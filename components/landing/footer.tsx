@@ -1,17 +1,17 @@
 import Link from "next/link"
 
+import { PerkleyLogo } from "@/components/brand/perkley-logo"
+import { pageContainerClass } from "@/components/landing/primitives"
 import { WaitlistLink } from "@/components/waitlist-link"
+import { cn } from "@/lib/utils"
 
 export function SiteFooter() {
   return (
     <footer className="border-t border-border py-16">
-      <div className="mx-auto flex max-w-6xl flex-col gap-12 px-4 sm:px-6 lg:flex-row lg:items-start lg:justify-between">
+      <div className={cn("flex flex-col gap-12 lg:flex-row lg:items-start lg:justify-between", pageContainerClass)}>
         <div className="flex flex-col gap-4">
-          <Link href="/" className="flex items-center gap-2.5">
-            <span className="flex size-8 items-center justify-center rounded-lg bg-brand text-xs font-semibold text-white">
-              P
-            </span>
-            <span className="text-sm font-semibold tracking-tight">Perkley</span>
+          <Link href="/" className="inline-flex w-fit">
+            <PerkleyLogo />
           </Link>
           <p className="max-w-xs text-sm leading-7 text-muted-foreground">
             Creator marketing, reimagined. A performance marketplace where brands
@@ -58,7 +58,7 @@ export function SiteFooter() {
         </div>
       </div>
 
-      <div className="mx-auto mt-12 max-w-6xl border-t border-border px-4 pt-8 sm:px-6">
+      <div className={cn("mt-12 border-t border-border pt-8", pageContainerClass)}>
         <div className="flex flex-col gap-2 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} Perkley</p>
           <p>Coming soon.</p>
