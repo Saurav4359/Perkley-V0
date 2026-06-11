@@ -4,14 +4,15 @@ import { ArrowRightIcon } from "lucide-react"
 import { motion } from "framer-motion"
 
 import { HeroPreview } from "@/components/landing/hero-preview"
-import { MetricChip, SectionLabel } from "@/components/landing/primitives"
+import { MetricChip, pageContainerClass, SectionLabel } from "@/components/landing/primitives"
 import { Button } from "@/components/ui/button"
 import { openWaitlist } from "@/lib/waitlist-navigation"
+import { cn } from "@/lib/utils"
 
 export function HeroSection() {
   return (
     <section className="border-b border-border">
-      <div className="mx-auto grid max-w-6xl gap-16 px-4 py-20 sm:px-6 sm:py-24 lg:grid-cols-2 lg:items-center lg:gap-12 lg:py-28">
+      <div className={cn("grid gap-10 py-16 sm:py-20 lg:grid-cols-2 lg:items-center lg:gap-12 lg:py-24", pageContainerClass)}>
         <div className="flex flex-col gap-8">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
