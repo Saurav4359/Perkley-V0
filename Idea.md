@@ -1,3 +1,309 @@
+# Perkley - Validation & Proof of Work Plan
+
+## Core Thesis
+
+Creator marketing today is broken.
+
+Brands:
+
+* Spend significant time finding creators
+* Negotiate individually
+* Don't know which creator will actually perform
+
+Creators:
+
+* Struggle to get discovered
+* Compete on follower count instead of performance
+* Rarely get opportunities from brands
+
+Perkley aims to change creator marketing from:
+
+"Brands choose creators"
+
+to
+
+"Creators compete and performance decides winners."
+
+---
+
+# Biggest Assumption
+
+The biggest risk is NOT creators.
+
+India has millions of creators.
+
+The biggest risk is:
+
+Will brands actually prefer this model over traditional influencer marketing?
+
+This must be validated first.
+
+---
+
+# Marketplace Reality
+
+Creators are not scarce.
+
+Brands are scarce.
+
+Therefore:
+
+Acquire brands first.
+
+Creators will follow opportunities and rewards.
+
+Money attracts creators.
+
+Creators do not automatically attract brands.
+
+---
+
+# Proof of Work Before Product
+
+Do NOT build a complex marketplace first.
+
+Build proof.
+
+Evidence is more valuable than code.
+
+---
+
+# Manual MVP
+
+## Step 1
+
+Get 1 brand willing to run a campaign.
+
+Example:
+
+Reward Pool:
+₹10,000
+
+Rewards:
+1st → ₹5,000
+2nd → ₹3,000
+3rd → ₹2,000
+
+---
+
+## Step 2
+
+Recruit creators manually.
+
+Sources:
+
+* 100xSchool
+* Instagram
+* LinkedIn
+* College communities
+* WhatsApp groups
+
+Target:
+20-50 creators
+
+---
+
+## Step 3
+
+Run campaign manually.
+
+No platform required.
+
+Use:
+
+* Google Forms
+* WhatsApp
+* Notion
+
+---
+
+## Step 4
+
+Collect results.
+
+Learn:
+
+* How many creators joined?
+* What reward amount attracts creators?
+* What rules are needed?
+* What disputes happen?
+* What do brands actually care about?
+
+---
+
+# Why This Matters
+
+1 successful campaign >
+
+3 months of coding.
+
+---
+
+# AI Role
+
+AI should NOT judge creativity.
+
+AI should judge measurable outcomes.
+
+Examples:
+
+* Views
+* Likes
+* Shares
+* Saves
+* Comments
+* Clicks
+* Conversions
+
+AI can calculate winners.
+
+AI should not decide subjective brand quality.
+
+---
+
+# Escrow System
+
+Brand deposits funds before campaign starts.
+
+Benefits:
+
+* Builds creator trust
+* Guarantees payouts
+* Prevents fake campaigns
+* Creates transparency
+
+Future flow:
+
+Brand → Escrow → Campaign → Winners → Automatic Payout
+
+---
+
+# Potential Campaign Types
+
+## Performance Campaign
+
+Winner decided by:
+
+* Views
+* Shares
+* Saves
+* Engagement
+
+---
+
+## Referral Campaign
+
+Creators receive referral links.
+
+Winner decided by:
+
+* Signups
+* Sales
+* Revenue generated
+
+---
+
+## Adathon
+
+Brand launches challenge.
+
+Multiple creators create ads.
+
+Best-performing ads win.
+
+---
+
+# Physical Product Problem
+
+Challenge:
+
+Brands cannot send products to 100 creators.
+
+Possible solutions:
+
+### Existing Customers
+
+Only users who already own product participate.
+
+### Limited Creator Slots
+
+Brand approves first 20 creators for product seeding.
+
+### Digital Products
+
+AI tools
+Apps
+SaaS
+Courses
+
+No shipping required.
+
+### UGC Campaigns
+
+Creators use provided assets.
+
+No physical product required.
+
+---
+
+# First Success Metric
+
+NOT:
+
+* Followers
+* Logo
+* Landing page traffic
+
+Success is:
+
+1 Brand
+20 Creators
+1 Completed Campaign
+
+---
+
+# Validation Questions For Brands
+
+1. Do you currently work with creators?
+2. How do you discover creators?
+3. What is your creator marketing budget?
+4. What is the most frustrating part?
+5. Would you run a performance-based creator competition?
+6. Would you trust predefined metrics to decide winners?
+7. Would you deposit campaign funds into escrow?
+
+---
+
+# Validation Questions For Creators
+
+1. Would you participate in campaigns?
+2. What reward amount excites you?
+3. What makes you ignore opportunities?
+4. Do you prefer guaranteed payment or competition?
+5. What follower range do you have?
+
+---
+
+# 30-Day Goal
+
+Do NOT focus on:
+
+* Complex engineering
+* AI judging
+* Marketplace features
+
+Focus on:
+
+* 10 brand conversations
+* 30 creator conversations
+* 1 paying pilot campaign
+* 20 participating creators
+* 1 completed campaign
+
+If this succeeds, Perkley has earned the right to be built.
+
+---
+
 # Perkley — Product Concept
 
 ## Vision
