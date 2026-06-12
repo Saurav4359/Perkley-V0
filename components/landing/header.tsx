@@ -38,20 +38,23 @@ export function SiteHeader() {
   return (
     <>
       <div
-        className="pointer-events-none h-[4.5rem] shrink-0 sm:h-20"
+        className="pointer-events-none h-16 shrink-0 sm:h-[4.5rem]"
         aria-hidden
       />
-      <div className="fixed inset-x-0 top-4 z-50">
+      <div className="fixed inset-x-0 top-0 z-50">
         <div className={pageContainerClass}>
           <header
             className={cn(
-              "glass-nav rounded-3xl border transition-[background-color,box-shadow,border-color] duration-300",
+              "glass-nav my-4 rounded-2xl border transition-[background-color,box-shadow,border-color] duration-300",
               scrolled && "glass-nav-scrolled"
             )}
           >
-            <div className="flex h-14 items-center justify-between gap-4 px-4 sm:h-16 sm:px-6">
+            <div className="flex h-12 items-center justify-between gap-4 px-3.5 sm:h-14 sm:px-5">
               <Link href="/" className="shrink-0">
-                <PerkleyLogo />
+                <PerkleyLogo
+                  markClassName="h-9 w-9 sm:h-10 sm:w-10"
+                  textClassName="text-[1.05rem] sm:text-[1.15rem]"
+                />
               </Link>
 
               <nav className="hidden items-center gap-6 text-[0.9375rem] lg:flex xl:gap-8">
