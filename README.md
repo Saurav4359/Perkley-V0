@@ -59,3 +59,27 @@ bun run lint    # typecheck + eslint
 | `@perkley/email` | SMTP email helpers |
 
 See [apps/web/README.md](./apps/web/README.md) and [apps/api/README.md](./apps/api/README.md) for app-specific setup.
+
+## Deploying to Vercel
+
+The Next.js app lives in `apps/web/`, not the repository root. Configure the Vercel project as follows (**Project → Settings → General**):
+
+| Setting | Value |
+|---------|--------|
+| **Root Directory** | `apps/web` |
+| **Framework Preset** | Next.js |
+| **Install Command** | `cd ../.. && bun install` |
+| **Build Command** | `cd ../.. && bun run build --filter=web` |
+| **Output Directory** | `.next` (default) |
+
+Also enable **Include source files outside of the Root Directory in the Build Step** — required because `apps/web/tsconfig.json` extends shared config in `packages/typescript-config/`.
+
+These commands are also codified in [`apps/web/vercel.json`](./apps/web/vercel.json). Use Bun as the package manager in Vercel to match `packageManager` in the root `package.json`.
+
+Verify locally before deploying:
+
+```bash
+bun install
+bun run build:web
+ls apps/web/.next
+```
