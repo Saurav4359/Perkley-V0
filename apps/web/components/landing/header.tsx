@@ -20,7 +20,7 @@ const NAV_ITEMS = [
 const SECTION_IDS = NAV_ITEMS.map((item) => item.id)
 
 export function SiteHeader() {
-  const activeSection = useActiveSection(SECTION_IDS)
+  const { activeSection, setActiveOnNavigate } = useActiveSection(SECTION_IDS)
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
@@ -61,10 +61,11 @@ export function SiteHeader() {
                   <Link
                     key={href}
                     href={href}
+                    onClick={() => setActiveOnNavigate(id)}
                     className={cn(
-                      "relative whitespace-nowrap font-medium transition-colors",
+                      "relative whitespace-nowrap font-medium no-underline transition-colors focus-visible:outline-none",
                       activeSection === id
-                        ? "text-foreground after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-full after:rounded-full after:bg-brand"
+                        ? "text-foreground after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-full after:rounded-full after:bg-brand after:content-['']"
                         : "text-foreground/80 hover:text-foreground"
                     )}
                   >

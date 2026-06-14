@@ -1,35 +1,59 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 export function useActiveSection(sectionIds: readonly string[], offset = 80) {
   const [activeSection, setActiveSection] = useState("")
+  const lockedUntilRef = useRef(0)
+
+  const setActiveOnNavigate = useCallback((id: string) => {
+    if (!sectionIds.includes(id)) return
+    setActiveSection(id)
+    lockedUntilRef.current = Date.now() + 700
+  }, [sectionIds])
 
   useEffect(() => {
-    function updateActiveSection() {
-      let current = ""
+    function updateFromScroll() {
+      if (Date.now() < lockedUntilRef.current) return
 
-      for (const id of sectionIds) {
+      const viewportLine = window.scrollY + offset
+      let current = sectionIds[0] ?? ""
+
+      for (let i = sectionIds.length - 1; i >= 0; i--) {
+        const id = sectionIds[i]
         const element = document.getElementById(id)
         if (!element) continue
 
-        if (element.getBoundingClientRect().top <= offset) {
+        const sectionTop = element.getBoundingClientRect().top + window.scrollY
+        if (sectionTop <= viewportLine + 1) {
           current = id
+          break
         }
       }
 
       setActiveSection(current)
     }
 
-    updateActiveSection()
-    window.addEventListener("scroll", updateActiveSection, { passive: true })
-    window.addEventListener("resize", updateActiveSection)
+    function updateFromHash() {
+      const hash = window.location.hash.replace("#", "")
+      if (hash && sectionIds.includes(hash)) {
+        setActiveOnNavigate(hash)
+      } else {
+        updateFromScroll()
+      }
+    }
+
+    updateFromHash()
+    window.addEventListener("scroll", updateFromScroll, { passive: true })
+    window.addEventListener("resize", updateFromScroll)
+    window.addEventListener("hashchange", updateFromHash)
 
     return () => {
-      window.removeEventListener("scroll", updateActiveSection)
-      window.removeEventListener("resize", updateActiveSection)
+      window.removeEventListener("scroll", updateFromScroll)
+      window.removeEventListener("resize", updateFromScroll)
+      window.removeEventListener("hashchange", updateFromHash)
     }
-  }, [sectionIds, offset])
+  }, [sectionIds, offset, setActiveOnNavigate])
 
-  return activeSection
+  return { activeSection, setActiveOnNavigate }
 }
