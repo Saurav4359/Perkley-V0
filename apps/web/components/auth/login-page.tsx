@@ -82,7 +82,6 @@ export function LoginPage() {
             <span className="text-xs text-muted-foreground">or continue with</span>
             <div className="h-px flex-1 bg-border" />
           </div>
-
           <div className="flex justify-center gap-3">
             <button
               type="button"

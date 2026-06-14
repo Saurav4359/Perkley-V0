@@ -39,6 +39,8 @@
   --color-brand: var(--brand);
   --color-brand-muted: var(--brand-muted);
   --color-brand-subtle: var(--brand-subtle);
+  --color-reward: var(--reward);
+  --color-reward-muted: var(--reward-muted);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
@@ -64,6 +66,8 @@
   --brand: #fe6c37;
   --brand-muted: #fff4ef;
   --brand-subtle: #ff9a73;
+  --reward: rgba(10, 10, 10, 0.7);
+  --reward-muted: #f4f4f5;
   --secondary: #f4f4f5;
   --secondary-foreground: #0a0a0a;
   --muted: #f4f4f5;
@@ -101,6 +105,8 @@
   --primary-foreground: #0a0a0a;
   --brand-muted: rgba(254, 108, 55, 0.12);
   --brand-subtle: #ff9a73;
+  --reward: rgba(250, 250, 250, 0.7);
+  --reward-muted: rgba(250, 250, 250, 0.08);
   --secondary: #171717;
   --secondary-foreground: #fafafa;
   --muted: #171717;
