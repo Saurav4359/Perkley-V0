@@ -1,133 +1,132 @@
-export type CampaignType = "bounty" | "campaign"
-export type CampaignCategory = "content" | "design" | "development" | "other"
+import { BRAND_LISTINGS, CREATOR_LISTINGS } from "@/lib/dashboard/listings-adapter"
+import type { ListingStatus, ListingType, Niche } from "@/lib/dashboard/types"
+import { NICHES } from "@/lib/dashboard/types"
+
+export type CampaignType = ListingType
+export type CampaignCategory = Niche
 
 export type Campaign = {
   id: string
   title: string
   brand: string
   type: CampaignType
-  category: CampaignCategory
+  niche: Niche
   reward: string
   dueInDays: number
   slotsLeft: number
   initials: string
   accent: string
+  tagline: string
+  rewardLabel: string
+  status: ListingStatus
+  fixedReward?: number
+  totalBudget?: number
+  competingCount?: number
+  verified?: boolean
+  trending?: boolean
+  isNew?: boolean
+  fillPercent?: number
+  filledCount?: number
+  maxCompetitors?: number
+  joinedAvatars?: string[]
+  joinedTotal?: number
+  rewardSortValue?: number
 }
 
 export const CREATOR_NAV = [
-  { label: "Campaigns", href: "/dashboard", active: true },
-  { label: "My work", href: "/dashboard/work" },
+  { label: "Campaigns", href: "/dashboard" },
+  { label: "My Work", href: "/dashboard/work" },
   { label: "Earnings", href: "/dashboard/earnings" },
+  { label: "Leaderboard", href: "/dashboard/leaderboard" },
+  { label: "Discover", href: "/dashboard/discover" },
 ] as const
 
 export const BRAND_NAV = [
-  { label: "Overview", href: "/dashboard/brand", active: true },
+  { label: "Overview", href: "/dashboard/brand" },
   { label: "Campaigns", href: "/dashboard/brand/campaigns" },
   { label: "Creators", href: "/dashboard/brand/creators" },
 ] as const
 
-export const CAMPAIGN_CATEGORIES = [
-  { id: "all", label: "All" },
-  { id: "content", label: "Content" },
-  { id: "design", label: "Design" },
-  { id: "development", label: "Development" },
-  { id: "other", label: "Other" },
-] as const
+export type BrandCampaignStatus = "live" | "reviewing" | "draft" | "ended"
 
-export const CREATOR_CAMPAIGNS: Campaign[] = [
-  {
-    id: "1",
-    title: "Launch week UGC sprint",
-    brand: "Northline Skincare",
-    type: "bounty",
-    category: "content",
-    reward: "2,500",
-    dueInDays: 5,
-    slotsLeft: 12,
-    initials: "NS",
-    accent: "#FE6C37",
-  },
-  {
-    id: "2",
-    title: "Product demo reel challenge",
-    brand: "VaultPay",
-    type: "campaign",
-    category: "content",
-    reward: "800",
-    dueInDays: 9,
-    slotsLeft: 6,
-    initials: "VP",
-    accent: "#0A0A0A",
-  },
-  {
-    id: "3",
-    title: "Landing page hero refresh",
-    brand: "Orbit Labs",
-    type: "bounty",
-    category: "design",
-    reward: "1,200",
-    dueInDays: 14,
-    slotsLeft: 3,
-    initials: "OL",
-    accent: "#6366F1",
-  },
-  {
-    id: "4",
-    title: "API integration walkthrough",
-    brand: "Stackforge",
-    type: "campaign",
-    category: "development",
-    reward: "650",
-    dueInDays: 7,
-    slotsLeft: 8,
-    initials: "SF",
-    accent: "#059669",
-  },
-]
+export type BrandCampaign = Omit<Campaign, "status"> & {
+  status: BrandCampaignStatus
+  submissions: number
+  spots: number
+}
+
+export function getBrandNav(pathname: string) {
+  return BRAND_NAV.map((item) => ({
+    ...item,
+    active:
+      item.href === "/dashboard/brand"
+        ? pathname === item.href
+        : pathname.startsWith(item.href),
+  }))
+}
+
+export function getCreatorNav(pathname: string) {
+  return CREATOR_NAV.map((item) => ({
+    ...item,
+    active:
+      item.href === "/dashboard"
+        ? pathname === item.href
+        : pathname.startsWith(item.href),
+  }))
+}
+
+export const BRAND_CAMPAIGNS = BRAND_LISTINGS
+
+export const CAMPAIGN_CATEGORIES = NICHES
+
+export const CREATOR_CAMPAIGNS = CREATOR_LISTINGS
 
 export const RECENT_WINNERS = [
   {
     name: "Maya Chen",
-    task: "TikTok hook test for a fintech launch",
-    amount: "420",
+    task: "Vitamin C launch reel sprint",
+    amount: "25,000",
   },
   {
     name: "Jordan Okoye",
-    task: "Short-form ad variant for a D2C drop",
-    amount: "275",
+    task: "Summer shred challenge",
+    amount: "18,000",
   },
   {
     name: "Priya Shah",
-    task: "Creator brief for a product unboxing",
-    amount: "190",
+    task: "Monsoon drop lookbook",
+    amount: "12,000",
   },
 ]
 
 export const RECENT_ACTIVITY = [
   {
     user: "Alex Rivera",
-    action: "submitted a bounty entry",
-    campaign: "Summer drop UGC",
+    action: "submitted to bounty",
+    campaign: "Vitamin C launch reel sprint",
     time: "2m ago",
+    kind: "submit" as const,
   },
   {
     user: "Sam Lee",
-    action: "won a performance bonus",
-    campaign: "VaultPay demo reel",
+    action: "qualified for campaign payout",
+    campaign: "UPI demo reel",
     time: "18m ago",
+    kind: "qualified" as const,
   },
   {
     user: "Northline Skincare",
-    action: "posted a new campaign",
-    campaign: "Launch week UGC sprint",
+    action: "posted a new bounty",
+    campaign: "Vitamin C launch reel sprint",
     time: "1h ago",
+    kind: "new" as const,
   },
 ]
 
 export const ONBOARDING_STEPS = [
   { label: "Complete your creator profile", done: true },
-  { label: "Join your first campaign", done: true },
-  { label: "Submit work and climb the leaderboard", done: false },
+  { label: "Join your first bounty or campaign", done: true },
+  { label: "Submit work and track earnings", done: false },
 ]
 
 export const BRAND_ONBOARDING_STEPS = [
@@ -135,3 +134,5 @@ export const BRAND_ONBOARDING_STEPS = [
   { label: "Launch your first bounty", done: false },
   { label: "Review submissions and pay winners", done: false },
 ]
+
+export const ADMIN_NAV = [{ label: "Submissions", href: "/dashboard/admin" }] as const
