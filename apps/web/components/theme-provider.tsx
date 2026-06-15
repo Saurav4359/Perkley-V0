@@ -10,16 +10,23 @@ import {
 } from "react"
 
 import {
+  runThemeTransition,
+  type ThemeTransitionOrigin,
+} from "@/lib/theme-transition"
+import {
   applyTheme,
   getStoredTheme,
-  storeTheme,
   type Theme,
 } from "@/lib/theme"
 
+type SetThemeOptions = {
+  origin?: ThemeTransitionOrigin
+}
+
 type ThemeContextValue = {
   theme: Theme
-  setTheme: (theme: Theme) => void
-  toggleTheme: () => void
+  setTheme: (theme: Theme, options?: SetThemeOptions) => void
+  toggleTheme: (options?: SetThemeOptions) => void
   mounted: boolean
 }
 
@@ -37,15 +44,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setMounted(true)
   }, [])
 
-  const setTheme = useCallback((next: Theme) => {
+  const setTheme = useCallback((next: Theme, options?: SetThemeOptions) => {
+    runThemeTransition(next, options?.origin)
     setThemeState(next)
-    storeTheme(next)
-    applyTheme(next)
   }, [])
 
-  const toggleTheme = useCallback(() => {
-    setTheme(theme === "dark" ? "light" : "dark")
-  }, [setTheme, theme])
+  const toggleTheme = useCallback(
+    (options?: SetThemeOptions) => {
+      setTheme(theme === "dark" ? "light" : "dark", options)
+    },
+    [setTheme, theme]
+  )
 
   const value = useMemo(
     () => ({ theme, setTheme, toggleTheme, mounted }),
