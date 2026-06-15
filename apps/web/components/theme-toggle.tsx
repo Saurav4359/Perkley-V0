@@ -9,6 +9,14 @@ type ThemeToggleProps = {
   className?: string
 }
 
+function getToggleOrigin(element: HTMLElement) {
+  const rect = element.getBoundingClientRect()
+  return {
+    x: rect.left + rect.width / 2,
+    y: rect.top + rect.height / 2,
+  }
+}
+
 export function ThemeToggle({ className }: ThemeToggleProps) {
   const { theme, setTheme, mounted } = useTheme()
 
@@ -31,9 +39,12 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
             type="button"
             aria-label={option === "light" ? "Light theme" : "Dark theme"}
             aria-pressed={active}
-            onClick={() => setTheme(option)}
+            onClick={(event) => {
+              if (active) return
+              setTheme(option, { origin: getToggleOrigin(event.currentTarget) })
+            }}
             className={cn(
-              "inline-flex h-full flex-1 cursor-pointer items-center justify-center rounded-full transition-colors",
+              "inline-flex h-full flex-1 cursor-pointer items-center justify-center rounded-full transition-colors duration-300 ease-in-out",
               active
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"

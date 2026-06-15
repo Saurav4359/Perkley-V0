@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google"
 
 import { ThemeProvider } from "@/components/theme-provider"
 import { ThemeScript } from "@/components/theme-script"
+import { SiteFooter } from "@/components/landing/footer"
 
 import "./globals.css"
 
@@ -49,7 +50,12 @@ export default function RootLayout({
         <ThemeScript />
       </head>
       <body className="min-h-full bg-background text-foreground">
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <div className="flex min-h-full flex-col">
+            {children}
+            <SiteFooter />
+          </div>
+        </ThemeProvider>
       </body>
     </html>
   )
