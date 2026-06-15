@@ -1,5 +1,4 @@
 import { AudienceStrip } from "@/components/landing/audience-strip"
-import { SiteFooter } from "@/components/landing/footer"
 import { FaqSection } from "@/components/landing/faq"
 import { HeroSection } from "@/components/landing/hero"
 import { HowItWorksSection } from "@/components/landing/how-it-works"
@@ -19,7 +18,6 @@ export default function HomePage() {
         <WhyPerkleySection />
         <FaqSection />
       </main>
-      <SiteFooter />
     </>
   )
 }
