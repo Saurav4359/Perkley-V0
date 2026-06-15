@@ -13,23 +13,23 @@ import { pageContainerClass } from "@/components/landing/primitives"
 import { cn } from "@/lib/utils"
 
 const productLinks = [
-  { label: "How it works", href: "#how-it-works" },
-  { label: "Why Perkley", href: "#why-perkley" },
-  { label: "FAQ", href: "#faq" },
-  { label: "Campaigns", href: "#how-it-works" },
+  { label: "How it works", href: "/#how-it-works" },
+  { label: "Why Perkley", href: "/#why-perkley" },
+  { label: "FAQ", href: "/#faq" },
+  { label: "Campaigns", href: "/#how-it-works" },
 ]
 
 const companyLinks = [
-  { label: "About", href: "#why-perkley" },
+  { label: "About", href: "/#why-perkley" },
   { label: "Careers", href: "mailto:careers@perkley.com" },
-  { label: "Blog", href: "#faq" },
+  { label: "Blog", href: "/#faq" },
   { label: "Contact", href: "mailto:hello@perkley.com" },
 ]
 
 const resourceLinks = [
-  { label: "Documentation", href: "#faq" },
-  { label: "Creator guide", href: "#how-it-works" },
-  { label: "Brand guide", href: "#why-perkley" },
+  { label: "Documentation", href: "/#faq" },
+  { label: "Creator guide", href: "/#how-it-works" },
+  { label: "Brand guide", href: "/#why-perkley" },
   { label: "Support", href: "mailto:support@perkley.com" },
 ]
 
