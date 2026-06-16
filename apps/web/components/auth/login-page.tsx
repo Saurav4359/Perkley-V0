@@ -22,13 +22,14 @@ import { cn } from "@/lib/utils"
 
 export function LoginPage() {
   const [role, setRole] = useState<"creator" | "brand">("creator")
+  const [email, setEmail] = useState("")
   const router = useRouter()
 
   function handleLogin(event: React.FormEvent) {
     event.preventDefault()
 
     if (role === "brand") {
-      initBrandSession()
+      initBrandSession({ workEmail: email.trim() })
       router.push("/dashboard/brand")
       return
     }
@@ -77,6 +78,8 @@ export function LoginPage() {
             <input
               type="email"
               placeholder="you@example.com"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
               className={`mt-2 ${authInputClassName}`}
             />
           </div>

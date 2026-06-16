@@ -4,6 +4,12 @@ import {
   ONBOARDING_STORAGE_KEY,
   USER_ROLE_STORAGE_KEY,
 } from "@/lib/onboarding/constants"
+import {
+  clearBrandProfileState,
+  mergeBrandProfileSeed,
+  saveBrandProfileFromSignup,
+  type BrandProfileSeed,
+} from "@/lib/dashboard/brand-profile-storage"
 import { canParticipateInListings } from "@/lib/onboarding/progress"
 import { createInitialOnboardingState } from "@/lib/onboarding/state"
 import type { OnboardingState, UserRole } from "@/lib/onboarding/types"
@@ -146,7 +152,10 @@ export function initCreatorSession() {
   return resetOnboardingState()
 }
 
-export function initBrandSession() {
+export function initBrandSession(
+  seed?: BrandProfileSeed,
+  options?: { fromSignup?: boolean }
+) {
   setUserRole("brand")
   if (typeof window !== "undefined") {
     try {
@@ -155,6 +164,17 @@ export function initBrandSession() {
       // ignore
     }
   }
+
+  if (options?.fromSignup && seed?.name?.trim()) {
+    saveBrandProfileFromSignup({
+      name: seed.name.trim(),
+      website: seed.website,
+      workEmail: seed.workEmail,
+    })
+    return
+  }
+
+  mergeBrandProfileSeed(seed)
 }
 
 export function getCreatorDashboardPath(): string {
@@ -173,4 +193,5 @@ export function clearUserSession() {
   } catch {
     // ignore storage failures
   }
+  clearBrandProfileState()
 }
