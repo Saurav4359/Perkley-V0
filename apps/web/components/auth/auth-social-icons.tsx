@@ -21,7 +21,16 @@ export function GoogleIcon() {
   )
 }
 
-export function InstagramIcon() {
+export function InstagramIcon({
+  className,
+  monochrome = false,
+}: {
+  className?: string
+  monochrome?: boolean
+}) {
+  const stroke = monochrome ? "currentColor" : "url(#perkley-instagram-stroke)"
+  const dotFill = monochrome ? "currentColor" : "url(#perkley-instagram-stroke)"
+
   return (
     <svg
       width="23"
@@ -29,45 +38,36 @@ export function InstagramIcon() {
       viewBox="0 0 24 24"
       fill="none"
       aria-hidden
+      className={className}
     >
-      <defs>
-        <linearGradient
-          id="perkley-instagram-stroke"
-          x1="2"
-          y1="22"
-          x2="22"
-          y2="2"
-          gradientUnits="userSpaceOnUse"
-        >
-          <stop stopColor="#FEDA75" />
-          <stop offset="0.35" stopColor="#FA7E1E" />
-          <stop offset="0.65" stopColor="#D62976" />
-          <stop offset="1" stopColor="#962FBF" />
-        </linearGradient>
-      </defs>
+      {!monochrome ? (
+        <defs>
+          <linearGradient
+            id="perkley-instagram-stroke"
+            x1="2"
+            y1="22"
+            x2="22"
+            y2="2"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop stopColor="#FEDA75" />
+            <stop offset="0.35" stopColor="#FA7E1E" />
+            <stop offset="0.65" stopColor="#D62976" />
+            <stop offset="1" stopColor="#962FBF" />
+          </linearGradient>
+        </defs>
+      ) : null}
       <rect
         x="3"
         y="3"
         width="18"
         height="18"
         rx="5"
-        stroke="url(#perkley-instagram-stroke)"
+        stroke={stroke}
         strokeWidth="1.75"
       />
-      <circle
-        cx="12"
-        cy="12"
-        r="4"
-        stroke="url(#perkley-instagram-stroke)"
-        strokeWidth="1.75"
-      />
-      <circle
-        cx="17.5"
-        cy="6.5"
-        r="1.1"
-        fill="url(#perkley-instagram-stroke)"
-        stroke="none"
-      />
+      <circle cx="12" cy="12" r="4" stroke={stroke} strokeWidth="1.75" />
+      <circle cx="17.5" cy="6.5" r="1.1" fill={dotFill} stroke="none" />
     </svg>
   )
 }

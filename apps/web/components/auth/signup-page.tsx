@@ -11,6 +11,10 @@ import {
   authPrimaryButtonClassName,
 } from "@/components/auth/auth-styles"
 import { PasswordField } from "@/components/auth/password-field"
+import {
+  initBrandSession,
+  initCreatorSession,
+} from "@/lib/onboarding/storage"
 import { cn } from "@/lib/utils"
 
 const roleOptions = [
@@ -112,9 +116,13 @@ export function SignupPage() {
               className="space-y-5"
               onSubmit={(event) => {
                 event.preventDefault()
-                router.push(
-                  role === "brand" ? "/dashboard/brand" : "/dashboard"
-                )
+                if (role === "brand") {
+                  initBrandSession()
+                  router.push("/dashboard/brand")
+                  return
+                }
+                initCreatorSession()
+                router.push("/onboarding")
               }}
             >
               {role === "creator" ? (
