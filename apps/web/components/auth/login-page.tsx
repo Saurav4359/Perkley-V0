@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 import { AuthShell } from "@/components/auth/auth-shell"
@@ -12,12 +13,30 @@ import {
   authSocialButtonClassName,
 } from "@/components/auth/auth-styles"
 import { PasswordField } from "@/components/auth/password-field"
+import {
+  clearOnboardingPending,
+  initBrandSession,
+  setUserRole,
+} from "@/lib/onboarding/storage"
 import { cn } from "@/lib/utils"
 
 export function LoginPage() {
   const [role, setRole] = useState<"creator" | "brand">("creator")
+  const router = useRouter()
 
-  const dashboardHref = role === "brand" ? "/dashboard/brand" : "/dashboard"
+  function handleLogin(event: React.FormEvent) {
+    event.preventDefault()
+
+    if (role === "brand") {
+      initBrandSession()
+      router.push("/dashboard/brand")
+      return
+    }
+
+    setUserRole("creator")
+    clearOnboardingPending()
+    router.push("/dashboard")
+  }
 
   return (
     <AuthShell variant="login">
@@ -50,7 +69,7 @@ export function LoginPage() {
           ))}
         </div>
 
-        <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+        <form className="space-y-5" onSubmit={handleLogin}>
           <div>
             <label className="text-sm font-medium text-foreground">
               {role === "brand" ? "Work email" : "Email"}
@@ -71,9 +90,9 @@ export function LoginPage() {
               </Link>
             }
           />
-          <Link href={dashboardHref} className={authPrimaryButtonClassName}>
+          <button type="submit" className={authPrimaryButtonClassName}>
             Login
-          </Link>
+          </button>
         </form>
 
         <div className="space-y-5">
