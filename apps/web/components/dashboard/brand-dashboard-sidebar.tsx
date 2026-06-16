@@ -31,6 +31,7 @@ export function BrandDashboardSidebar() {
       connectedSteps={!canLaunch}
       winners={RECENT_WINNERS}
       activity={RECENT_ACTIVITY}
+      activityHref="/dashboard/brand/notifications"
     />
   )
 }

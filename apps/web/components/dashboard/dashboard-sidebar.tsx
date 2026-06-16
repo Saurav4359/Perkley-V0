@@ -35,6 +35,7 @@ type DashboardSidebarProps = {
   connectedSteps?: boolean
   winners: Winner[]
   activity: Activity[]
+  activityHref?: string
 }
 
 function PaidOutSparkline() {
@@ -144,6 +145,7 @@ export function DashboardSidebar({
   connectedSteps = false,
   winners,
   activity,
+  activityHref = "/dashboard/notifications",
 }: DashboardSidebarProps) {
   const liveCampaigns = stats.find((s) => s.label.toLowerCase().includes("live"))
   const totalEarnings = stats.find((s) => s.label.toLowerCase().includes("earnings"))
@@ -229,7 +231,7 @@ export function DashboardSidebar({
       <div className="rounded-[1.15rem] border border-border bg-card p-5">
         <div className="flex items-center justify-between gap-2">
           <h3 className="text-sm font-semibold text-foreground">Recent activity</h3>
-          <Link href="#" className="text-xs font-medium text-brand hover:underline">
+          <Link href={activityHref} className="text-xs font-medium text-brand hover:underline">
             View all
           </Link>
         </div>

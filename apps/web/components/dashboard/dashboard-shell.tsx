@@ -3,13 +3,11 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import {
-  Bell,
-  Search,
-} from "lucide-react"
+import { Search } from "lucide-react"
 
 import { PerkleyLogo } from "@/components/brand/perkley-logo"
 import { InrIcon } from "@/components/dashboard/inr-icon"
+import { NotificationMenu } from "@/components/dashboard/notification-menu"
 import { UserMenu } from "@/components/dashboard/user-menu"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { clearUserSession } from "@/lib/onboarding/storage"
@@ -112,14 +110,7 @@ export function DashboardShell({
               <Search className="size-4" />
             </button>
             <ThemeToggle />
-            <button
-              type="button"
-              aria-label="Notifications"
-              className="relative inline-flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            >
-              <Bell className="size-4" />
-              <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-brand" />
-            </button>
+            <NotificationMenu role={isBrand ? "brand" : "creator"} />
             <div className="hidden items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-sm font-medium sm:flex">
               <InrIcon className="size-4" />
               <span className="tabular-nums text-reward">2,450</span>
