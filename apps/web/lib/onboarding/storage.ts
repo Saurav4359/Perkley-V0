@@ -163,3 +163,14 @@ export function getCreatorDashboardPath(): string {
   }
   return "/dashboard"
 }
+
+export function clearUserSession() {
+  if (typeof window === "undefined") return
+
+  try {
+    localStorage.removeItem(USER_ROLE_STORAGE_KEY)
+    localStorage.removeItem(ONBOARDING_PENDING_KEY)
+  } catch {
+    // ignore storage failures
+  }
+}

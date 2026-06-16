@@ -11,6 +11,7 @@ import { PerkleyLogo } from "@/components/brand/perkley-logo"
 import { InrIcon } from "@/components/dashboard/inr-icon"
 import { UserMenu } from "@/components/dashboard/user-menu"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { clearUserSession } from "@/lib/onboarding/storage"
 import { cn } from "@/lib/utils"
 
 type NavItem = {
@@ -111,12 +112,10 @@ export function DashboardShell({
               accountLabel={isBrand ? "Brand account" : "Creator account"}
               profileHref={isBrand ? "/dashboard/brand" : "/dashboard/profile"}
               settingsHref={isBrand ? "/dashboard/brand" : "/dashboard/profile"}
-                onLogout={() => {
-                  if (typeof window !== "undefined") {
-                    window.localStorage.removeItem("perkley-user-role")
-                  }
-                  router.push("/login")
-                }}
+              onLogout={() => {
+                clearUserSession()
+                router.replace("/")
+              }}
             />
           </div>
         </div>
