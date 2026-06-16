@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "smoke:onboarding": "bun run scripts/smoke-onboarding.ts"
+    "smoke:onboarding": "bun run scripts/smoke-onboarding.ts",
+    "smoke:brand-onboarding": "bun run scripts/smoke-brand-onboarding.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
