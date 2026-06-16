@@ -1,3 +1,5 @@
+import { useId } from "react"
+
 export function GoogleIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
@@ -28,8 +30,9 @@ export function InstagramIcon({
   className?: string
   monochrome?: boolean
 }) {
-  const stroke = monochrome ? "currentColor" : "url(#perkley-instagram-stroke)"
-  const dotFill = monochrome ? "currentColor" : "url(#perkley-instagram-stroke)"
+  const gradientId = `perkley-instagram-stroke-${useId().replace(/:/g, "")}`
+  const stroke = monochrome ? "currentColor" : `url(#${gradientId})`
+  const dotFill = monochrome ? "currentColor" : `url(#${gradientId})`
 
   return (
     <svg
@@ -43,7 +46,7 @@ export function InstagramIcon({
       {!monochrome ? (
         <defs>
           <linearGradient
-            id="perkley-instagram-stroke"
+            id={gradientId}
             x1="2"
             y1="22"
             x2="22"
