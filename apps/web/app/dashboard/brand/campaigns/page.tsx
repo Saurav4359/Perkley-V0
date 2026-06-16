@@ -34,7 +34,7 @@ const stats = [
 ] as const
 
 export const metadata: Metadata = {
-  title: "Campaigns — Perkley",
+  title: "My Brand — Perkley",
   robots: { index: false, follow: false },
 }
 
@@ -47,10 +47,11 @@ export default function BrandCampaignsPage() {
           <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="space-y-1">
               <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-                Campaigns
+                My Brand
               </h1>
               <p className="max-w-xl text-sm text-muted-foreground">
-                Create bounties, track submissions, and pay creators for performance.
+                Your listings, submission analytics, and drafts — everything for the
+                brand you manage on Perkley.
               </p>
             </div>
             <Link
@@ -61,7 +62,7 @@ export default function BrandCampaignsPage() {
               )}
             >
               <Plus className="size-4" />
-              New campaign
+              New listing
             </Link>
           </div>
         </div>

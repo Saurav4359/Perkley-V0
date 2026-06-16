@@ -96,7 +96,7 @@ export function BrandHero({ userName }: BrandHeroProps) {
                   "0 10px 22px -8px rgba(255,107,44,0.45), 0 3px 8px -3px rgba(255,107,44,0.3), inset 0 1px 0 rgba(255,255,255,0.18)",
               }}
             >
-              New Campaign
+              New listing
               <ArrowRight
                 className="size-[16px] transition-transform duration-300 group-hover:translate-x-0.5"
                 strokeWidth={2.5}
@@ -119,7 +119,7 @@ export function BrandHero({ userName }: BrandHeroProps) {
                 gap: 8,
               }}
             >
-              Review Campaigns
+              My Brand
               <Sparkles className="size-[16px] text-[#FF6B2C]" strokeWidth={2.25} />
             </Link>
           </div>

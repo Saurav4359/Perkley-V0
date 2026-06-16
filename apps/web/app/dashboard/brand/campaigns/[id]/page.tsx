@@ -36,7 +36,7 @@ export default async function BrandListingDetailPage({ params }: BrandListingDet
         listing={listing}
         mode="brand"
         backHref="/dashboard/brand/campaigns"
-        backLabel="Back to campaigns"
+        backLabel="Back to My Brand"
       />
     </DashboardShell>
   )

@@ -128,6 +128,7 @@ export function BrandCampaignList({ campaigns }: BrandCampaignListProps) {
             key={campaign.id}
             listing={campaign}
             href={`/dashboard/brand/campaigns/${campaign.id}`}
+            cta="manage"
             className="border-white/45 bg-white/[0.20] shadow-[inset_0_1px_0_rgba(255,255,255,0.64),0_14px_46px_rgba(15,23,42,0.07)] ring-1 ring-black/[0.02] backdrop-blur-xl transition-[background-color,border-color,box-shadow,transform] supports-[backdrop-filter]:bg-white/[0.14] hover:-translate-y-0.5 hover:border-white/60 hover:bg-white/[0.28] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.74),0_18px_54px_rgba(15,23,42,0.10)] dark:border-white/10 dark:bg-white/[0.045] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_14px_46px_rgba(0,0,0,0.22)] dark:ring-white/[0.025] dark:hover:bg-white/[0.07]"
           />
         ))}
