@@ -1,6 +1,7 @@
 export const ONBOARDING_STORAGE_KEY = "perkley-onboarding"
 export const USER_ROLE_STORAGE_KEY = "perkley-user-role"
 export const ONBOARDING_PENDING_KEY = "perkley-onboarding-pending"
+export const BRAND_PROFILE_STORAGE_KEY = "perkley-brand-profile"
 
 export const ONBOARDING_STEP_COUNT = 4
 
