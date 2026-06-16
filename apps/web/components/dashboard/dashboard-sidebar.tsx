@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ArrowRight, BadgeCheck, CheckCircle2, Circle, Sparkles, TrendingUp } from "lucide-react"
+import { ArrowRight, BadgeCheck, CheckCircle2, ChevronDown, Circle, Sparkles, TrendingUp } from "lucide-react"
 
 import { RewardAmount } from "@/components/dashboard/reward-amount"
 
@@ -31,6 +31,8 @@ type Activity = {
 type DashboardSidebarProps = {
   stats: Stat[]
   steps: Step[]
+  stepsTitle?: string
+  connectedSteps?: boolean
   winners: Winner[]
   activity: Activity[]
 }
@@ -78,7 +80,71 @@ function ActivityIcon({ kind }: { kind?: Activity["kind"] }) {
   )
 }
 
-export function DashboardSidebar({ stats, steps, winners, activity }: DashboardSidebarProps) {
+function StepsList({
+  steps,
+  connected,
+}: {
+  steps: Step[]
+  connected?: boolean
+}) {
+  if (connected) {
+    return (
+      <ul className="mt-2.5">
+        {steps.map((step, index) => (
+          <li key={step.label}>
+            <div className="flex items-center gap-2.5">
+              {step.done ? (
+                <CheckCircle2 className="size-4 shrink-0 text-brand" />
+              ) : (
+                <Circle className="size-4 shrink-0 text-muted-foreground/45" />
+              )}
+              <span
+                className={
+                  step.done
+                    ? "text-[13px] leading-tight text-foreground"
+                    : "text-[13px] leading-tight text-muted-foreground"
+                }
+              >
+                {step.label}
+              </span>
+            </div>
+            {index < steps.length - 1 ? (
+              <div className="flex h-3.5 w-4 items-center justify-center">
+                <ChevronDown className="size-3.5 text-muted-foreground/35" aria-hidden />
+              </div>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+    )
+  }
+
+  return (
+    <ul className="mt-4 space-y-3">
+      {steps.map((step) => (
+        <li key={step.label} className="flex items-start gap-3 text-sm">
+          {step.done ? (
+            <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-brand" />
+          ) : (
+            <Circle className="mt-0.5 size-4 shrink-0 text-muted-foreground/45" />
+          )}
+          <span className={step.done ? "text-foreground" : "text-muted-foreground"}>
+            {step.label}
+          </span>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+export function DashboardSidebar({
+  stats,
+  steps,
+  stepsTitle = "How Perkley works",
+  connectedSteps = false,
+  winners,
+  activity,
+}: DashboardSidebarProps) {
   const liveCampaigns = stats.find((s) => s.label.toLowerCase().includes("live"))
   const totalEarnings = stats.find((s) => s.label.toLowerCase().includes("earnings"))
 
@@ -123,22 +189,15 @@ export function DashboardSidebar({ stats, steps, winners, activity }: DashboardS
         </div>
       </div>
 
-      <div className="rounded-[1.15rem] border border-border bg-card p-5">
-        <h3 className="text-sm font-semibold text-foreground">How Perkley works</h3>
-        <ul className="mt-4 space-y-3">
-          {steps.map((step) => (
-            <li key={step.label} className="flex items-start gap-3 text-sm">
-              {step.done ? (
-                <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-brand" />
-              ) : (
-                <Circle className="mt-0.5 size-4 shrink-0 text-muted-foreground/45" />
-              )}
-              <span className={step.done ? "text-foreground" : "text-muted-foreground"}>
-                {step.label}
-              </span>
-            </li>
-          ))}
-        </ul>
+      <div
+        className={
+          connectedSteps
+            ? "rounded-[1.15rem] border border-border bg-card px-4 py-3.5"
+            : "rounded-[1.15rem] border border-border bg-card p-5"
+        }
+      >
+        <h3 className="text-sm font-semibold text-foreground">{stepsTitle}</h3>
+        <StepsList steps={steps} connected={connectedSteps} />
       </div>
 
       <div className="rounded-[1.15rem] border border-border bg-card p-5">
