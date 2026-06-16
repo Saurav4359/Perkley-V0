@@ -1,18 +1,15 @@
 import Link from "next/link"
 import { Plus } from "lucide-react"
+import { Suspense } from "react"
 
+import { BrandDashboardSidebar } from "@/components/dashboard/brand-dashboard-sidebar"
 import { BrandHero } from "@/components/dashboard/brand-hero"
+import { BrandOnboardingStatusBanner } from "@/components/dashboard/brand-onboarding-status-banner"
+import { BrandProfileCompleteToast } from "@/components/dashboard/brand-profile-complete-toast"
 import { ListingCard } from "@/components/dashboard/listing-card"
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
-import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar"
 import { buttonVariants } from "@/components/ui/button"
-import {
-  BRAND_CAMPAIGNS,
-  BRAND_ONBOARDING_STEPS,
-  getBrandNav,
-  RECENT_ACTIVITY,
-  RECENT_WINNERS,
-} from "@/lib/dashboard/mock-data"
+import { BRAND_CAMPAIGNS, getBrandNav } from "@/lib/dashboard/mock-data"
 import { cn } from "@/lib/utils"
 
 const OVERVIEW_CAMPAIGNS = BRAND_CAMPAIGNS.filter((campaign) =>
@@ -22,9 +19,13 @@ const OVERVIEW_CAMPAIGNS = BRAND_CAMPAIGNS.filter((campaign) =>
 export default function BrandDashboardPage() {
   return (
     <DashboardShell nav={getBrandNav("/dashboard/brand")} userName="Saurav">
+      <Suspense fallback={null}>
+        <BrandProfileCompleteToast />
+      </Suspense>
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px] xl:gap-8">
         <div className="space-y-6">
           <BrandHero userName="Saurav" />
+          <BrandOnboardingStatusBanner />
 
           <section className="space-y-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -66,15 +67,7 @@ export default function BrandDashboardPage() {
           </section>
         </div>
 
-        <DashboardSidebar
-          stats={[
-            { label: "Active spend", value: "12.4L" },
-            { label: "Pending reviews", value: "9" },
-          ]}
-          steps={BRAND_ONBOARDING_STEPS}
-          winners={RECENT_WINNERS}
-          activity={RECENT_ACTIVITY}
-        />
+        <BrandDashboardSidebar />
       </div>
     </DashboardShell>
   )
