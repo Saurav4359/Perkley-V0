@@ -36,7 +36,7 @@ export function ProfileCompleteToast() {
       )}
     >
       <span className="inline-flex items-center gap-2">
-        <CheckIcon className="size-4 text-emerald-600" strokeWidth={2.5} />
+        <CheckIcon className="size-4 text-emerald-600 dark:text-emerald-400" strokeWidth={2.5} />
         Profile complete
       </span>
     </div>
