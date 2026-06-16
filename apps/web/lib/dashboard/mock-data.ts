@@ -41,10 +41,13 @@ export const CREATOR_NAV = [
   { label: "Discover", href: "/dashboard/discover" },
 ] as const
 
+/** Demo logged-in brand — used to separate marketplace browse from owned listings. */
+export const CURRENT_BRAND_NAME = "Northline Skincare"
+
 export const BRAND_NAV = [
-  { label: "Overview", href: "/dashboard/brand" },
-  { label: "Campaigns", href: "/dashboard/brand/campaigns" },
-  { label: "Creators", href: "/dashboard/brand/creators" },
+  { label: "Listings", href: "/dashboard/brand" },
+  { label: "My Brand", href: "/dashboard/brand/campaigns" },
+  { label: "Analytics", href: "/dashboard/brand/analytics" },
 ] as const
 
 export type BrandCampaignStatus = "live" | "reviewing" | "draft" | "ended"
@@ -56,13 +59,22 @@ export type BrandCampaign = Omit<Campaign, "status"> & {
 }
 
 export function getBrandNav(pathname: string) {
-  return BRAND_NAV.map((item) => ({
-    ...item,
-    active:
-      item.href === "/dashboard/brand"
-        ? pathname === item.href
-        : pathname.startsWith(item.href),
-  }))
+  return BRAND_NAV.map((item) => {
+    let active = false
+
+    if (item.href === "/dashboard/brand") {
+      active =
+        pathname === item.href || pathname.startsWith("/dashboard/brand/listings")
+    } else if (item.href === "/dashboard/brand/campaigns") {
+      active =
+        pathname.startsWith("/dashboard/brand/campaigns") ||
+        pathname.startsWith("/dashboard/brand/profile")
+    } else if (item.href === "/dashboard/brand/analytics") {
+      active = pathname.startsWith("/dashboard/brand/analytics")
+    }
+
+    return { ...item, active }
+  })
 }
 
 export function getCreatorNav(pathname: string) {
@@ -75,7 +87,11 @@ export function getCreatorNav(pathname: string) {
   }))
 }
 
-export const BRAND_CAMPAIGNS = BRAND_LISTINGS
+export const MARKETPLACE_LISTINGS = CREATOR_LISTINGS
+
+export const BRAND_CAMPAIGNS = BRAND_LISTINGS.filter(
+  (listing) => listing.brand === CURRENT_BRAND_NAME
+)
 
 export const CAMPAIGN_CATEGORIES = NICHES
 
