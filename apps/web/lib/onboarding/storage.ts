@@ -5,6 +5,14 @@ import {
   USER_ROLE_STORAGE_KEY,
 } from "@/lib/onboarding/constants"
 import {
+  BRAND_ONBOARDING_STORAGE_KEY,
+} from "@/lib/brand-onboarding/constants"
+import {
+  clearBrandOnboardingState,
+  initBrandOnboardingSession,
+  markBrandOnboardingPending,
+} from "@/lib/brand-onboarding/storage"
+import {
   clearBrandProfileState,
   mergeBrandProfileSeed,
   saveBrandProfileFromSignup,
@@ -165,16 +173,36 @@ export function initBrandSession(
     }
   }
 
+  const profileSeed = seed?.name?.trim()
+    ? {
+        name: seed.name.trim(),
+        website: seed.website,
+        workEmail: seed.workEmail,
+      }
+    : seed
+
   if (options?.fromSignup && seed?.name?.trim()) {
     saveBrandProfileFromSignup({
       name: seed.name.trim(),
       website: seed.website,
       workEmail: seed.workEmail,
     })
+    initBrandOnboardingSession(profileSeed)
     return
   }
 
-  mergeBrandProfileSeed(seed)
+  mergeBrandProfileSeed(profileSeed)
+
+  const existingOnboarding = typeof window !== "undefined"
+    ? localStorage.getItem(BRAND_ONBOARDING_STORAGE_KEY)
+    : null
+
+  if (!existingOnboarding) {
+    initBrandOnboardingSession(profileSeed)
+    return
+  }
+
+  markBrandOnboardingPending()
 }
 
 export function getCreatorDashboardPath(): string {
@@ -194,4 +222,5 @@ export function clearUserSession() {
     // ignore storage failures
   }
   clearBrandProfileState()
+  clearBrandOnboardingState()
 }

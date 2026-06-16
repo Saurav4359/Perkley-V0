@@ -4,6 +4,11 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 
 import { canParticipateInListings } from "@/lib/onboarding/progress"
+import { canLaunchBrandCampaigns } from "@/lib/brand-onboarding/progress"
+import {
+  getBrandOnboardingState,
+  isBrandOnboardingComplete,
+} from "@/lib/brand-onboarding/storage"
 import { getOnboardingState, getUserRole, isOnboardingComplete } from "@/lib/onboarding/storage"
 
 export function OnboardingRouteGate({ children }: { children: React.ReactNode }) {
@@ -14,7 +19,12 @@ export function OnboardingRouteGate({ children }: { children: React.ReactNode })
     const role = getUserRole()
 
     if (role === "brand") {
-      router.replace("/dashboard/brand")
+      const brandState = getBrandOnboardingState()
+      if (canLaunchBrandCampaigns(brandState) && isBrandOnboardingComplete()) {
+        router.replace("/dashboard/brand")
+        return
+      }
+      router.replace("/brand-onboarding")
       return
     }
 

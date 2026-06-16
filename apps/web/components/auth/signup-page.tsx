@@ -128,7 +128,7 @@ export function SignupPage() {
                     },
                     { fromSignup: true }
                   )
-                  router.push("/dashboard/brand/profile")
+                  router.push("/brand-onboarding")
                   return
                 }
                 initCreatorSession()

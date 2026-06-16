@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
 
+import { getBrandDashboardPath } from "@/lib/brand-onboarding/storage"
 import { getUserRole } from "@/lib/onboarding/storage"
 
 export function DashboardOnboardingGate({ children }: { children: React.ReactNode }) {
@@ -11,14 +12,31 @@ export function DashboardOnboardingGate({ children }: { children: React.ReactNod
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    if (pathname.startsWith("/dashboard/brand")) {
+    const role = getUserRole()
+
+    if (role === "brand") {
+      if (pathname.startsWith("/brand-onboarding")) {
+        setReady(true)
+        return
+      }
+
+      const brandPath = getBrandDashboardPath()
+      if (brandPath === "/brand-onboarding" && !pathname.startsWith("/brand-onboarding")) {
+        router.replace(brandPath)
+        return
+      }
+
+      if (!pathname.startsWith("/dashboard/brand")) {
+        router.replace("/dashboard/brand")
+        return
+      }
+
       setReady(true)
       return
     }
 
-    const role = getUserRole()
-    if (role === "brand") {
-      router.replace("/dashboard/brand")
+    if (pathname.startsWith("/dashboard/brand")) {
+      router.replace("/dashboard")
       return
     }
 
