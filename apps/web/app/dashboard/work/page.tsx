@@ -1,11 +1,8 @@
-import { MySubmissionsList } from "@/components/dashboard/my-submissions-list"
+import { MySubmissionsPanel } from "@/components/dashboard/my-submissions-panel"
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
-import { getCreatorSubmissions } from "@/lib/dashboard/listings-data"
 import { getCreatorNav } from "@/lib/dashboard/mock-data"
 
 export default function CreatorWorkPage() {
-  const submissions = getCreatorSubmissions()
-
   return (
     <DashboardShell nav={getCreatorNav("/dashboard/work")} userName="Saurav">
       <div className="space-y-6">
@@ -15,7 +12,7 @@ export default function CreatorWorkPage() {
             Track bounty rankings and campaign qualification status. Metrics sync every 6 hours.
           </p>
         </div>
-        <MySubmissionsList submissions={submissions} />
+        <MySubmissionsPanel />
       </div>
     </DashboardShell>
   )
