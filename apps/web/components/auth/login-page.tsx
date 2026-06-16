@@ -44,7 +44,7 @@ export function LoginPage() {
       <div className="space-y-8">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-            Welcome back!
+            Welcome backk!
           </h1>
           <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground">
             Sign in to manage campaigns, track creator performance, and pay
