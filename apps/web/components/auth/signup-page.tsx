@@ -35,6 +35,9 @@ const roleOptions = [
 export function SignupPage() {
   const [step, setStep] = useState<1 | 2>(1)
   const [role, setRole] = useState<"creator" | "brand" | null>(null)
+  const [brandName, setBrandName] = useState("")
+  const [workEmail, setWorkEmail] = useState("")
+  const [website, setWebsite] = useState("")
   const router = useRouter()
 
   return (
@@ -117,8 +120,15 @@ export function SignupPage() {
               onSubmit={(event) => {
                 event.preventDefault()
                 if (role === "brand") {
-                  initBrandSession()
-                  router.push("/dashboard/brand")
+                  initBrandSession(
+                    {
+                      name: brandName.trim(),
+                      website: website.trim(),
+                      workEmail: workEmail.trim(),
+                    },
+                    { fromSignup: true }
+                  )
+                  router.push("/dashboard/brand/profile")
                   return
                 }
                 initCreatorSession()
@@ -142,9 +152,25 @@ export function SignupPage() {
                     label="Brand / Company name"
                     type="text"
                     placeholder="Acme Inc."
+                    value={brandName}
+                    onChange={setBrandName}
+                    required
                   />
-                  <Field label="Work email" type="email" placeholder="hello@acme.com" />
-                  <Field label="Website" type="url" placeholder="https://acme.com" />
+                  <Field
+                    label="Work email"
+                    type="email"
+                    placeholder="hello@acme.com"
+                    value={workEmail}
+                    onChange={setWorkEmail}
+                    required
+                  />
+                  <Field
+                    label="Website"
+                    type="url"
+                    placeholder="https://acme.com"
+                    value={website}
+                    onChange={setWebsite}
+                  />
                   <PasswordField autoComplete="new-password" />
                 </>
               )}
@@ -173,10 +199,16 @@ function Field({
   label,
   type,
   placeholder,
+  value,
+  onChange,
+  required,
 }: {
   label: string
   type: string
   placeholder: string
+  value?: string
+  onChange?: (value: string) => void
+  required?: boolean
 }) {
   return (
     <div>
@@ -184,6 +216,9 @@ function Field({
       <input
         type={type}
         placeholder={placeholder}
+        value={value}
+        required={required}
+        onChange={(event) => onChange?.(event.target.value)}
         className={`mt-2 ${authInputClassName}`}
       />
     </div>

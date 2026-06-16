@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 import {
   Bell,
   Search,
@@ -12,6 +13,7 @@ import { InrIcon } from "@/components/dashboard/inr-icon"
 import { UserMenu } from "@/components/dashboard/user-menu"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { clearUserSession } from "@/lib/onboarding/storage"
+import { getBrandHeaderName } from "@/lib/dashboard/brand-profile-storage"
 import { cn } from "@/lib/utils"
 
 type NavItem = {
@@ -36,7 +38,23 @@ export function DashboardShell({
   const router = useRouter()
   const isDetail = variant === "detail"
   const isBrand = nav.some((item) => item.href.startsWith("/dashboard/brand"))
-  const avatarInitial = userName.slice(0, 1).toUpperCase()
+  const [headerName, setHeaderName] = useState(userName)
+  const avatarInitial = headerName.slice(0, 1).toUpperCase()
+
+  useEffect(() => {
+    if (!isBrand) {
+      setHeaderName(userName)
+      return
+    }
+
+    function syncBrandName() {
+      setHeaderName(getBrandHeaderName())
+    }
+
+    syncBrandName()
+    window.addEventListener("perkley-brand-profile-updated", syncBrandName)
+    return () => window.removeEventListener("perkley-brand-profile-updated", syncBrandName)
+  }, [isBrand, userName])
 
   return (
     <div
@@ -107,11 +125,13 @@ export function DashboardShell({
               <span className="tabular-nums text-reward">2,450</span>
             </div>
             <UserMenu
-              name={userName}
+              name={headerName}
               avatarInitial={avatarInitial}
               accountLabel={isBrand ? "Brand account" : "Creator account"}
-              profileHref={isBrand ? "/dashboard/brand" : "/dashboard/profile"}
-              settingsHref={isBrand ? "/dashboard/brand" : "/dashboard/profile"}
+              profileHref={isBrand ? "/dashboard/brand/profile" : "/dashboard/profile"}
+              settingsHref={
+                isBrand ? "/dashboard/brand/profile?tab=settings" : "/dashboard/profile"
+              }
               onLogout={() => {
                 clearUserSession()
                 router.replace("/")
