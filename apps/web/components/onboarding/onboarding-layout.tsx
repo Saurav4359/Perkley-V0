@@ -4,6 +4,7 @@ import Link from "next/link"
 import { motion } from "framer-motion"
 
 import { PerkleyLogo } from "@/components/brand/perkley-logo"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { cn } from "@/lib/utils"
 
 type OnboardingLayoutProps = {
@@ -20,13 +21,16 @@ export function OnboardingLayout({ children, className }: OnboardingLayoutProps)
       </div>
 
       <div className="relative mx-auto flex min-h-[100dvh] max-h-[100dvh] w-full max-w-3xl flex-col overflow-hidden px-4 py-5 sm:px-6 sm:py-6">
-        <Link href="/" className="inline-flex w-fit shrink-0">
-          <PerkleyLogo
-            className="gap-2"
-            markClassName="block h-8 w-8 sm:h-9 sm:w-9"
-            textClassName="text-lg leading-none sm:text-xl"
-          />
-        </Link>
+        <div className="flex shrink-0 items-center justify-between gap-3">
+          <Link href="/" className="inline-flex w-fit">
+            <PerkleyLogo
+              className="gap-2"
+              markClassName="block h-8 w-8 sm:h-9 sm:w-9"
+              textClassName="text-lg leading-none sm:text-xl"
+            />
+          </Link>
+          <ThemeToggle />
+        </div>
 
         <motion.main
           className={cn("mx-auto flex w-full min-h-0 flex-1 flex-col py-4 sm:py-5", className)}
