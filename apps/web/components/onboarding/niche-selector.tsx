@@ -39,8 +39,8 @@ export function NicheSelector({ selected, onChange, compact = false }: NicheSele
               "border text-left text-sm font-medium transition-colors",
               compact ? "rounded-xl px-3 py-2.5" : "rounded-xl px-3.5 py-3",
               active
-                ? "border-brand/40 bg-brand/10 text-foreground shadow-[0_8px_24px_-16px_rgba(254,108,55,0.45)]"
-                : "border-border/70 bg-card text-foreground hover:border-foreground/15 hover:bg-muted/30"
+                ? "border-brand/40 bg-brand/10 text-foreground shadow-[0_8px_24px_-16px_rgba(254,108,55,0.45)] dark:bg-brand/15"
+                : "border-border/70 bg-card text-foreground hover:border-foreground/15 hover:bg-muted/30 dark:hover:bg-muted/50"
             )}
           >
             {niche}

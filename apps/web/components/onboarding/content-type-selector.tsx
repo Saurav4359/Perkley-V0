@@ -44,7 +44,7 @@ export function ContentTypeSelector({
               compact ? "px-3.5 py-2" : "px-4 py-2.5",
               active
                 ? "border-brand/40 bg-brand text-white shadow-[0_8px_24px_-16px_rgba(254,108,55,0.55)]"
-                : "border-border/70 bg-card text-foreground hover:border-foreground/15 hover:bg-muted/30"
+                : "border-border/70 bg-card text-foreground hover:border-foreground/15 hover:bg-muted/30 dark:hover:bg-muted/50"
             )}
           >
             {contentType}
