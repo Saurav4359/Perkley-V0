@@ -11,7 +11,7 @@ import { LISTING_TYPE_COPY } from "@/lib/dashboard/types"
 
 type ListingDetailViewProps = {
   listing: ListingDetail
-  mode?: "brand" | "creator"
+  mode?: "brand" | "brand-browse" | "creator"
   backHref?: string
   backLabel?: string
 }

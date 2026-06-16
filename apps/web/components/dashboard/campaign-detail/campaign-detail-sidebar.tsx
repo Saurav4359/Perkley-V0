@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils"
 type CampaignDetailSidebarProps = {
   listing: ListingDetail
   related: Listing[]
-  mode?: "brand" | "creator"
+  mode?: "brand" | "brand-browse" | "creator"
 }
 
 function RelatedListing({
@@ -54,7 +54,11 @@ export function CampaignDetailSidebar({
 }: CampaignDetailSidebarProps) {
   const isBounty = listing.type === "bounty"
   const relatedHrefPrefix =
-    mode === "creator" ? "/dashboard/campaigns" : "/dashboard/brand/campaigns"
+    mode === "creator"
+      ? "/dashboard/campaigns"
+      : mode === "brand-browse"
+        ? "/dashboard/brand/listings"
+        : "/dashboard/brand/campaigns"
 
   const brandPrimaryLabel =
     listing.status === "draft"
@@ -78,7 +82,7 @@ export function CampaignDetailSidebar({
               </span>
             </div>
             <ol className="mt-6 space-y-4">
-              {listing.prizeTiers.map((tier, index) => (
+              {listing.prizeTiers.map((tier) => (
                 <li key={tier.label} className="flex items-center justify-between gap-3 text-sm">
                   <span className="text-muted-foreground">{tier.label}</span>
                   <span className="font-semibold tabular-nums">₹{tier.amount}</span>
@@ -128,6 +132,11 @@ export function CampaignDetailSidebar({
       <section className="space-y-3 border-b border-border px-4 py-6 sm:px-6 lg:px-8">
         {mode === "creator" ? (
           <SubmitListingButton listing={listing} />
+        ) : mode === "brand-browse" ? (
+          <p className="rounded-lg border border-dashed border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+            Reference listing from {listing.brandName}. Brands can browse how others
+            structure bounties and campaigns — applying is for creators only.
+          </p>
         ) : (
           <button
             type="button"
