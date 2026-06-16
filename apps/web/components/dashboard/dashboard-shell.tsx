@@ -1,14 +1,15 @@
 "use client"
 
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import {
   Bell,
-  ChevronDown,
   Search,
 } from "lucide-react"
 
 import { PerkleyLogo } from "@/components/brand/perkley-logo"
 import { InrIcon } from "@/components/dashboard/inr-icon"
+import { UserMenu } from "@/components/dashboard/user-menu"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { cn } from "@/lib/utils"
 
@@ -31,7 +32,10 @@ export function DashboardShell({
   userName = "Creator",
   variant = "default",
 }: DashboardShellProps) {
+  const router = useRouter()
   const isDetail = variant === "detail"
+  const isBrand = nav.some((item) => item.href.startsWith("/dashboard/brand"))
+  const avatarInitial = userName.slice(0, 1).toUpperCase()
 
   return (
     <div
@@ -101,18 +105,19 @@ export function DashboardShell({
               <InrIcon className="size-4" />
               <span className="tabular-nums text-reward">2,450</span>
             </div>
-            <button
-              type="button"
-              className="flex items-center gap-2 rounded-full border border-border bg-card py-1 pl-1 pr-2.5 transition-colors hover:bg-muted"
-            >
-              <span className="flex size-7 items-center justify-center rounded-full bg-brand text-xs font-semibold text-white">
-                {userName.slice(0, 1).toUpperCase()}
-              </span>
-              <span className="hidden max-w-[7rem] truncate text-sm font-medium sm:inline">
-                {userName}
-              </span>
-              <ChevronDown className="size-3.5 text-muted-foreground" />
-            </button>
+            <UserMenu
+              name={userName}
+              avatarInitial={avatarInitial}
+              accountLabel={isBrand ? "Brand account" : "Creator account"}
+              profileHref={isBrand ? "/dashboard/brand" : "/dashboard/profile"}
+              settingsHref={isBrand ? "/dashboard/brand" : "/dashboard/profile"}
+                onLogout={() => {
+                  if (typeof window !== "undefined") {
+                    window.localStorage.removeItem("perkley-user-role")
+                  }
+                  router.push("/login")
+                }}
+            />
           </div>
         </div>
       </header>
