@@ -48,7 +48,10 @@ export function ProgressHeader({ step }: ProgressHeaderProps) {
 
 export function onboardingCardClassName(className?: string) {
   return cn(
-    "rounded-[1.5rem] border border-border/70 bg-card p-6 shadow-[0_1px_2px_rgba(0,0,0,0.03),0_12px_40px_-20px_rgba(0,0,0,0.08)] sm:p-7",
+    "rounded-[1.5rem] border border-border/70 bg-card p-6",
+    "shadow-[0_1px_2px_rgba(0,0,0,0.03),0_12px_40px_-20px_rgba(0,0,0,0.08)]",
+    "dark:shadow-[0_1px_2px_rgba(0,0,0,0.35),0_12px_40px_-20px_rgba(0,0,0,0.55)]",
+    "sm:p-7",
     className
   )
 }
@@ -81,7 +84,7 @@ export function OnboardingCardBack({
       type="button"
       onClick={onClick}
       className={cn(
-        "inline-flex items-center gap-0.5 text-sm font-medium text-neutral-500 transition-colors hover:text-black dark:text-neutral-400 dark:hover:text-white",
+        "inline-flex items-center gap-0.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground",
         className
       )}
     >
@@ -111,7 +114,7 @@ export function OnboardingStepActions({
         <button
           type="button"
           onClick={onSkip ?? skipCurrentStep}
-          className="inline-flex h-12 shrink-0 items-center justify-center px-6 text-sm font-medium text-neutral-500 transition-colors hover:text-black dark:text-neutral-400 dark:hover:text-white sm:shrink-0"
+          className="inline-flex h-12 shrink-0 items-center justify-center px-6 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:shrink-0"
         >
           Skip for now
         </button>
