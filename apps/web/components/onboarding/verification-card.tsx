@@ -119,8 +119,8 @@ export function VerificationCard({ profile, onContinue, onBack }: VerificationCa
       </div>
 
       {blocked ? (
-        <div className="mt-4 flex items-start gap-3 rounded-xl border border-amber-500/25 bg-amber-500/10 p-4">
-          <AlertTriangleIcon className="mt-0.5 size-5 shrink-0 text-amber-600" />
+        <div className="mt-4 flex items-start gap-3 rounded-xl border border-amber-500/25 bg-amber-500/10 p-4 dark:bg-amber-500/8">
+          <AlertTriangleIcon className="mt-0.5 size-5 shrink-0 text-amber-600 dark:text-amber-400" />
           <div>
             <p className="text-sm font-medium text-foreground">
               Switch to Professional Account to continue

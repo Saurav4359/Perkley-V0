@@ -81,7 +81,7 @@ export function PaymentForm({
             className={cn(
               "flex-1 rounded-full px-5 py-2.5 text-sm font-medium transition-all sm:flex-none",
               method === tab
-                ? "bg-card text-foreground shadow-sm"
+                ? "bg-card text-foreground shadow-sm dark:ring-1 dark:ring-border/80"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
