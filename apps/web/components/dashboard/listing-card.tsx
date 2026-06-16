@@ -11,10 +11,20 @@ type ListingCardProps = {
   href: string
   className?: string
   divided?: boolean
+  /** Creators can apply; brands browsing the marketplace only view details. */
+  cta?: "apply" | "view" | "manage"
 }
 
-export function ListingCard({ listing, href, className, divided }: ListingCardProps) {
+export function ListingCard({
+  listing,
+  href,
+  className,
+  divided,
+  cta = "apply",
+}: ListingCardProps) {
   const isBounty = listing.type === "bounty"
+  const showApply = cta === "apply" && !isBounty
+  const actionLabel = cta === "manage" ? "Manage" : "View details"
   const visibleAvatars = listing.joinedAvatars?.slice(0, 4) ?? []
   const joinedExtra =
     listing.joinedTotal != null
@@ -121,15 +131,7 @@ export function ListingCard({ listing, href, className, divided }: ListingCardPr
             </div>
           ) : null}
 
-          {isBounty ? (
-            <Link
-              href={href}
-              className="inline-flex items-center gap-0.5 text-xs font-medium text-brand hover:underline"
-            >
-              View details
-              <ArrowRight className="size-3.5" />
-            </Link>
-          ) : (
+          {showApply ? (
             <Link
               href={href}
               className={cn(
@@ -140,19 +142,22 @@ export function ListingCard({ listing, href, className, divided }: ListingCardPr
               Apply now
               <ArrowRight className="size-3.5" />
             </Link>
+          ) : (
+            <Link
+              href={href}
+              className={cn(
+                "inline-flex items-center gap-0.5 text-xs font-medium hover:underline",
+                cta === "manage" ? "text-foreground" : "text-brand"
+              )}
+            >
+              {actionLabel}
+              <ArrowRight className="size-3.5" />
+            </Link>
           )}
         </div>
 
         <div className="ml-auto shrink-0 md:hidden">
-          {isBounty ? (
-            <Link
-              href={href}
-              className="inline-flex items-center gap-0.5 text-xs font-medium text-brand"
-            >
-              View
-              <ArrowRight className="size-3.5" />
-            </Link>
-          ) : (
+          {showApply ? (
             <Link
               href={href}
               className={cn(
@@ -161,6 +166,17 @@ export function ListingCard({ listing, href, className, divided }: ListingCardPr
               )}
             >
               Apply
+            </Link>
+          ) : (
+            <Link
+              href={href}
+              className={cn(
+                "inline-flex items-center gap-0.5 text-xs font-medium",
+                cta === "manage" ? "text-foreground" : "text-brand"
+              )}
+            >
+              {cta === "manage" ? "Manage" : "View"}
+              <ArrowRight className="size-3.5" />
             </Link>
           )}
         </div>
