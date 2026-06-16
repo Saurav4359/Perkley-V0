@@ -60,7 +60,7 @@ export function InstagramConnectCard({ onConnected }: InstagramConnectCardProps)
             </>
           ) : (
             <>
-              <InstagramIcon monochrome className="text-black" />
+              <InstagramIcon />
               Continue with Instagram
             </>
           )}
