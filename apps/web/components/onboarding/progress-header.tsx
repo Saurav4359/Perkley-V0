@@ -12,10 +12,11 @@ import { cn } from "@/lib/utils"
 
 type ProgressHeaderProps = {
   step: OnboardingStep
+  completing?: boolean
 }
 
-export function ProgressHeader({ step }: ProgressHeaderProps) {
-  const progress = getOnboardingStepProgressPercent(step)
+export function ProgressHeader({ step, completing = false }: ProgressHeaderProps) {
+  const progress = completing ? 100 : getOnboardingStepProgressPercent(step)
 
   return (
     <div className="mb-5 space-y-2.5 sm:mb-6">
@@ -23,7 +24,7 @@ export function ProgressHeader({ step }: ProgressHeaderProps) {
         <p className="text-sm font-medium text-brand">Complete your profile</p>
         <div className="flex items-end justify-between gap-4">
           <h1 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
-            Step {step} of {ONBOARDING_STEP_COUNT}
+            {completing ? "All set" : `Step ${step} of ${ONBOARDING_STEP_COUNT}`}
           </h1>
           <span className="text-sm tabular-nums text-muted-foreground">{progress}%</span>
         </div>
@@ -35,11 +36,16 @@ export function ProgressHeader({ step }: ProgressHeaderProps) {
             className="h-full rounded-full bg-gradient-to-r from-brand to-[#FF8547]"
             initial={false}
             animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            transition={{
+              duration: completing ? 1.2 : 0.45,
+              ease: [0.22, 1, 0.36, 1],
+            }}
           />
         </div>
         <p className="text-xs leading-snug text-muted-foreground">
-          You can finish later — profile setup is required before you submit to any listing.
+          {completing
+            ? "Wrapping up — you’ll land on your dashboard in a moment."
+            : "You can finish later — profile setup is required before you submit to any listing."}
         </p>
       </div>
     </div>
