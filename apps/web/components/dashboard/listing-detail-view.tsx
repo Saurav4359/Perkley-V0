@@ -5,7 +5,6 @@ import { BountyLeaderboard } from "@/components/dashboard/bounty-leaderboard"
 import { CampaignDetailBody } from "@/components/dashboard/campaign-detail/campaign-detail-body"
 import { CampaignDetailHero } from "@/components/dashboard/campaign-detail/campaign-detail-hero"
 import { CampaignDetailSidebar } from "@/components/dashboard/campaign-detail/campaign-detail-sidebar"
-import { SubmitPostForm } from "@/components/dashboard/submit-post-form"
 import type { ListingDetail } from "@/lib/dashboard/campaign-details"
 import { LISTINGS } from "@/lib/dashboard/listings-data"
 import { LISTING_TYPE_COPY } from "@/lib/dashboard/types"
@@ -63,11 +62,6 @@ export function ListingDetailView({
                 isLive={listing.status === "active"}
                 prizeTiers={prizeTiersForBoard}
               />
-            </div>
-          ) : null}
-          {mode === "creator" && listing.status === "active" ? (
-            <div className="border-t border-border px-4 py-8 sm:px-6 lg:px-8">
-              <SubmitPostForm listing={listing} />
             </div>
           ) : null}
         </div>
