@@ -100,6 +100,33 @@ export function OnboardingCardBack({
   )
 }
 
+export function OnboardingActionsRow({
+  children,
+  showSkip = true,
+  onSkip,
+  className,
+}: {
+  children?: React.ReactNode
+  showSkip?: boolean
+  onSkip?: () => void
+  className?: string
+}) {
+  return (
+    <div className={cn("flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center", className)}>
+      {children}
+      {showSkip && onSkip ? (
+        <button
+          type="button"
+          onClick={onSkip}
+          className="inline-flex h-12 shrink-0 items-center justify-center px-6 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:shrink-0"
+        >
+          Skip for now
+        </button>
+      ) : null}
+    </div>
+  )
+}
+
 export function OnboardingStepActions({
   children,
   showSkip = true,
@@ -114,17 +141,12 @@ export function OnboardingStepActions({
   const { skipCurrentStep } = useOnboarding()
 
   return (
-    <div className={cn("flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center", className)}>
+    <OnboardingActionsRow
+      showSkip={showSkip}
+      onSkip={onSkip ?? skipCurrentStep}
+      className={className}
+    >
       {children}
-      {showSkip ? (
-        <button
-          type="button"
-          onClick={onSkip ?? skipCurrentStep}
-          className="inline-flex h-12 shrink-0 items-center justify-center px-6 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:shrink-0"
-        >
-          Skip for now
-        </button>
-      ) : null}
-    </div>
+    </OnboardingActionsRow>
   )
 }
