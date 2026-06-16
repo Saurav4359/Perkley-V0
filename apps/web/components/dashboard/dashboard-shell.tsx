@@ -131,7 +131,7 @@ export function DashboardShell({
               profileHref={isBrand ? "/dashboard/brand/profile" : "/dashboard/profile"}
               analyticsHref={isBrand ? "/dashboard/brand/analytics" : undefined}
               settingsHref={
-                isBrand ? "/dashboard/brand/profile?tab=settings" : "/dashboard/profile"
+                isBrand ? "/dashboard/brand/settings" : "/dashboard/settings"
               }
               onLogout={() => {
                 clearUserSession()
