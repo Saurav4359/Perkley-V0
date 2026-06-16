@@ -10,13 +10,7 @@ export type OnboardingRequirement = {
 }
 
 export function getOnboardingStepProgressPercent(step: OnboardingStep): number {
-  if (ONBOARDING_STEP_COUNT <= 1) return 100
-
-  const startPercent = 20
-  const stepIndex = step - 1
-  const intervals = ONBOARDING_STEP_COUNT - 1
-
-  return Math.round(startPercent + (stepIndex / intervals) * (100 - startPercent))
+  return Math.round((step / ONBOARDING_STEP_COUNT) * 100)
 }
 
 export function getOnboardingRequirements(state: OnboardingState): OnboardingRequirement[] {
