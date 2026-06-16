@@ -34,7 +34,7 @@ export type Campaign = {
 }
 
 export const CREATOR_NAV = [
-  { label: "Campaigns", href: "/dashboard" },
+  { label: "Listings", href: "/dashboard" },
   { label: "My Work", href: "/dashboard/work" },
   { label: "Earnings", href: "/dashboard/earnings" },
   { label: "Leaderboard", href: "/dashboard/leaderboard" },
