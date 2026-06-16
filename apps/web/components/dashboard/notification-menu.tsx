@@ -89,7 +89,7 @@ export function NotificationMenu({ role }: NotificationMenuProps) {
             </div>
           </div>
 
-          <div className="max-h-[min(24rem,60vh)] overflow-y-auto p-1">
+          <div className="perkley-scrollbar max-h-[min(24rem,60vh)] overflow-y-auto p-1">
             {previewItems.length === 0 ? (
               <div className="px-3 py-8 text-center text-sm text-muted-foreground">
                 No notifications yet.

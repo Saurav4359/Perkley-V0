@@ -171,7 +171,7 @@ export function BrandOnboardingFlow() {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+    <div className="perkley-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto">
       <BrandProgressHeader step={state.currentStep} completing={isFinishing} />
 
       <AnimatePresence mode="wait">

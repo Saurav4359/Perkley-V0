@@ -163,7 +163,7 @@ export function EditCreatorProfileDialog({
             ))}
           </nav>
 
-          <div className="relative min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6 sm:py-6">
+          <div className="perkley-scrollbar relative min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6 sm:py-6">
             {section === "about" ? (
               <div className="space-y-5">
                 <div>

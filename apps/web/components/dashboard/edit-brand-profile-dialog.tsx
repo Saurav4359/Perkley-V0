@@ -180,7 +180,7 @@ export function EditBrandProfileDialog({
             ))}
           </nav>
 
-          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6 sm:py-6">
+          <div className="perkley-scrollbar min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6 sm:py-6">
             <div className="mb-5">
               <h3 className="text-sm font-medium text-foreground">{sectionCopy.title}</h3>
               <p className="mt-1 text-sm text-muted-foreground">{sectionCopy.description}</p>
