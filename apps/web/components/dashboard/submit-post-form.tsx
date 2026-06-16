@@ -3,7 +3,9 @@
 import { useState } from "react"
 import { ArrowUpRight, Check } from "lucide-react"
 
+import { CompleteProfileReminder } from "@/components/dashboard/complete-profile-reminder"
 import { buttonVariants } from "@/components/ui/button"
+import { useOnboardingProgress } from "@/hooks/use-onboarding-progress"
 import type { Listing } from "@/lib/dashboard/types"
 import { cn } from "@/lib/utils"
 
@@ -20,6 +22,7 @@ const checklistItems = [
 ] as const
 
 export function SubmitPostForm({ listing, onSubmitted }: SubmitPostFormProps) {
+  const { canParticipate } = useOnboardingProgress()
   const [postUrl, setPostUrl] = useState("")
   const [checks, setChecks] = useState<Record<(typeof checklistItems)[number], boolean>>({
     "Post is public": false,
@@ -38,9 +41,15 @@ export function SubmitPostForm({ listing, onSubmitted }: SubmitPostFormProps) {
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
-    if (!canSubmit) return
+    if (!canParticipate || !canSubmit) return
     setSubmitted(true)
     onSubmitted?.()
+  }
+
+  if (!canParticipate) {
+    return (
+      <CompleteProfileReminder title="Finish your profile before submitting" />
+    )
   }
 
   if (submitted) {
