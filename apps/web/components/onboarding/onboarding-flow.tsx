@@ -6,6 +6,10 @@ import { AnimatePresence, motion } from "framer-motion"
 
 import { ContentTypeSelector } from "@/components/onboarding/content-type-selector"
 import { InstagramConnectCard } from "@/components/onboarding/instagram-connect-card"
+import {
+  ONBOARDING_FINISH_DURATION_MS,
+  OnboardingFinishLoader,
+} from "@/components/onboarding/onboarding-finish-loader"
 import { NicheSelector } from "@/components/onboarding/niche-selector"
 import { useOnboarding } from "@/components/onboarding/onboarding-provider"
 import { PaymentForm } from "@/components/onboarding/payment-form"
@@ -19,7 +23,7 @@ import {
 import { VerificationCard } from "@/components/onboarding/verification-card"
 import { ONBOARDING_STEP_COUNT } from "@/lib/onboarding/constants"
 import { getPreviousOnboardingStep } from "@/lib/onboarding/state"
-import type { OnboardingStep } from "@/lib/onboarding/types"
+import type { OnboardingStep, PaymentDetails } from "@/lib/onboarding/types"
 import {
   validateContentTypes,
   validateNiches,
@@ -47,6 +51,18 @@ export function OnboardingFlow() {
 
   const searchParams = useSearchParams()
   const [contentError, setContentError] = useState<string | null>(null)
+  const [isFinishing, setIsFinishing] = useState(false)
+  const [pendingPayment, setPendingPayment] = useState<PaymentDetails | null>(null)
+
+  useEffect(() => {
+    if (!isFinishing || !pendingPayment) return
+
+    const timer = window.setTimeout(() => {
+      finishAndExit(pendingPayment)
+    }, ONBOARDING_FINISH_DURATION_MS + 150)
+
+    return () => window.clearTimeout(timer)
+  }, [isFinishing, pendingPayment, finishAndExit])
 
   useEffect(() => {
     if (!hydrated) return
@@ -85,17 +101,26 @@ export function OnboardingFlow() {
     if (previous) goToStep(previous)
   }
 
+  function handlePaymentSubmit(payment: PaymentDetails) {
+    setPendingPayment(payment)
+    setIsFinishing(true)
+  }
+
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-      <ProgressHeader step={state.currentStep} />
+      <ProgressHeader step={state.currentStep} completing={isFinishing} />
 
       <AnimatePresence mode="wait">
-        <motion.div key={state.currentStep} {...stepMotion}>
-          {state.currentStep === 1 ? (
+        <motion.div key={isFinishing ? "finishing" : state.currentStep} {...stepMotion}>
+          {isFinishing ? (
+            <OnboardingFinishLoader />
+          ) : null}
+
+          {!isFinishing && state.currentStep === 1 ? (
             <InstagramConnectCard onConnected={connectInstagram} />
           ) : null}
 
-          {state.currentStep === 2 && state.instagram ? (
+          {!isFinishing && state.currentStep === 2 && state.instagram ? (
             <VerificationCard
               profile={state.instagram}
               onContinue={advanceFromVerification}
@@ -103,7 +128,7 @@ export function OnboardingFlow() {
             />
           ) : null}
 
-          {state.currentStep === 2 && !state.instagram ? (
+          {!isFinishing && state.currentStep === 2 && !state.instagram ? (
             <div className={onboardingCardClassName()}>
               <OnboardingCardBack onClick={handleBack} className="mb-3" />
               <h2 className="text-lg font-semibold tracking-tight text-foreground sm:text-xl">
@@ -116,7 +141,7 @@ export function OnboardingFlow() {
             </div>
           ) : null}
 
-          {state.currentStep === 3 ? (
+          {!isFinishing && state.currentStep === 3 ? (
             <div className={onboardingCardClassName()}>
               <OnboardingCardBack onClick={handleBack} className="mb-4" />
               <h2 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
@@ -157,10 +182,10 @@ export function OnboardingFlow() {
             </div>
           ) : null}
 
-          {state.currentStep === 4 ? (
+          {!isFinishing && state.currentStep === 4 ? (
             <PaymentForm
               initial={state.payment}
-              onSubmit={finishAndExit}
+              onSubmit={handlePaymentSubmit}
               onBack={handleBack}
             />
           ) : null}
