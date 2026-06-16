@@ -5,6 +5,7 @@ import { useState } from "react"
 import {
   onboardingCardClassName,
   onboardingPrimaryButtonClassName,
+  OnboardingActionsRow,
   OnboardingCardBack,
   OnboardingStepActions,
 } from "@/components/onboarding/progress-header"
@@ -17,9 +18,12 @@ type PaymentFormProps = {
   initial?: PaymentDetails | null
   onSubmit: (payment: PaymentDetails) => void
   onBack?: () => void
+  onSkip?: () => void
   embedded?: boolean
   submitLabel?: string
   notice?: React.ReactNode
+  title?: string
+  description?: string
 }
 
 const emptyUpi = { fullName: "", upiId: "" }
@@ -29,9 +33,12 @@ export function PaymentForm({
   initial,
   onSubmit,
   onBack,
+  onSkip,
   embedded = false,
   submitLabel = "Continue",
   notice,
+  title = "Add payout details",
+  description = "Where should we send your earnings when you win a bounty or complete a campaign?",
 }: PaymentFormProps) {
   const [method, setMethod] = useState<PaymentMethod>(initial?.method ?? "upi")
   const [upi, setUpi] = useState(initial?.upi ?? emptyUpi)
@@ -60,11 +67,9 @@ export function PaymentForm({
           {onBack ? <OnboardingCardBack onClick={onBack} className="mb-4" /> : null}
           <div>
             <h2 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
-              Get paid
+              {title}
             </h2>
-            <p className="mt-1.5 text-sm text-muted-foreground">
-              We&apos;ll use this when you win campaigns.
-            </p>
+            <p className="mt-1.5 text-sm text-muted-foreground">{description}</p>
           </div>
         </>
       ) : null}
@@ -152,6 +157,12 @@ export function PaymentForm({
           </button>
           {notice}
         </div>
+      ) : onSkip ? (
+        <OnboardingActionsRow onSkip={onSkip} className="mt-2">
+          <button type="submit" className={onboardingPrimaryButtonClassName()}>
+            {submitLabel}
+          </button>
+        </OnboardingActionsRow>
       ) : (
         <OnboardingStepActions className="mt-2">
           <button type="submit" className={onboardingPrimaryButtonClassName()}>

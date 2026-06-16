@@ -18,6 +18,7 @@ import {
   initBrandSession,
   setUserRole,
 } from "@/lib/onboarding/storage"
+import { getBrandDashboardPath } from "@/lib/brand-onboarding/storage"
 import { cn } from "@/lib/utils"
 
 export function LoginPage() {
@@ -30,7 +31,7 @@ export function LoginPage() {
 
     if (role === "brand") {
       initBrandSession({ workEmail: email.trim() })
-      router.push("/dashboard/brand")
+      router.push(getBrandDashboardPath())
       return
     }
 

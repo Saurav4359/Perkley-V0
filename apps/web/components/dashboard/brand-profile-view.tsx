@@ -9,12 +9,10 @@ import {
   Clock,
   ExternalLink,
   Globe,
-  Mail,
   MapPin,
   PencilIcon,
   Share2Icon,
   Star,
-  Upload,
   XCircle,
 } from "lucide-react"
 
@@ -36,7 +34,7 @@ import type { BrandCampaign } from "@/lib/dashboard/mock-data"
 import { LISTING_TYPE_COPY } from "@/lib/dashboard/types"
 import { cn } from "@/lib/utils"
 
-type ProfileTab = "campaigns" | "reviews" | "settings"
+type ProfileTab = "campaigns" | "reviews"
 
 type BrandProfileViewProps = {
   initialTab?: ProfileTab
@@ -255,10 +253,9 @@ export function BrandProfileView({ initialTab = "campaigns" }: BrandProfileViewP
     return () => window.removeEventListener("perkley-brand-profile-updated", handleUpdate)
   }, [])
 
-  const tabs: { id: ProfileTab; label: string; show?: boolean }[] = [
+  const tabs: { id: ProfileTab; label: string }[] = [
     { id: "campaigns", label: "Campaigns" },
     { id: "reviews", label: "Reviews" },
-    { id: "settings", label: "Settings", show: profile.isOwnProfile },
   ]
 
   const ratingDisplay =
@@ -280,10 +277,6 @@ export function BrandProfileView({ initialTab = "campaigns" }: BrandProfileViewP
   function handleProfileSaved(updates: Partial<BrandProfileData>) {
     const stored = patchBrandProfileState(brandProfilePatchFromData(updates))
     setProfile(buildBrandProfileFromStored(stored, { isOwnProfile: true }))
-  }
-
-  function handleVisibilityChange(visibility: BrandProfileData["visibility"]) {
-    handleProfileSaved({ visibility })
   }
 
   return (
@@ -455,13 +448,11 @@ export function BrandProfileView({ initialTab = "campaigns" }: BrandProfileViewP
 
           <div className="mt-8 border-b border-border">
             <div className="flex flex-wrap items-center gap-6">
-              {tabs
-                .filter((item) => item.show !== false)
-                .map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => setTab(item.id)}
+              {tabs.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setTab(item.id)}
                     className={cn(
                       "relative pb-3 text-sm font-medium transition-colors",
                       tab === item.id
@@ -550,111 +541,6 @@ export function BrandProfileView({ initialTab = "campaigns" }: BrandProfileViewP
                     ))}
                   </div>
                 )}
-              </div>
-            ) : null}
-
-            {tab === "settings" && profile.isOwnProfile ? (
-              <div className="space-y-6">
-                <section className="rounded-2xl border border-border bg-card p-5 sm:p-6">
-                  <h2 className="text-base font-semibold text-foreground">Account</h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Login email from signup — used for account access, not shown publicly
-                  </p>
-                  {profile.workEmail ? (
-                    <p className="mt-4 inline-flex items-center gap-2 text-sm text-foreground">
-                      <Mail className="size-4 text-muted-foreground" />
-                      {profile.workEmail}
-                    </p>
-                  ) : (
-                    <p className="mt-4 text-sm text-muted-foreground">No work email on file.</p>
-                  )}
-                </section>
-
-                <section className="rounded-2xl border border-border bg-card p-5 sm:p-6">
-                  <h2 className="text-base font-semibold text-foreground">Profile & media</h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Update your public brand identity and logo
-                  </p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="mt-4 rounded-full"
-                    onClick={() => setEditOpen(true)}
-                  >
-                    <PencilIcon data-icon="inline-start" />
-                    Edit profile
-                  </Button>
-                </section>
-
-                <section className="rounded-2xl border border-border bg-card p-5 sm:p-6">
-                  <h2 className="text-base font-semibold text-foreground">Business verification</h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Verify with GST number or registered entity documents to earn the verified badge
-                  </p>
-                  <div className="mt-4 flex flex-wrap items-center gap-3">
-                    <span
-                      className={cn(
-                        "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium",
-                        profile.verificationStatus === "verified"
-                          ? "bg-sky-500/10 text-sky-700 dark:text-sky-400"
-                          : profile.verificationStatus === "pending"
-                            ? "bg-amber-500/10 text-amber-700 dark:text-amber-400"
-                            : "bg-muted text-muted-foreground"
-                      )}
-                    >
-                      {profile.verificationStatus === "verified" ? (
-                        <BadgeCheck className="size-3.5" />
-                      ) : profile.verificationStatus === "pending" ? (
-                        <Clock className="size-3.5" />
-                      ) : null}
-                      {profile.verificationStatus === "verified"
-                        ? "Verified"
-                        : profile.verificationStatus === "pending"
-                          ? "Verification pending"
-                          : "Not verified"}
-                    </span>
-                    {profile.verificationStatus !== "verified" ? (
-                      <Button size="sm" className="gap-1.5 rounded-full">
-                        <Upload className="size-3.5" />
-                        Upload documents
-                      </Button>
-                    ) : null}
-                  </div>
-                </section>
-
-                <section className="rounded-2xl border border-border bg-card p-5 sm:p-6">
-                  <h2 className="text-base font-semibold text-foreground">Profile visibility</h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Unlisted profiles are hidden from discovery but campaigns can still be accessed
-                    via direct link
-                  </p>
-                  <div className="mt-4 flex items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => handleVisibilityChange("public")}
-                      className={cn(
-                        "rounded-full border px-4 py-2 text-sm font-medium transition-colors",
-                        profile.visibility === "public"
-                          ? "border-brand bg-brand-muted text-brand"
-                          : "border-border text-muted-foreground hover:text-foreground"
-                      )}
-                    >
-                      Public
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleVisibilityChange("unlisted")}
-                      className={cn(
-                        "rounded-full border px-4 py-2 text-sm font-medium transition-colors",
-                        profile.visibility === "unlisted"
-                          ? "border-brand bg-brand-muted text-brand"
-                          : "border-border text-muted-foreground hover:text-foreground"
-                      )}
-                    >
-                      Unlisted
-                    </button>
-                  </div>
-                </section>
               </div>
             ) : null}
           </div>

@@ -2,7 +2,13 @@
 
 import Link from "next/link"
 import { useEffect, useRef, useState } from "react"
-import { ChevronDownIcon, LogOutIcon, SettingsIcon, UserIcon } from "lucide-react"
+import {
+  BarChart3,
+  ChevronDownIcon,
+  LogOutIcon,
+  SettingsIcon,
+  UserIcon,
+} from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -12,6 +18,7 @@ type UserMenuProps = {
   accountLabel?: string
   settingsHref?: string
   profileHref?: string
+  analyticsHref?: string
   onLogout?: () => void
 }
 
@@ -21,6 +28,7 @@ export function UserMenu({
   accountLabel = "Creator account",
   settingsHref = "/dashboard/profile",
   profileHref = "/dashboard/profile",
+  analyticsHref,
   onLogout,
 }: UserMenuProps) {
   const [open, setOpen] = useState(false)
@@ -98,6 +106,18 @@ export function UserMenu({
             <UserIcon className="size-4 text-muted-foreground" strokeWidth={1.75} />
             Profile
           </Link>
+
+          {analyticsHref ? (
+            <Link
+              role="menuitem"
+              href={analyticsHref}
+              onClick={() => setOpen(false)}
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted/60"
+            >
+              <BarChart3 className="size-4 text-muted-foreground" strokeWidth={1.75} />
+              Analytics
+            </Link>
+          ) : null}
 
           <Link
             role="menuitem"

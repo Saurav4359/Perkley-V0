@@ -4,6 +4,7 @@ import { ArrowUpRight, Briefcase, Clock } from "lucide-react"
 import { CampaignCountdown } from "@/components/dashboard/campaign-detail/campaign-countdown"
 import { DetailSectionLabel } from "@/components/dashboard/campaign-detail/detail-primitives"
 import { InrIcon } from "@/components/dashboard/inr-icon"
+import { SubmitListingButton } from "@/components/dashboard/submit-listing-button"
 import { buttonVariants } from "@/components/ui/button"
 import type { ListingDetail } from "@/lib/dashboard/campaign-details"
 import type { Listing } from "@/lib/dashboard/types"
@@ -55,16 +56,14 @@ export function CampaignDetailSidebar({
   const relatedHrefPrefix =
     mode === "creator" ? "/dashboard/campaigns" : "/dashboard/brand/campaigns"
 
-  const primaryLabel =
-    mode === "creator"
-      ? "Submit now"
-      : listing.status === "draft"
-        ? "Publish"
-        : listing.status === "active"
-          ? isBounty
-            ? "View leaderboard"
-            : "Review submissions"
-          : "View results"
+  const brandPrimaryLabel =
+    listing.status === "draft"
+      ? "Publish"
+      : listing.status === "active"
+        ? isBounty
+          ? "View leaderboard"
+          : "Review submissions"
+        : "View results"
 
   return (
     <aside className="lg:sticky lg:top-16 lg:self-start">
@@ -127,16 +126,20 @@ export function CampaignDetailSidebar({
       </section>
 
       <section className="space-y-3 border-b border-border px-4 py-6 sm:px-6 lg:px-8">
-        <button
-          type="button"
-          className={cn(
-            buttonVariants({ size: "lg" }),
-            "h-11 w-full rounded-lg bg-brand text-white hover:bg-brand/90"
-          )}
-        >
-          {primaryLabel}
-          <ArrowUpRight className="size-4" />
-        </button>
+        {mode === "creator" ? (
+          <SubmitListingButton listing={listing} />
+        ) : (
+          <button
+            type="button"
+            className={cn(
+              buttonVariants({ size: "lg" }),
+              "h-11 w-full rounded-lg bg-brand text-white hover:bg-brand/90"
+            )}
+          >
+            {brandPrimaryLabel}
+            <ArrowUpRight className="size-4" />
+          </button>
+        )}
         {mode === "brand" ? (
           <button
             type="button"
