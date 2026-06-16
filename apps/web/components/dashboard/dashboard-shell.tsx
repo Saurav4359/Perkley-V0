@@ -129,6 +129,7 @@ export function DashboardShell({
               avatarInitial={avatarInitial}
               accountLabel={isBrand ? "Brand account" : "Creator account"}
               profileHref={isBrand ? "/dashboard/brand/profile" : "/dashboard/profile"}
+              analyticsHref={isBrand ? "/dashboard/brand/analytics" : undefined}
               settingsHref={
                 isBrand ? "/dashboard/brand/profile?tab=settings" : "/dashboard/profile"
               }
