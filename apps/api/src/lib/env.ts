@@ -10,6 +10,11 @@ const envSchema = z.object({
   SESSION_COOKIE_NAME: z.string().min(1).default("perkley_session"),
   UPLOAD_STORAGE_DIR: z.string().min(1).default("./var/uploads"),
 
+  SUPABASE_URL: z.string().url().optional(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
+  SUPABASE_PUBLISHABLE_KEY: z.string().min(1).optional(),
+  SUPABASE_STORAGE_BUCKET: z.string().min(1).default("media"),
+
   DATABASE_URL: z.string().url().optional(),
 
   RAZORPAY_KEY_ID: z.string().min(1).optional(),
@@ -115,6 +120,44 @@ export function requireUploadTokenSecret(env: ApiEnv = getEnv()) {
 
 export function isRazorpayConfigured(env: ApiEnv = getEnv()) {
   return Boolean(env.RAZORPAY_KEY_ID && env.RAZORPAY_KEY_SECRET)
+}
+
+export function isSupabaseStorageConfigured(env: ApiEnv = getEnv()) {
+  return Boolean(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY)
+}
+
+export function requireSupabaseStorageEnv(env: ApiEnv = getEnv()) {
+  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required for Supabase storage")
+  }
+  return {
+    url: env.SUPABASE_URL.replace(/\/$/, ""),
+    serviceKey: env.SUPABASE_SERVICE_ROLE_KEY,
+    bucket: env.SUPABASE_STORAGE_BUCKET,
+  }
+}
+
+export function isSupabaseAuthConfigured(env: ApiEnv = getEnv()) {
+  return Boolean(env.SUPABASE_URL && (env.SUPABASE_PUBLISHABLE_KEY || env.SUPABASE_SERVICE_ROLE_KEY))
+}
+
+/**
+ * Returns the Supabase project URL and an API key suitable for the GoTrue
+ * `/auth/v1/user` endpoint used to verify a user's access token. Prefers the
+ * publishable (anon) key and falls back to the service-role key (both are valid
+ * `apikey` values for that endpoint).
+ */
+export function requireSupabaseAuthEnv(env: ApiEnv = getEnv()) {
+  const apiKey = env.SUPABASE_PUBLISHABLE_KEY ?? env.SUPABASE_SERVICE_ROLE_KEY
+  if (!env.SUPABASE_URL || !apiKey) {
+    throw new Error(
+      "SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY (or SUPABASE_SERVICE_ROLE_KEY) are required for Supabase auth"
+    )
+  }
+  return {
+    url: env.SUPABASE_URL.replace(/\/$/, ""),
+    apiKey,
+  }
 }
 
 export function isInstagramConfigured(env: ApiEnv = getEnv()) {
