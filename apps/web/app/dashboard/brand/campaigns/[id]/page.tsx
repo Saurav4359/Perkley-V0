@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 
 import { CampaignDetailClient } from "@/components/dashboard/campaign-detail-client"
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
-import { getBrandNav } from "@/lib/dashboard/mock-data"
+import { getBrandNav } from "@/lib/dashboard/navigation"
 
 type BrandListingDetailPageProps = {
   params: Promise<{ id: string }>
@@ -19,7 +19,7 @@ export default async function BrandListingDetailPage({ params }: BrandListingDet
   return (
     <DashboardShell
       nav={getBrandNav(`/dashboard/brand/campaigns/${id}`)}
-      userName="Saurav"
+     
       variant="detail"
     >
       <CampaignDetailClient

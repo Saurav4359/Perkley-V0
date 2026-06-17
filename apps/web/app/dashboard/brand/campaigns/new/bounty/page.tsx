@@ -3,11 +3,11 @@ import { ArrowLeft } from "lucide-react"
 
 import { CreateBountyForm } from "@/components/dashboard/forms/create-bounty-form"
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
-import { getBrandNav } from "@/lib/dashboard/mock-data"
+import { getBrandNav } from "@/lib/dashboard/navigation"
 
 export default function CreateBountyPage() {
   return (
-    <DashboardShell nav={getBrandNav("/dashboard/brand/campaigns/new/bounty")} userName="Saurav">
+    <DashboardShell nav={getBrandNav("/dashboard/brand/campaigns/new/bounty")}>
       <div className="relative mx-auto max-w-3xl px-4 py-8 sm:px-6">
         <div
           aria-hidden

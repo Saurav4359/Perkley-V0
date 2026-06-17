@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 
 import { CampaignDetailClient } from "@/components/dashboard/campaign-detail-client"
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
-import { getBrandNav } from "@/lib/dashboard/mock-data"
+import { getBrandNav } from "@/lib/dashboard/navigation"
 
 type BrandMarketplaceListingPageProps = {
   params: Promise<{ id: string }>
@@ -21,7 +21,7 @@ export default async function BrandMarketplaceListingPage({
   return (
     <DashboardShell
       nav={getBrandNav(`/dashboard/brand/listings/${id}`)}
-      userName="Saurav"
+     
       variant="detail"
     >
       <CampaignDetailClient

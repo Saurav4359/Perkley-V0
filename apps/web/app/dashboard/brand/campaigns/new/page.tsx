@@ -7,14 +7,14 @@ import { BrandCompleteVerificationReminder } from "@/components/dashboard/brand-
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { buttonVariants } from "@/components/ui/button"
 import { useBrandOnboardingProgress } from "@/hooks/use-brand-onboarding-progress"
-import { getBrandNav } from "@/lib/dashboard/mock-data"
+import { getBrandNav } from "@/lib/dashboard/navigation"
 import { cn } from "@/lib/utils"
 
 export default function NewListingPage() {
   const { canLaunch } = useBrandOnboardingProgress()
 
   return (
-    <DashboardShell nav={getBrandNav("/dashboard/brand/campaigns/new")} userName="Saurav">
+    <DashboardShell nav={getBrandNav("/dashboard/brand/campaigns/new")}>
       <div className="mx-auto max-w-3xl space-y-8 px-4 py-8 sm:px-6">
         <div className="space-y-2">
           <h1 className="text-2xl font-semibold tracking-tight">Create a listing</h1>
