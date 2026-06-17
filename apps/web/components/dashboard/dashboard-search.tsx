@@ -2,13 +2,10 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useEffect, useId, useMemo, useRef, useState } from "react"
+import { useEffect, useId, useRef, useState } from "react"
 import { Search } from "lucide-react"
 
-import {
-  searchDashboardListings,
-  type DashboardSearchResult,
-} from "@/lib/dashboard/search-listings"
+import { useDashboardSearch, type DashboardSearchResult } from "@/hooks/use-dashboard-search"
 import { cn } from "@/lib/utils"
 
 type DashboardSearchProps = {
@@ -61,10 +58,7 @@ export function DashboardSearch({ mode, className, onNavigate }: DashboardSearch
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
 
-  const results = useMemo(
-    () => searchDashboardListings(query, mode),
-    [query, mode]
-  )
+  const { results, isLoading } = useDashboardSearch(query, mode)
 
   const showResults = open && query.trim().length > 0
 
@@ -190,7 +184,9 @@ export function DashboardSearch({ mode, className, onNavigate }: DashboardSearch
             </div>
           ) : (
             <p className="px-4 py-6 text-center text-sm text-muted-foreground">
-              No listings match &ldquo;{query.trim()}&rdquo;
+              {isLoading
+                ? "Searching…"
+                : `No listings match "${query.trim()}"`}
             </p>
           )}
         </div>
