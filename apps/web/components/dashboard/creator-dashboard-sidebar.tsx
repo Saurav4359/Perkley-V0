@@ -1,39 +1,33 @@
 "use client"
 
+import { useMemo } from "react"
+
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar"
 import { useCreatorActivity, useCreatorStats } from "@/hooks/use-dashboard"
 import { useOnboardingProgress } from "@/hooks/use-onboarding-progress"
 import { dashboardActivityToSidebar } from "@/lib/dashboard/dashboard-adapter"
-import {
-  RECENT_ACTIVITY,
-  RECENT_WINNERS,
-} from "@/lib/dashboard/mock-data"
 import { formatInr } from "@/lib/dashboard/utils"
-
-const FALLBACK_STATS = [
-  { label: "Live campaigns", value: "48", trend: "12%" },
-  { label: "Total earnings", value: "₹1,24,500", trend: "23%" },
-] as const
 
 export function CreatorDashboardSidebar() {
   const { canParticipate, requirements } = useOnboardingProgress()
   const statsQuery = useCreatorStats()
   const activityQuery = useCreatorActivity()
 
-  const stats = statsQuery.data
-    ? [
-        { label: "Live campaigns", value: String(statsQuery.data.openCampaigns) },
-        {
-          label: "Total earnings",
-          value: `₹${formatInr(statsQuery.data.estimatedEarningsInr)}`,
-        },
-      ]
-    : [...FALLBACK_STATS]
+  const stats = useMemo(() => {
+    if (!statsQuery.data) return []
+    return [
+      { label: "Live campaigns", value: String(statsQuery.data.openCampaigns) },
+      {
+        label: "Total earnings",
+        value: `₹${formatInr(statsQuery.data.estimatedEarningsInr)}`,
+      },
+    ]
+  }, [statsQuery.data])
 
-  const activity =
-    activityQuery.data && activityQuery.data.length > 0
-      ? activityQuery.data.map(dashboardActivityToSidebar)
-      : RECENT_ACTIVITY
+  const activity = useMemo(
+    () => activityQuery.data?.map(dashboardActivityToSidebar) ?? [],
+    [activityQuery.data]
+  )
 
   const steps = canParticipate
     ? [
@@ -52,8 +46,8 @@ export function CreatorDashboardSidebar() {
       steps={steps}
       stepsTitle={canParticipate ? "How Perkley works" : "Profile setup"}
       connectedSteps={!canParticipate}
-      winners={RECENT_WINNERS}
       activity={activity}
+      isLoading={statsQuery.isLoading || activityQuery.isLoading}
     />
   )
 }

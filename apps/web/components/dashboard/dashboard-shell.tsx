@@ -15,6 +15,7 @@ import { NotificationMenu } from "@/components/dashboard/notification-menu"
 import { UserMenu } from "@/components/dashboard/user-menu"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useSignout } from "@/hooks/use-auth"
+import { useCreatorStats } from "@/hooks/use-dashboard"
 import { useBrandProfile, useCreatorProfile } from "@/hooks/use-profile"
 import { clearUserSession } from "@/lib/onboarding/storage"
 import { getBrandHeaderName } from "@/lib/dashboard/brand-profile-storage"
@@ -43,6 +44,7 @@ export function DashboardShell({
   const signout = useSignout()
   const isDetail = variant === "detail"
   const isBrand = nav.some((item) => item.href.startsWith("/dashboard/brand"))
+  const creatorStats = useCreatorStats()
   const [headerName, setHeaderName] = useState(userName)
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const avatarInitial = headerName.slice(0, 1).toUpperCase()
@@ -119,7 +121,13 @@ export function DashboardShell({
             <NotificationMenu role={isBrand ? "brand" : "creator"} />
             <div className="hidden items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-sm font-medium sm:flex">
               <InrIcon className="size-4" />
-              <span className="tabular-nums text-reward">2,450</span>
+              <span className="tabular-nums text-reward">
+                {isBrand
+                  ? "—"
+                  : creatorStats.data
+                    ? creatorStats.data.estimatedEarningsInr.toLocaleString("en-IN")
+                    : "…"}
+              </span>
             </div>
             <UserMenu
               name={headerName}
