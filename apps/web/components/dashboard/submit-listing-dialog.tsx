@@ -25,7 +25,9 @@ import {
   onboardingSecondaryButtonClassName,
 } from "@/components/onboarding/progress-header"
 import { useListingSubmission } from "@/hooks/use-listing-submission"
+import { useCreateSubmission } from "@/hooks/use-submissions"
 import { useOnboardingProgress } from "@/hooks/use-onboarding-progress"
+import { ApiError } from "@/lib/api/client"
 import {
   buildSubmissionChecklist,
   getSubmissionStepDescription,
@@ -191,8 +193,10 @@ export function SubmitListingDialog({
 }: SubmitListingDialogProps) {
   const { canParticipate } = useOnboardingProgress()
   const { hasSubmitted, submission, submit } = useListingSubmission(listing.id)
+  const createSubmission = useCreateSubmission(listing.id)
   const checklist = useMemo(() => buildSubmissionChecklist(listing), [listing])
   const [mounted, setMounted] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const [step, setStep] = useState(1)
   const [postUrl, setPostUrl] = useState("")
@@ -225,6 +229,7 @@ export function SubmitListingDialog({
     )
     setConfirmed(false)
     setUrlError(null)
+    setSubmitError(null)
     if (hasSubmitted && submission) {
       setPostUrl(submission.postUrl)
       setIsSuccess(true)
@@ -273,8 +278,25 @@ export function SubmitListingDialog({
     setStep(2)
   }
 
-  function handleFinalSubmit() {
-    if (!confirmed) return
+  async function handleFinalSubmit() {
+    if (!confirmed || createSubmission.isPending) return
+    setSubmitError(null)
+
+    try {
+      await createSubmission.mutateAsync({
+        postUrl: postUrl.trim(),
+        note: note.trim() || undefined,
+      })
+    } catch (err) {
+      setSubmitError(
+        err instanceof ApiError
+          ? err.message
+          : "Couldn't submit your entry. Please try again."
+      )
+      return
+    }
+
+    // Mirror into local storage so the existing "my work" views stay in sync.
     submit({
       listingId: listing.id,
       listingTitle: listing.title,
@@ -522,6 +544,12 @@ export function SubmitListingDialog({
                               work.
                             </span>
                           </button>
+
+                          {submitError ? (
+                            <p className="text-sm text-destructive" role="alert">
+                              {submitError}
+                            </p>
+                          ) : null}
                         </div>
                       </motion.div>
                     ) : null}
@@ -573,11 +601,11 @@ export function SubmitListingDialog({
                 {step === 3 ? (
                   <button
                     type="button"
-                    disabled={!confirmed}
+                    disabled={!confirmed || createSubmission.isPending}
                     onClick={handleFinalSubmit}
                     className={cn(onboardingPrimaryButtonClassName(), "ml-auto flex-1 sm:flex-none")}
                   >
-                    Submit entry
+                    {createSubmission.isPending ? "Submitting…" : "Submit entry"}
                     <ArrowUpRight className="size-4" />
                   </button>
                 ) : null}
