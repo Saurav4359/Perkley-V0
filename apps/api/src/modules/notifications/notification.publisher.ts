@@ -3,6 +3,7 @@ import type { NotificationType, Prisma } from "@prisma/client"
 import { prisma } from "../../lib/prisma"
 import {
   buildApplicationAcceptedNotification,
+  buildDeadlineReminderNotification,
   buildNewCampaignNotification,
   buildPaymentReleasedNotification,
   buildSubmissionReviewedNotification,
@@ -151,6 +152,18 @@ export async function notifyPaymentReleased(input: {
   await createNotification({
     userId: input.creatorId,
     ...buildPaymentReleasedNotification(input),
+  })
+}
+
+export async function notifyDeadlineReminder(input: {
+  creatorId: string
+  campaignId: string
+  campaignTitle: string
+  hoursRemaining: number
+}) {
+  await createNotification({
+    userId: input.creatorId,
+    ...buildDeadlineReminderNotification(input),
   })
 }
 

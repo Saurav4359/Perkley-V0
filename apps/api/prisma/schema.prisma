@@ -96,6 +96,7 @@ enum NotificationType {
   submission_reviewed
   winner_announced
   payment_released
+  deadline_reminder
 }
 
 enum EscrowStatus {

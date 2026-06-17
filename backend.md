@@ -23,12 +23,12 @@ This file is the source of truth for backend scope, status, and acceptance crite
 | Payments | 4 | 0 | 0 |
 | Analytics | 4 | 0 | 0 |
 | Admin | 6 | 0 | 0 |
-| Background jobs | 0 | 0 | 4 |
+| Background jobs | 4 | 0 | 0 |
 | Future | 0 | 0 | 6 |
 
-**Estimated completion:** ~82% of the full product backend (Steps 1–12 done locally; Step 13 not started).
+**Estimated completion:** ~88% of the full product backend (Steps 1–13 done locally; remaining work is integration tests, migrations, frontend wiring, and post-MVP features).
 
-Last audited: 2026-06-17 (Step 12 admin)
+Last audited: 2026-06-17 (Step 13 background jobs)
 
 ## Feature Status Matrix
 
@@ -147,6 +147,7 @@ Also done: `GET /api/dashboard/creator/search`, `GET /api/dashboard/brand/search
 | Submission Reviewed | Done | Approve/reject submission |
 | Winner Announced | Done | Winner selection on bounty leaderboard |
 | Payment Released | Done | Fires on payout release |
+| Deadline Reminder | Done | Background job for accepted creators without submissions |
 
 ### Payments
 
@@ -208,10 +209,10 @@ Also done: `GET /api/dashboard/creator/search`, `GET /api/dashboard/brand/search
 
 | Feature | Status | Notes |
 | --- | --- | --- |
-| Submission Verification | Not started | Step 13 |
-| Leaderboard Updates | Not started | Step 13 |
-| Notifications | Not started | Step 13 |
-| Scheduled Campaign Expiry | Not started | Step 13 |
+| Submission Verification | Done | Re-validates `submitted` submissions |
+| Leaderboard Updates | Done | Refreshes metrics for active bounty submissions |
+| Notifications | Done | Deadline reminder notifications |
+| Scheduled Campaign Expiry | Done | Archives active campaigns past deadline |
 
 ### Future
 
@@ -942,6 +943,57 @@ Status: Done for local backend foundation
 - Audit log persistence for admin actions.
 - Automatic admin promotion from whitelist during auth.
 - Connect frontend admin console to these APIs.
+
+## Step 13: Background Jobs
+
+Status: Done for local backend foundation
+
+### Goals
+
+- Expire active campaigns once their deadline passes.
+- Re-verify submissions still stuck in `submitted`.
+- Refresh engagement metrics for active bounty submissions.
+- Remind accepted creators who have not submitted before the deadline.
+- Provide a scheduler plus admin-triggered manual runs.
+
+### Jobs
+
+| Job | Name | Behavior |
+| --- | --- | --- |
+| Campaign expiry | `expire-campaigns` | Active campaigns past deadline → `archived` |
+| Submission verification | `verify-submissions` | Re-validate `submitted` posts → `under_review`/`competing` |
+| Leaderboard metrics | `refresh-metrics` | Re-sync metrics for competing bounty submissions |
+| Deadline reminders | `deadline-reminders` | Notify accepted creators without submissions within 24h |
+
+### Endpoints
+
+| Method | Path | Status | RBAC | Notes |
+| --- | --- | --- | --- | --- |
+| POST | `/api/admin/jobs/run` | Done | `admin` | Run all jobs, returns summary |
+| POST | `/api/admin/jobs/:job/run` | Done | `admin` | Run a single named job |
+
+### Scheduler
+
+- Disabled by default; enable with `JOBS_ENABLED=true`.
+- Interval controlled by `JOBS_INTERVAL_MS` (default 300000ms / 5min).
+- Scheduler is started in `index.ts` (not in `createApp`) so tests and serverless invocations stay job-free.
+- Overlapping runs are skipped while a previous run is still in flight; timer is `unref`-ed.
+
+### Rules
+
+- Deadline reminders dedupe per creator/campaign within the reminder window.
+- Jobs are idempotent and safe to run repeatedly.
+
+### Tests
+
+- Expiry/reminder window math, job name validation, and run summary utilities
+- Deadline reminder notification copy and `deadline` kind mapping
+
+### Remaining In Step 13
+
+- DB-backed integration tests for job side effects.
+- Move to a durable queue/cron (e.g. external scheduler) for production.
+- Persist job run history for observability.
 
 ## Future Steps
 - Step 12: Admin (users, brands, creators, campaigns, payments, reports)

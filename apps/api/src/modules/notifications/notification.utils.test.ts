@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test"
 
 import {
   buildApplicationAcceptedNotification,
+  buildDeadlineReminderNotification,
   buildNewCampaignNotification,
   buildPaymentReleasedNotification,
   buildSubmissionReviewedNotification,
@@ -15,6 +16,17 @@ describe("notification utilities", () => {
     expect(notificationKindForType("application_accepted")).toBe("qualified")
     expect(notificationKindForType("submission_reviewed")).toBe("review")
     expect(notificationKindForType("payment_released")).toBe("payout")
+    expect(notificationKindForType("deadline_reminder")).toBe("deadline")
+  })
+
+  test("builds deadline reminder notification copy", () => {
+    const reminder = buildDeadlineReminderNotification({
+      campaignId: "campaign-1",
+      campaignTitle: "UPI demo reel",
+      hoursRemaining: 12,
+    })
+    expect(reminder.type).toBe("deadline_reminder")
+    expect(reminder.body).toContain("12h")
   })
 
   test("builds application accepted notification copy", () => {

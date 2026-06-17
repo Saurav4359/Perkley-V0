@@ -14,6 +14,7 @@ import {
   brandDashboardRoutes,
   creatorDashboardRoutes,
 } from "./modules/dashboard/dashboard.routes"
+import { jobsRoutes } from "./modules/jobs/jobs.routes"
 import { notificationRoutes } from "./modules/notifications/notification.routes"
 import { brandProfileRoutes, creatorProfileRoutes } from "./modules/profiles/profile.routes"
 import { mediaRoutes, uploadRoutes } from "./modules/uploads/upload.routes"
@@ -60,6 +61,7 @@ export function createApp() {
   app.use("/api/notifications", notificationRoutes)
   app.use("/api/analytics", analyticsRoutes)
   app.use("/api/admin", adminRoutes)
+  app.use("/api/admin/jobs", jobsRoutes)
   app.use("/api/users", userRoutes)
   app.use("/api/creator", creatorProfileRoutes)
   app.use("/api/brand", brandProfileRoutes)

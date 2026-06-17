@@ -21,6 +21,8 @@ export function notificationKindForType(type: NotificationType): NotificationKin
       return "qualified"
     case "payment_released":
       return "payout"
+    case "deadline_reminder":
+      return "deadline"
     default:
       return "review"
   }
@@ -94,6 +96,23 @@ export function buildNewCampaignNotification(input: {
     href: `/dashboard/campaigns/${input.campaignId}`,
     metadata: {
       campaignId: input.campaignId,
+    },
+  }
+}
+
+export function buildDeadlineReminderNotification(input: {
+  campaignId: string
+  campaignTitle: string
+  hoursRemaining: number
+}) {
+  return {
+    type: "deadline_reminder" as const,
+    title: "Deadline approaching",
+    body: `${input.campaignTitle} closes in about ${input.hoursRemaining}h — submit your content soon`,
+    href: `/dashboard/campaigns/${input.campaignId}`,
+    metadata: {
+      campaignId: input.campaignId,
+      hoursRemaining: input.hoursRemaining,
     },
   }
 }
