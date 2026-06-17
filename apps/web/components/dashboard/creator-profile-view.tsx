@@ -52,8 +52,8 @@ function formatCount(value: number) {
 
 export function CreatorProfileView({ profile: initialProfile }: CreatorProfileViewProps) {
   const [profile, setProfile] = useState(initialProfile)
-  const [instagramFollowers, setInstagramFollowers] = useState<number | null>(8540)
-  const [instagramCategory, setInstagramCategory] = useState<string | null>("Education")
+  const [instagramFollowers, setInstagramFollowers] = useState<number | null>(null)
+  const [instagramCategory, setInstagramCategory] = useState<string | null>(null)
   const [tab, setTab] = useState<ProfileTab>("activity")
   const [copied, setCopied] = useState(false)
   const [editOpen, setEditOpen] = useState(false)

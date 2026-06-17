@@ -1,4 +1,4 @@
-import { BRAND_CAMPAIGNS, type BrandCampaign } from "@/lib/dashboard/mock-data"
+import type { BrandCampaign } from "@/lib/dashboard/feed-types"
 import {
   brandInitialsFromName,
   getBrandProfileState,
@@ -60,8 +60,8 @@ export type BrandProfileData = {
   isOwnProfile: boolean
 }
 
-function campaignsForBrand(brandName: string) {
-  return BRAND_CAMPAIGNS.filter((campaign) => campaign.brand === brandName)
+function campaignsForBrand(brandName: string, campaigns: BrandCampaign[]) {
+  return campaigns.filter((campaign) => campaign.brand === brandName)
 }
 
 function computeTrustSignals(
@@ -94,9 +94,9 @@ function computeTrustSignals(
 
 export function buildBrandProfileFromStored(
   stored: StoredBrandProfile,
-  options?: { isOwnProfile?: boolean }
+  options?: { isOwnProfile?: boolean; campaigns?: BrandCampaign[] }
 ): BrandProfileData {
-  const brandCampaigns = campaignsForBrand(stored.name)
+  const brandCampaigns = campaignsForBrand(stored.name, options?.campaigns ?? [])
   const activeCampaigns = brandCampaigns.filter((campaign) =>
     ["live", "reviewing", "draft"].includes(campaign.status)
   )
@@ -144,7 +144,10 @@ export function buildBrandProfileFromStored(
   }
 }
 
-export function buildBrandProfile(options?: { isOwnProfile?: boolean }): BrandProfileData {
+export function buildBrandProfile(options?: {
+  isOwnProfile?: boolean
+  campaigns?: BrandCampaign[]
+}): BrandProfileData {
   const stored = getBrandProfileState()
   return buildBrandProfileFromStored(stored, options)
 }

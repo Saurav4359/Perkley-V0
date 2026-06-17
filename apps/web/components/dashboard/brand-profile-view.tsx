@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import {
   BadgeCheck,
   Calendar,
@@ -20,6 +20,8 @@ import { InstagramIcon, XBrandIcon } from "@/components/auth/auth-social-icons"
 import { EditBrandProfileDialog } from "@/components/dashboard/edit-brand-profile-dialog"
 import { DetailSectionLabel } from "@/components/dashboard/campaign-detail/detail-primitives"
 import { Button } from "@/components/ui/button"
+import { useMyCampaigns } from "@/hooks/use-campaigns"
+import { apiCampaignToBrandItem } from "@/lib/dashboard/campaign-adapter"
 import {
   buildBrandProfileFromStored,
   brandProfilePatchFromData,
@@ -30,7 +32,7 @@ import {
   getBrandProfileState,
   patchBrandProfileState,
 } from "@/lib/dashboard/brand-profile-storage"
-import type { BrandCampaign } from "@/lib/dashboard/mock-data"
+import type { BrandCampaign } from "@/lib/dashboard/feed-types"
 import { LISTING_TYPE_COPY } from "@/lib/dashboard/types"
 import { cn } from "@/lib/utils"
 
@@ -230,28 +232,39 @@ function ReviewCard({
 }
 
 export function BrandProfileView({ initialTab = "campaigns" }: BrandProfileViewProps) {
+  const campaignsQuery = useMyCampaigns()
+  const brandCampaigns = useMemo(
+    () => (campaignsQuery.data ?? []).map(apiCampaignToBrandItem),
+    [campaignsQuery.data]
+  )
+
   const [profile, setProfile] = useState<BrandProfileData>(() =>
-    buildBrandProfileFromStored(getBrandProfileState(), { isOwnProfile: true })
+    buildBrandProfileFromStored(getBrandProfileState(), {
+      isOwnProfile: true,
+      campaigns: [],
+    })
   )
   const [tab, setTab] = useState<ProfileTab>(initialTab)
   const [copied, setCopied] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
 
-  function syncFromStorage() {
+  function syncFromStorage(campaigns = brandCampaigns) {
     const stored = getBrandProfileState()
-    setProfile(buildBrandProfileFromStored(stored, { isOwnProfile: true }))
+    setProfile(
+      buildBrandProfileFromStored(stored, { isOwnProfile: true, campaigns })
+    )
   }
 
   useEffect(() => {
-    syncFromStorage()
+    syncFromStorage(brandCampaigns)
 
     function handleUpdate() {
-      syncFromStorage()
+      syncFromStorage(brandCampaigns)
     }
 
     window.addEventListener("perkley-brand-profile-updated", handleUpdate)
     return () => window.removeEventListener("perkley-brand-profile-updated", handleUpdate)
-  }, [])
+  }, [brandCampaigns])
 
   const tabs: { id: ProfileTab; label: string }[] = [
     { id: "campaigns", label: "Campaigns" },
@@ -276,7 +289,12 @@ export function BrandProfileView({ initialTab = "campaigns" }: BrandProfileViewP
 
   function handleProfileSaved(updates: Partial<BrandProfileData>) {
     const stored = patchBrandProfileState(brandProfilePatchFromData(updates))
-    setProfile(buildBrandProfileFromStored(stored, { isOwnProfile: true }))
+    setProfile(
+      buildBrandProfileFromStored(stored, {
+        isOwnProfile: true,
+        campaigns: brandCampaigns,
+      })
+    )
   }
 
   return (

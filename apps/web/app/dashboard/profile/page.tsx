@@ -1,14 +1,11 @@
-import { CreatorProfileView } from "@/components/dashboard/creator-profile-view"
+import { CreatorProfilePageClient } from "@/components/dashboard/creator-profile-page-client"
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
-import { buildCreatorProfile } from "@/lib/dashboard/creator-profile"
-import { getCreatorNav } from "@/lib/dashboard/mock-data"
+import { getCreatorNav } from "@/lib/dashboard/navigation"
 
 export default function CreatorProfilePage() {
-  const profile = buildCreatorProfile("Saurav Sharma")
-
   return (
-    <DashboardShell nav={getCreatorNav("/dashboard/profile")} userName="Saurav">
-      <CreatorProfileView profile={profile} />
+    <DashboardShell nav={getCreatorNav("/dashboard/profile")}>
+      <CreatorProfilePageClient />
     </DashboardShell>
   )
 }
