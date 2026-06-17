@@ -2,7 +2,7 @@ import type { MediaAsset, MediaPurpose, User, UserRole } from "@prisma/client"
 
 import { badRequest, forbidden, notFound, unauthorized } from "../../lib/http-error"
 import { prisma } from "../../lib/prisma"
-import { readUpload, publicMediaPath, storeUpload } from "./upload.storage"
+import { assetPublicUrl, readUpload, storeUpload } from "./upload.storage"
 import { signUploadToken, verifyUploadToken } from "./upload.token"
 import type { PrepareUploadInput } from "./upload.schemas"
 import {
@@ -131,7 +131,7 @@ export async function uploadAssetContent(
     throw badRequest("Uploaded file size does not match prepared upload.", "file_size_mismatch")
   }
 
-  await storeUpload(asset.storageKey, bytes)
+  await storeUpload(asset.storageKey, bytes, asset.mimeType)
 
   const updated = await prisma.mediaAsset.update({
     where: { id: assetId },
@@ -139,7 +139,7 @@ export async function uploadAssetContent(
       status: "uploaded",
       byteSizeActual: bytes.length,
       uploadedAt: new Date(),
-      publicUrl: publicMediaPath(assetId),
+      publicUrl: assetPublicUrl(asset),
     },
   })
 
@@ -172,22 +172,23 @@ export async function attachCreatorAvatar(userId: string, assetId: string) {
   const user = await requireRole(userId, "creator")
   const asset = await loadAttachableAsset(userId, "creator_avatar", assetId)
 
+  const publicUrl = assetPublicUrl(asset)
   await prisma.$transaction([
     prisma.mediaAsset.update({
       where: { id: asset.id },
-      data: { status: "attached", publicUrl: publicMediaPath(asset.id) },
+      data: { status: "attached", publicUrl },
     }),
     prisma.creatorProfile.upsert({
       where: { userId },
       update: {
         avatarAssetId: asset.id,
-        avatarUrl: publicMediaPath(asset.id),
+        avatarUrl: publicUrl,
       },
       create: {
         userId,
         displayName: user.email?.split("@")[0] ?? "Creator",
         avatarAssetId: asset.id,
-        avatarUrl: publicMediaPath(asset.id),
+        avatarUrl: publicUrl,
       },
     }),
   ])
@@ -197,23 +198,24 @@ export async function attachBrandLogo(userId: string, assetId: string) {
   const user = await requireRole(userId, "brand")
   const asset = await loadAttachableAsset(userId, "brand_logo", assetId)
 
+  const publicUrl = assetPublicUrl(asset)
   await prisma.$transaction([
     prisma.mediaAsset.update({
       where: { id: asset.id },
-      data: { status: "attached", publicUrl: publicMediaPath(asset.id) },
+      data: { status: "attached", publicUrl },
     }),
     prisma.brandProfile.upsert({
       where: { userId },
       update: {
         logoAssetId: asset.id,
-        logoUrl: publicMediaPath(asset.id),
+        logoUrl: publicUrl,
       },
       create: {
         userId,
         brandName: user.email?.split("@")[0] ?? "Brand",
         workEmail: user.email,
         logoAssetId: asset.id,
-        logoUrl: publicMediaPath(asset.id),
+        logoUrl: publicUrl,
       },
     }),
   ])
@@ -228,16 +230,17 @@ export async function attachPortfolioImage(userId: string, portfolioItemId: stri
   })
   if (!portfolioItem) throw notFound("Portfolio item not found.")
 
+  const publicUrl = assetPublicUrl(asset)
   await prisma.$transaction([
     prisma.mediaAsset.update({
       where: { id: asset.id },
-      data: { status: "attached", publicUrl: publicMediaPath(asset.id) },
+      data: { status: "attached", publicUrl },
     }),
     prisma.creatorPortfolioItem.update({
       where: { id: portfolioItem.id },
       data: {
         imageAssetId: asset.id,
-        thumbnailUrl: publicMediaPath(asset.id),
+        thumbnailUrl: publicUrl,
       },
     }),
   ])
