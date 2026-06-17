@@ -22,13 +22,13 @@ This file is the source of truth for backend scope, status, and acceptance crite
 | Notifications | 5 | 0 | 0 |
 | Payments | 4 | 0 | 0 |
 | Analytics | 4 | 0 | 0 |
-| Admin | 0 | 0 | 6 |
+| Admin | 6 | 0 | 0 |
 | Background jobs | 0 | 0 | 4 |
 | Future | 0 | 0 | 6 |
 
-**Estimated completion:** ~74% of the full product backend (Steps 1–11 done locally; Steps 12–13 not started).
+**Estimated completion:** ~82% of the full product backend (Steps 1–12 done locally; Step 13 not started).
 
-Last audited: 2026-06-17 (Step 11 analytics + Instagram metrics)
+Last audited: 2026-06-17 (Step 12 admin)
 
 ## Feature Status Matrix
 
@@ -180,12 +180,12 @@ Also done: `GET /api/dashboard/creator/search`, `GET /api/dashboard/brand/search
 
 | Feature | Status | Notes |
 | --- | --- | --- |
-| Manage Users | Not started | Step 12 |
-| Manage Brands | Not started | Step 12 |
-| Manage Creators | Not started | Step 12 |
-| Manage Campaigns | Not started | Step 12 |
-| Manage Payments | Not started | Step 12 |
-| Reports | Not started | Step 12 |
+| Manage Users | Done | List + suspend/activate/delete |
+| Manage Brands | Done | List + verification status |
+| Manage Creators | Done | List + verification status |
+| Manage Campaigns | Done | List + moderate (cancel) |
+| Manage Payments | Done | List escrow transactions |
+| Reports | Done | Platform-wide summary report |
 
 ### File Uploads
 
@@ -892,6 +892,56 @@ Status: Done for local backend foundation
 - DB-backed integration tests for analytics and sync routes.
 - Periodic follower re-verification and scheduled metric sync (Step 13).
 - Connect frontend analytics views to these APIs.
+
+## Step 12: Admin
+
+Status: Done for local backend foundation
+
+### Goals
+
+- Admins manage users (suspend, activate, soft-delete).
+- Admins review and set brand/creator verification status.
+- Admins view and moderate (cancel) campaigns.
+- Admins view escrow payment records.
+- Admins read a platform-wide report.
+
+### Endpoints
+
+| Method | Path | Status | RBAC | Notes |
+| --- | --- | --- | --- | --- |
+| GET | `/api/admin/users` | Done | `admin` | Filter by role/status/email; paginated |
+| PATCH | `/api/admin/users/:id/status` | Done | `admin` | active / suspended / deleted |
+| GET | `/api/admin/creators` | Done | `admin` | Filter by verification status |
+| PATCH | `/api/admin/creators/:id/verification` | Done | `admin` | Set creator verification |
+| GET | `/api/admin/brands` | Done | `admin` | Filter by verification status |
+| PATCH | `/api/admin/brands/:id/verification` | Done | `admin` | Set brand verification |
+| GET | `/api/admin/campaigns` | Done | `admin` | Filter by status/type; paginated |
+| POST | `/api/admin/campaigns/:id/moderate` | Done | `admin` | Cancel campaign with optional reason |
+| GET | `/api/admin/payments` | Done | `admin` | Escrow transactions; filter by status |
+| GET | `/api/admin/reports` | Done | `admin` | Users, campaigns, revenue, payouts summary |
+
+### Rules
+
+- User status transitions block no-op changes and re-activation of deleted users.
+- Campaign moderation cancels any campaign that is not already cancelled or completed.
+- All list endpoints are paginated (`page`, `pageSize`, max 100).
+- All admin routes require authenticated `admin` role.
+
+### Admin Role Assignment
+
+- `ADMIN_EMAIL_WHITELIST` env defines admin emails; `isWhitelistedAdminEmail` helper checks membership.
+- Promotion to admin role is currently a manual/DB operation (no self-service endpoint).
+
+### Tests
+
+- Status transition, campaign moderation, pagination bounds, summary aggregators, and whitelist matching utilities
+
+### Remaining In Step 12
+
+- DB-backed integration tests for admin routes.
+- Audit log persistence for admin actions.
+- Automatic admin promotion from whitelist during auth.
+- Connect frontend admin console to these APIs.
 
 ## Future Steps
 - Step 12: Admin (users, brands, creators, campaigns, payments, reports)

@@ -6,6 +6,7 @@ import helmet from "helmet"
 import { getEnv } from "./lib/env"
 import { requestLog } from "./lib/request-log"
 import { errorHandler } from "./middleware/error-handler"
+import { adminRoutes } from "./modules/admin/admin.routes"
 import { analyticsRoutes } from "./modules/analytics/analytics.routes"
 import { authRoutes } from "./modules/auth/auth.routes"
 import { campaignRoutes } from "./modules/campaigns/campaign.routes"
@@ -58,6 +59,7 @@ export function createApp() {
   app.use("/api/dashboard/brand", brandDashboardRoutes)
   app.use("/api/notifications", notificationRoutes)
   app.use("/api/analytics", analyticsRoutes)
+  app.use("/api/admin", adminRoutes)
   app.use("/api/users", userRoutes)
   app.use("/api/creator", creatorProfileRoutes)
   app.use("/api/brand", brandProfileRoutes)
