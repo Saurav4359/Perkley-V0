@@ -22,21 +22,63 @@ type ApiRequestOptions = Omit<RequestInit, "body"> & {
   body?: unknown
 }
 
+let refreshPromise: Promise<boolean> | null = null
+
+async function tryRefreshSession(): Promise<boolean> {
+  if (!refreshPromise) {
+    refreshPromise = (async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+          method: "POST",
+          credentials: "include",
+        })
+        return response.ok
+      } catch {
+        return false
+      } finally {
+        refreshPromise = null
+      }
+    })()
+  }
+
+  return refreshPromise
+}
+
+function shouldAttemptRefresh(path: string) {
+  return (
+    !path.startsWith("/api/auth/signin") &&
+    !path.startsWith("/api/auth/signup") &&
+    !path.startsWith("/api/auth/refresh") &&
+    !path.startsWith("/api/auth/signout")
+  )
+}
+
 export async function apiFetch<T>(
   path: string,
   options: ApiRequestOptions = {}
 ): Promise<T> {
   const { body, headers, ...rest } = options
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...rest,
-    credentials: "include",
-    headers: {
-      ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
-      ...headers,
-    },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  })
+  async function sendRequest() {
+    return fetch(`${API_BASE_URL}${path}`, {
+      ...rest,
+      credentials: "include",
+      headers: {
+        ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
+        ...headers,
+      },
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    })
+  }
+
+  let response = await sendRequest()
+
+  if (response.status === 401 && shouldAttemptRefresh(path)) {
+    const refreshed = await tryRefreshSession()
+    if (refreshed) {
+      response = await sendRequest()
+    }
+  }
 
   if (response.status === 204) {
     return undefined as T
