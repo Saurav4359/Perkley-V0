@@ -1,51 +1,32 @@
-import { Hono } from "hono"
-import { cors } from "hono/cors"
+import { getEnv } from "./lib/env"
+import { prisma } from "./lib/prisma"
+import { createApp } from "./app"
 
-import { waitlistRoutes } from "./routes/waitlist"
+const env = getEnv()
+const app = createApp()
 
-const app = new Hono()
+const server = app.listen(env.PORT, () => {
+  console.log(`API listening on http://localhost:${env.PORT}`)
+})
 
-app.use(
-  "*",
-  cors({
-    origin: process.env.CORS_ORIGIN ?? "http://localhost:3000",
-    allowMethods: ["GET", "POST", "OPTIONS"],
+async function shutdown(signal: string) {
+  console.log(`${signal} received, shutting down API`)
+
+  server.close(async (error) => {
+    if (error) {
+      console.error(error)
+      process.exit(1)
+    }
+
+    await prisma.$disconnect()
+    process.exit(0)
   })
-)
-
-app.get("/health", (c) => c.json({ ok: true }))
-
-app.get("/", (c) =>
-  c.json({
-    name: "Perkley API",
-    version: "0.1.0",
-    endpoints: {
-      health: "GET /health",
-      waitlist: "POST /api/waitlist",
-    },
-  })
-)
-
-app.route("/api/waitlist", waitlistRoutes)
-
-app.notFound((c) =>
-  c.json(
-    {
-      error: "Not found",
-      endpoints: {
-        health: "GET /health",
-        waitlist: "POST /api/waitlist",
-      },
-    },
-    404
-  )
-)
-
-const port = Number(process.env.PORT ?? 3001)
-
-console.log(`API listening on http://localhost:${port}`)
-
-export default {
-  port,
-  fetch: app.fetch,
 }
+
+process.on("SIGINT", () => {
+  void shutdown("SIGINT")
+})
+
+process.on("SIGTERM", () => {
+  void shutdown("SIGTERM")
+})

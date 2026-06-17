@@ -1,26 +1,19 @@
-import type { MiddlewareHandler } from "hono"
+import type { NextFunction, Request, Response } from "express"
 
-import { logger } from "./logger"
-
-export const requestLogMiddleware: MiddlewareHandler = async (c, next) => {
+export function requestLog(req: Request, res: Response, next: NextFunction) {
   const start = Date.now()
-  const { method } = c.req
-  const path = c.req.path
 
-  await next()
+  res.on("finish", () => {
+    const durationMs = Date.now() - start
+    const level = res.statusCode >= 500 ? "error" : "info"
 
-  const durationMs = Date.now() - start
-  const status = c.res.status
-
-  const log = status >= 500 ? logger.error.bind(logger) : logger.info.bind(logger)
-
-  log(
-    {
-      method,
-      path,
-      status,
+    console[level]("request completed", {
+      method: req.method,
+      path: req.path,
+      status: res.statusCode,
       durationMs,
-    },
-    "request completed"
-  )
+    })
+  })
+
+  next()
 }
