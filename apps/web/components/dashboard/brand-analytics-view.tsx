@@ -17,15 +17,6 @@ import { RewardAmount } from "@/components/dashboard/reward-amount"
 import { buttonVariants } from "@/components/ui/button"
 import { useBrandAnalytics } from "@/hooks/use-analytics"
 import {
-  BUDGET_UTILIZATION,
-  BRAND_ANALYTICS_KPIS,
-  CAMPAIGN_PERFORMANCE,
-  CHANNEL_MIX,
-  CREATOR_FUNNEL,
-  ENGAGEMENT_WEEKLY,
-  NICHE_BREAKDOWN,
-  SPEND_OVER_TIME,
-  TOP_CREATORS,
   type AnalyticsKpi,
   type AnalyticsPeriod,
 } from "@/lib/dashboard/brand-analytics"
@@ -66,7 +57,7 @@ function TrendBadge({ value, label }: { value?: number; label?: string }) {
   )
 }
 
-function KpiCard({ kpi }: { kpi: typeof BRAND_ANALYTICS_KPIS[number] }) {
+function KpiCard({ kpi }: { kpi: AnalyticsKpi }) {
   return (
     <div className={cn(glassCardClassName, "px-4 py-4")}>
       <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
@@ -83,7 +74,7 @@ function KpiCard({ kpi }: { kpi: typeof BRAND_ANALYTICS_KPIS[number] }) {
   )
 }
 
-function SpendChart({ data }: { data: typeof SPEND_OVER_TIME }) {
+function SpendChart({ data }: { data: { label: string; value: number }[] }) {
   const max = Math.max(...data.map((d) => d.value))
   const width = 320
   const height = 120
@@ -122,7 +113,7 @@ function SpendChart({ data }: { data: typeof SPEND_OVER_TIME }) {
   )
 }
 
-function MiniSparkline({ data }: { data: typeof ENGAGEMENT_WEEKLY }) {
+function MiniSparkline({ data }: { data: { label: string; value: number }[] }) {
   const max = Math.max(...data.map((d) => d.value))
   const min = Math.min(...data.map((d) => d.value))
   const range = max - min || 1
@@ -181,7 +172,7 @@ function statusClass(status: string) {
 
 export function BrandAnalyticsView() {
   const [period, setPeriod] = useState<AnalyticsPeriod>("30d")
-  const { data: analytics } = useBrandAnalytics()
+  const { data: analytics, isLoading } = useBrandAnalytics()
 
   const kpis: AnalyticsKpi[] = analytics
     ? [
@@ -216,7 +207,7 @@ export function BrandAnalyticsView() {
           hint: "Paid and closed",
         },
       ]
-    : BRAND_ANALYTICS_KPIS
+    : []
 
   const budget = analytics
     ? {
@@ -224,7 +215,39 @@ export function BrandAnalyticsView() {
         spent: analytics.spend.releasedInr,
         remaining: analytics.spend.remainingInr,
       }
-    : BUDGET_UTILIZATION
+    : { allocated: 0, spent: 0, remaining: 0 }
+
+  const funnel = analytics
+    ? [
+        {
+          stage: "Applications",
+          count: analytics.totalApplications,
+          pct: 100,
+        },
+        {
+          stage: "Submissions",
+          count: analytics.engagement.submissions,
+          pct:
+            analytics.totalApplications > 0
+              ? Math.round(
+                  (analytics.engagement.submissions / analytics.totalApplications) * 100
+                )
+              : 0,
+        },
+        {
+          stage: "Qualified",
+          count: analytics.statusBreakdown.qualified ?? 0,
+          pct:
+            analytics.engagement.submissions > 0
+              ? Math.round(
+                  ((analytics.statusBreakdown.qualified ?? 0) /
+                    analytics.engagement.submissions) *
+                    100
+                )
+              : 0,
+        },
+      ]
+    : []
 
   const utilizationPct =
     budget.allocated > 0
@@ -283,64 +306,73 @@ export function BrandAnalyticsView() {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {kpis.map((kpi) => (
-          <KpiCard key={kpi.label} kpi={kpi} />
-        ))}
+        {isLoading ? (
+          <div className={cn(glassCardClassName, "px-4 py-8 text-center text-sm text-muted-foreground sm:col-span-2 xl:col-span-3")}>
+            Loading analytics…
+          </div>
+        ) : kpis.length === 0 ? (
+          <div className={cn(glassCardClassName, "px-4 py-8 text-center text-sm text-muted-foreground sm:col-span-2 xl:col-span-3")}>
+            No analytics data yet. Launch a campaign to start tracking performance.
+          </div>
+        ) : (
+          kpis.map((kpi) => <KpiCard key={kpi.label} kpi={kpi} />)
+        )}
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <section className={cn(glassCardClassName, "p-5 sm:p-6")}>
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h2 className="text-sm font-semibold text-foreground">Spend over time</h2>
+              <h2 className="text-sm font-semibold text-foreground">Spend summary</h2>
               <p className="mt-0.5 text-xs text-muted-foreground">
-                Monthly payout volume across campaigns
+                Released payouts across your campaigns
               </p>
             </div>
             <div className="flex items-center gap-1.5 rounded-full bg-brand-muted px-2.5 py-1 text-xs font-medium text-brand">
               <IndianRupee className="size-3.5" />
-              ₹{formatInr(SPEND_OVER_TIME[SPEND_OVER_TIME.length - 1].value)}
+              ₹{formatInr(budget.spent)}
             </div>
           </div>
-          <div className="mt-6">
-            <SpendChart data={SPEND_OVER_TIME} />
-          </div>
-          <div className="mt-2 flex justify-between text-[11px] text-muted-foreground">
-            {SPEND_OVER_TIME.map((point) => (
-              <span key={point.label}>{point.label}</span>
-            ))}
-          </div>
+          <p className="mt-6 text-sm text-muted-foreground">
+            {analytics
+              ? `₹${formatInr(budget.remaining)} remaining of ₹${formatInr(budget.allocated)} allocated.`
+              : "Spend trends will appear once campaigns are funded and payouts are released."}
+          </p>
         </section>
 
         <section className={cn(glassCardClassName, "p-5 sm:p-6")}>
           <h2 className="text-sm font-semibold text-foreground">Creator funnel</h2>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            From brief view to paid winner
+            From application to qualified submission
           </p>
-          <ul className="mt-5 space-y-3">
-            {CREATOR_FUNNEL.map((stage, index) => (
-              <li key={stage.stage}>
-                <div className="flex items-center justify-between gap-2 text-xs">
-                  <span className="font-medium text-foreground">{stage.stage}</span>
-                  <span className="tabular-nums text-muted-foreground">
-                    {formatInr(stage.count)}
-                  </span>
-                </div>
-                <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-muted">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-brand-subtle to-brand transition-all"
-                    style={{ width: `${stage.pct}%` }}
-                  />
-                </div>
-                {index < CREATOR_FUNNEL.length - 1 ? (
-                  <p className="mt-1 text-[10px] text-muted-foreground">
-                    {Math.round((CREATOR_FUNNEL[index + 1].count / stage.count) * 100)}% convert
-                    to next step
-                  </p>
-                ) : null}
-              </li>
-            ))}
-          </ul>
+          {funnel.length === 0 ? (
+            <p className="mt-5 text-sm text-muted-foreground">No funnel data yet.</p>
+          ) : (
+            <ul className="mt-5 space-y-3">
+              {funnel.map((stage, index) => (
+                <li key={stage.stage}>
+                  <div className="flex items-center justify-between gap-2 text-xs">
+                    <span className="font-medium text-foreground">{stage.stage}</span>
+                    <span className="tabular-nums text-muted-foreground">
+                      {formatInr(stage.count)}
+                    </span>
+                  </div>
+                  <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-muted">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-brand-subtle to-brand transition-all"
+                      style={{ width: `${stage.pct}%` }}
+                    />
+                  </div>
+                  {index < funnel.length - 1 && stage.count > 0 ? (
+                    <p className="mt-1 text-[10px] text-muted-foreground">
+                      {Math.round((funnel[index + 1].count / stage.count) * 100)}% convert to
+                      next step
+                    </p>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       </div>
 
@@ -348,66 +380,50 @@ export function BrandAnalyticsView() {
         <section className={cn(glassCardClassName, "p-5 sm:p-6 lg:col-span-2")}>
           <div className="flex items-center justify-between gap-2">
             <div>
-              <h2 className="text-sm font-semibold text-foreground">Campaign performance</h2>
+              <h2 className="text-sm font-semibold text-foreground">Engagement overview</h2>
               <p className="mt-0.5 text-xs text-muted-foreground">
-                Spend, submissions, and efficiency by listing
+                Views, likes, and comments across submissions
               </p>
             </div>
             <MousePointerClick className="size-4 text-muted-foreground" />
           </div>
-          <div className="mt-4 overflow-x-auto">
-            <table className="w-full min-w-[640px] text-left text-sm">
-              <thead>
-                <tr className="border-b border-border/60 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                  <th className="pb-3 pr-4">Campaign</th>
-                  <th className="pb-3 pr-4">Status</th>
-                  <th className="pb-3 pr-4">Spend</th>
-                  <th className="pb-3 pr-4">Subs</th>
-                  <th className="pb-3 pr-4">Qualified</th>
-                  <th className="pb-3 pr-4">Engagement</th>
-                  <th className="pb-3">CPA</th>
-                </tr>
-              </thead>
-              <tbody>
-                {CAMPAIGN_PERFORMANCE.map((row) => (
-                  <tr
-                    key={row.id}
-                    className="border-b border-border/40 last:border-0 hover:bg-muted/30"
-                  >
-                    <td className="py-3 pr-4">
-                      <Link
-                        href={`/dashboard/brand/campaigns/${row.id}`}
-                        className="font-medium text-foreground hover:text-brand hover:underline"
-                      >
-                        {row.title}
-                      </Link>
-                      <p className="text-[11px] capitalize text-muted-foreground">{row.type}</p>
-                    </td>
-                    <td className="py-3 pr-4">
-                      <span
-                        className={cn(
-                          "inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium",
-                          statusClass(row.status)
-                        )}
-                      >
-                        {statusLabel(row.status)}
-                      </span>
-                    </td>
-                    <td className="py-3 pr-4 tabular-nums">₹{formatInr(row.spend)}</td>
-                    <td className="py-3 pr-4 tabular-nums">{row.submissions}</td>
-                    <td className="py-3 pr-4 tabular-nums">{row.qualified}</td>
-                    <td className="py-3 pr-4 tabular-nums">{row.engagement.toFixed(1)}%</td>
-                    <td className="py-3 tabular-nums">₹{formatInr(row.cpa)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          {analytics ? (
+            <dl className="mt-5 grid gap-4 sm:grid-cols-2">
+              <div>
+                <dt className="text-xs text-muted-foreground">Total views</dt>
+                <dd className="mt-1 text-xl font-semibold tabular-nums">
+                  {formatInr(analytics.engagement.totalViews)}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted-foreground">Total likes</dt>
+                <dd className="mt-1 text-xl font-semibold tabular-nums">
+                  {formatInr(analytics.engagement.totalLikes)}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted-foreground">Total comments</dt>
+                <dd className="mt-1 text-xl font-semibold tabular-nums">
+                  {formatInr(analytics.engagement.totalComments)}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted-foreground">Avg. engagement score</dt>
+                <dd className="mt-1 text-xl font-semibold tabular-nums">
+                  {analytics.engagement.averageEngagementScore.toFixed(1)}
+                </dd>
+              </div>
+            </dl>
+          ) : (
+            <p className="mt-5 text-sm text-muted-foreground">
+              Engagement metrics will appear once creators submit to your campaigns.
+            </p>
+          )}
         </section>
 
         <section className={cn(glassCardClassName, "p-5 sm:p-6")}>
           <h2 className="text-sm font-semibold text-foreground">Budget utilization</h2>
-          <p className="mt-0.5 text-xs text-muted-foreground">Allocated vs spent this quarter</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">Allocated vs released spend</p>
           <div className="mt-6">
             <div className="flex items-end justify-between">
               <p className="text-3xl font-semibold tabular-nums">{utilizationPct}%</p>
@@ -434,99 +450,6 @@ export function BrandAnalyticsView() {
           </div>
         </section>
       </div>
-
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <section className={cn(glassCardClassName, "p-5 sm:p-6")}>
-          <div className="flex items-center gap-2">
-            <Eye className="size-4 text-brand" />
-            <h2 className="text-sm font-semibold text-foreground">Content channels</h2>
-          </div>
-          <p className="mt-0.5 text-xs text-muted-foreground">Where creators publish for you</p>
-          <ul className="mt-5 space-y-4">
-            {CHANNEL_MIX.map((channel) => (
-              <li key={channel.channel}>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-foreground">{channel.channel}</span>
-                  <span className="font-medium tabular-nums">{channel.pct}%</span>
-                </div>
-                <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-muted">
-                  <div
-                    className="h-full rounded-full"
-                    style={{ width: `${channel.pct}%`, backgroundColor: channel.color }}
-                  />
-                </div>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section className={cn(glassCardClassName, "p-5 sm:p-6")}>
-          <div className="flex items-center gap-2">
-            <TrendingUp className="size-4 text-emerald-600" />
-            <h2 className="text-sm font-semibold text-foreground">Engagement trend</h2>
-          </div>
-          <p className="mt-0.5 text-xs text-muted-foreground">Average rate over recent weeks</p>
-          <p className="mt-4 text-2xl font-semibold tabular-nums">
-            {ENGAGEMENT_WEEKLY[ENGAGEMENT_WEEKLY.length - 1].value}%
-          </p>
-          <TrendBadge value={0.6} label="vs last week" />
-          <div className="mt-4">
-            <MiniSparkline data={ENGAGEMENT_WEEKLY} />
-          </div>
-        </section>
-
-        <section className={cn(glassCardClassName, "p-5 sm:p-6")}>
-          <div className="flex items-center gap-2">
-            <Users className="size-4 text-brand" />
-            <h2 className="text-sm font-semibold text-foreground">Niche mix</h2>
-          </div>
-          <p className="mt-0.5 text-xs text-muted-foreground">Creator categories in your briefs</p>
-          <ul className="mt-5 space-y-3">
-            {NICHE_BREAKDOWN.map((item) => (
-              <li key={item.niche} className="flex items-center gap-3">
-                <span className="w-16 text-xs text-muted-foreground">{item.niche}</span>
-                <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-brand-subtle to-brand"
-                    style={{ width: `${item.pct}%` }}
-                  />
-                </div>
-                <span className="w-8 text-right text-xs font-medium tabular-nums">{item.pct}%</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      </div>
-
-      <section className={cn(glassCardClassName, "p-5 sm:p-6")}>
-        <div className="flex items-center justify-between gap-2">
-          <div>
-            <h2 className="text-sm font-semibold text-foreground">Top performing creators</h2>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              Highest engagement and earnings on your campaigns
-            </p>
-          </div>
-        </div>
-        <ul className="mt-5 divide-y divide-border/60">
-          {TOP_CREATORS.map((creator, index) => (
-            <li key={creator.name} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
-              <span className="w-5 text-xs font-semibold tabular-nums text-muted-foreground">
-                {index + 1}
-              </span>
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-muted text-xs font-semibold text-brand">
-                {creator.initials}
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-foreground">{creator.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {creator.campaigns} campaigns · {creator.engagement} engagement
-                </p>
-              </div>
-              <RewardAmount amount={creator.earned} size="sm" className="shrink-0" />
-            </li>
-          ))}
-        </ul>
-      </section>
     </div>
   )
 }
