@@ -6,7 +6,7 @@ import { prisma } from "../../lib/prisma"
 import { encryptSecret } from "../../lib/secrets"
 import type { SigninInput, SignupInput } from "./auth.schemas"
 import type { GoogleProfile, InstagramProfile, SupabaseGoogleProfile } from "./oauth"
-import { signSession, type SessionUser } from "./session"
+import { createSessionTokens, type SessionUser, type SessionTokens } from "./session"
 
 const passwordCost = 12
 
@@ -29,14 +29,14 @@ export function publicUser(user: UserWithProfiles) {
   }
 }
 
-async function issueSession(user: Pick<User, "id" | "role" | "email">) {
+async function issueSession(user: Pick<User, "id" | "role" | "email">): Promise<SessionTokens> {
   const sessionUser: SessionUser = {
     id: user.id,
     role: user.role,
     email: user.email,
   }
 
-  return signSession(sessionUser)
+  return createSessionTokens(sessionUser)
 }
 
 function isUniqueViolation(error: unknown) {
@@ -85,7 +85,7 @@ export async function signup(input: SignupInput) {
 
     return {
       user: publicUser(user),
-      token: await issueSession(user),
+      tokens: await issueSession(user),
     }
   } catch (error) {
     if (isUniqueViolation(error)) {
@@ -127,7 +127,7 @@ export async function signin(input: SigninInput) {
 
   return {
     user: publicUser(updated),
-    token: await issueSession(updated),
+    tokens: await issueSession(updated),
   }
 }
 
@@ -144,6 +144,24 @@ export async function getCurrentUser(userId: string) {
   assertActive(user)
 
   return publicUser(user)
+}
+
+export async function refreshSession(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: {
+      creatorProfile: true,
+      brandProfile: true,
+    },
+  })
+
+  if (!user) throw unauthorized()
+  assertActive(user)
+
+  return {
+    user: publicUser(user),
+    tokens: await issueSession(user),
+  }
 }
 
 async function upsertOAuthAccount(input: {
@@ -302,7 +320,7 @@ export async function completeGoogleOAuth(input: {
 
   return {
     user: publicUser(updated),
-    token: await issueSession(updated),
+    tokens: await issueSession(updated),
   }
 }
 
@@ -383,7 +401,7 @@ export async function completeSupabaseOAuth(input: {
 
   return {
     user: publicUser(updated),
-    token: await issueSession(updated),
+    tokens: await issueSession(updated),
   }
 }
 
@@ -468,6 +486,6 @@ export async function completeInstagramOAuth(input: {
 
   return {
     user: publicUser(updated),
-    token: await issueSession(updated),
+    tokens: await issueSession(updated),
   }
 }

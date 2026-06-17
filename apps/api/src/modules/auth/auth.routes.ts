@@ -1,6 +1,6 @@
 import { Router } from "express"
 
-import { getEnv } from "../../lib/env"
+import { getEnv, getRefreshCookieName } from "../../lib/env"
 import { badRequest } from "../../lib/http-error"
 import { asyncRoute } from "../../middleware/async-route"
 import { requireAuth } from "../../middleware/auth"
@@ -18,6 +18,7 @@ import {
   completeInstagramOAuth,
   completeSupabaseOAuth,
   getCurrentUser,
+  refreshSession,
   signin,
   signup,
 } from "./auth.service"
@@ -31,9 +32,10 @@ import {
   getInstagramAuthorizationUrl,
 } from "./oauth"
 import {
-  clearSessionCookie,
+  clearSessionCookies,
   getOptionalSession,
-  setSessionCookie,
+  setSessionCookies,
+  verifyRefreshToken,
 } from "./session"
 
 export const authRoutes = Router()
@@ -49,7 +51,7 @@ authRoutes.post(
   validateBody(signupSchema),
   asyncRoute(async (req, res) => {
     const result = await signup(req.body)
-    setSessionCookie(res, result.token)
+    setSessionCookies(res, result.tokens)
     res.status(201).json({ user: result.user })
   })
 )
@@ -60,15 +62,34 @@ authRoutes.post(
   validateBody(signinSchema),
   asyncRoute(async (req, res) => {
     const result = await signin(req.body)
-    setSessionCookie(res, result.token)
+    setSessionCookies(res, result.tokens)
     res.json({ user: result.user })
   })
 )
 
 authRoutes.post("/signout", (_req, res) => {
-  clearSessionCookie(res)
+  clearSessionCookies(res)
   res.status(204).send()
 })
+
+authRoutes.post(
+  "/refresh",
+  authRateLimit,
+  asyncRoute(async (req, res) => {
+    const env = getEnv()
+    const refreshToken = req.cookies?.[getRefreshCookieName(env)]
+    if (!refreshToken) {
+      clearSessionCookies(res)
+      res.status(401).json({ error: "Session expired.", code: "unauthorized" })
+      return
+    }
+
+    const { userId } = await verifyRefreshToken(refreshToken)
+    const result = await refreshSession(userId)
+    setSessionCookies(res, result.tokens)
+    res.json({ user: result.user })
+  })
+)
 
 authRoutes.get(
   "/me",
@@ -98,7 +119,7 @@ authRoutes.post(
       linkUserId: session?.id,
     })
 
-    setSessionCookie(res, result.token)
+    setSessionCookies(res, result.tokens)
     res.json({ user: result.user })
   })
 )
@@ -138,7 +159,7 @@ authRoutes.get(
       linkUserId: state.userId,
     })
 
-    setSessionCookie(res, result.token)
+    setSessionCookies(res, result.tokens)
     res.redirect(redirectAfterOAuth(state.redirectTo))
   })
 )
@@ -178,7 +199,7 @@ authRoutes.get(
       linkUserId: state.userId,
     })
 
-    setSessionCookie(res, result.token)
+    setSessionCookies(res, result.tokens)
     res.redirect(redirectAfterOAuth(state.redirectTo))
   })
 )
