@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google"
 
+import { QueryProvider } from "@/components/query-provider"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ThemeScript } from "@/components/theme-script"
 import { SiteFooter } from "@/components/landing/footer"
@@ -50,12 +51,14 @@ export default function RootLayout({
         <ThemeScript />
       </head>
       <body className="min-h-full bg-background text-foreground">
-        <ThemeProvider>
-          <div className="flex min-h-full flex-col">
-            {children}
-            <SiteFooter />
-          </div>
-        </ThemeProvider>
+        <QueryProvider>
+          <ThemeProvider>
+            <div className="flex min-h-full flex-col">
+              {children}
+              <SiteFooter />
+            </div>
+          </ThemeProvider>
+        </QueryProvider>
       </body>
     </html>
   )
