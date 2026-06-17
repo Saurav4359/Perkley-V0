@@ -2,6 +2,10 @@ import type { ApplicationStatus, CampaignApplication, Prisma } from "@prisma/cli
 
 import { badRequest, conflict, forbidden, notFound, unauthorized } from "../../lib/http-error"
 import { prisma } from "../../lib/prisma"
+import {
+  notifyApplicationAcceptedForCampaign,
+  runNotificationSideEffect,
+} from "../notifications/notification.publisher"
 import type { ApplyToCampaignInput } from "./application.schemas"
 import {
   canAcceptApplication,
@@ -237,6 +241,10 @@ export async function applyToCampaign(
     },
   })
 
+  if (status === "accepted") {
+    runNotificationSideEffect(notifyApplicationAcceptedForCampaign(campaignId, creatorId))
+  }
+
   return serializeApplication(application)
 }
 
@@ -388,6 +396,8 @@ export async function acceptApplication(
       },
     },
   })
+
+  runNotificationSideEffect(notifyApplicationAcceptedForCampaign(campaignId, updated.creatorId))
 
   return serializeApplication(updated)
 }

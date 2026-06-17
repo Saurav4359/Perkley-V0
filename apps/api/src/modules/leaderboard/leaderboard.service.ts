@@ -3,6 +3,10 @@ import type { CampaignStatus } from "@prisma/client"
 import { badRequest, notFound } from "../../lib/http-error"
 import { prisma } from "../../lib/prisma"
 import {
+  notifyWinnerAnnounced,
+  runNotificationSideEffect,
+} from "../notifications/notification.publisher"
+import {
   buildPrizeTiers,
   canGenerateLeaderboard,
   canSelectWinners,
@@ -207,6 +211,17 @@ export async function selectCampaignWinners(brandId: string, campaignId: string)
       prizeAmount: entry.prizeAmount,
       status: "won" as const,
     }))
+
+  for (const winner of winners) {
+    runNotificationSideEffect(
+      notifyWinnerAnnounced({
+        creatorId: winner.creatorId,
+        campaignId,
+        campaignTitle: campaign.title,
+        prizeAmount: winner.prizeAmount,
+      })
+    )
+  }
 
   return {
     campaignId,

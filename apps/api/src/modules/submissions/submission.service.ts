@@ -2,6 +2,10 @@ import type { CampaignSubmission, Prisma, SubmissionStatus } from "@prisma/clien
 
 import { badRequest, conflict, forbidden, notFound, unauthorized } from "../../lib/http-error"
 import { prisma } from "../../lib/prisma"
+import {
+  notifySubmissionReviewed,
+  runNotificationSideEffect,
+} from "../notifications/notification.publisher"
 import type {
   CreateSubmissionInput,
   RejectSubmissionInput,
@@ -454,10 +458,17 @@ export async function approveSubmission(
     include: submissionInclude,
   })
 
+  runNotificationSideEffect(
+    notifySubmissionReviewed({
+      creatorId: updated.creatorId,
+      campaignId,
+      campaignTitle: updated.campaign.title,
+      approved: true,
+    })
+  )
+
   return serializeSubmission(updated)
 }
-
-export async function rejectSubmission(
   brandId: string,
   campaignId: string,
   submissionId: string,
@@ -486,6 +497,15 @@ export async function rejectSubmission(
     },
     include: submissionInclude,
   })
+
+  runNotificationSideEffect(
+    notifySubmissionReviewed({
+      creatorId: updated.creatorId,
+      campaignId,
+      campaignTitle: updated.campaign.title,
+      approved: false,
+    })
+  )
 
   return serializeSubmission(updated)
 }

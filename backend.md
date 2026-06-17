@@ -19,16 +19,16 @@ This file is the source of truth for backend scope, status, and acceptance crite
 | Submissions | 5 | 1 | 0 |
 | Leaderboard | 3 | 0 | 0 |
 | Dashboard | 4 | 0 | 0 |
-| Notifications | 0 | 0 | 5 |
+| Notifications | 5 | 0 | 0 |
 | Payments | 0 | 0 | 4 |
 | Analytics | 0 | 0 | 4 |
 | Admin | 0 | 0 | 6 |
 | Background jobs | 0 | 0 | 4 |
 | Future | 0 | 0 | 6 |
 
-**Estimated completion:** ~56% of the full product backend (Steps 1–8 done locally; Steps 9–13 not started).
+**Estimated completion:** ~62% of the full product backend (Steps 1–9 done locally; Steps 10–13 not started).
 
-Last audited: 2026-06-17 (Step 8 dashboard)
+Last audited: 2026-06-17 (Step 9 notifications)
 
 ## Feature Status Matrix
 
@@ -142,11 +142,11 @@ Also done: `GET /api/dashboard/creator/search`, `GET /api/dashboard/brand/search
 
 | Feature | Status | Notes |
 | --- | --- | --- |
-| New Campaign | Not started | Step 9 |
-| Application Accepted | Not started | Step 9 |
-| Submission Reviewed | Not started | Step 9 |
-| Winner Announced | Not started | Step 9 |
-| Payment Released | Not started | Step 9 |
+| New Campaign | Done | Fan-out to creators matching niche on publish |
+| Application Accepted | Done | Bounty auto-accept + brand accept |
+| Submission Reviewed | Done | Approve/reject submission |
+| Winner Announced | Done | Winner selection on bounty leaderboard |
+| Payment Released | Partial | Publisher stub ready; wired in Step 10 |
 
 ### Payments
 
@@ -756,9 +756,51 @@ Status: Done for local backend foundation
 - Connect frontend dashboard shell, search, and analytics cards to these APIs.
 - Richer earnings totals after payments land in Step 10.
 
+## Step 9: Notifications
+
+Status: Done for local backend foundation
+
+### Goals
+
+- Persist in-app notifications per user with read/unread state.
+- Emit notifications when campaigns publish, applications are accepted, submissions are reviewed, and bounty winners are selected.
+- Expose list, unread count, mark-read, and mark-all-read APIs aligned with dashboard notification kinds.
+
+### Endpoints
+
+| Method | Path | Status | RBAC | Notes |
+| --- | --- | --- | --- | --- |
+| GET | `/api/notifications` | Done | Authenticated | `limit`, `unreadOnly` query params |
+| GET | `/api/notifications/unread-count` | Done | Authenticated | Unread badge count |
+| POST | `/api/notifications/:id/read` | Done | Authenticated | Mark one notification read |
+| POST | `/api/notifications/read-all` | Done | Authenticated | Mark all notifications read |
+
+### Event Triggers
+
+| Event | Type | Recipients |
+| --- | --- | --- |
+| Campaign published | `new_campaign` | Creators with matching niche |
+| Application accepted | `application_accepted` | Creator (bounty auto-accept or brand accept) |
+| Submission approved/rejected | `submission_reviewed` | Creator |
+| Bounty winners selected | `winner_announced` | Each winning creator |
+| Payment released | `payment_released` | Creator (publisher ready; Step 10 wires payout) |
+
+### Response Shape
+
+- `title`, `description` (body), `kind` (maps to frontend: `new`, `qualified`, `review`, `payout`), `href`, `read`, `createdAt`
+
+### Tests
+
+- Notification copy builders and type-to-kind mapping
+
+### Remaining In Step 9
+
+- DB-backed integration tests for notification routes and publish fan-out.
+- Connect frontend notification bell and list to these APIs.
+- Wire `notifyPaymentReleased` from payments module in Step 10.
+
 ## Future Steps
 
-- Step 9: Notifications (campaign, application, submission, winner, payment)
 - Step 10: Payments and escrow
 - Step 11: Analytics and Instagram metrics sync
 - Step 12: Admin (users, brands, creators, campaigns, payments, reports)

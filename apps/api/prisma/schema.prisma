@@ -90,6 +90,14 @@ enum SubmissionStatus {
   rejected
 }
 
+enum NotificationType {
+  new_campaign
+  application_accepted
+  submission_reviewed
+  winner_announced
+  payment_released
+}
+
 model User {
   id            String     @id @default(uuid()) @db.Uuid
   email         String?    @unique
@@ -111,6 +119,7 @@ model User {
   reviewedApplications CampaignApplication[] @relation("ReviewedApplications")
   submissions    CampaignSubmission[] @relation("CreatorSubmissions")
   reviewedSubmissions CampaignSubmission[] @relation("ReviewedSubmissions")
+  notifications Notification[]
 
   @@index([role])
   @@map("users")
@@ -355,4 +364,23 @@ model OAuthState {
   user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("oauth_states")
+}
+
+model Notification {
+  id        String           @id @default(uuid()) @db.Uuid
+  userId    String           @map("user_id") @db.Uuid
+  type      NotificationType
+  title     String
+  body      String
+  href      String?
+  metadata  Json             @default("{}")
+  readAt    DateTime?        @map("read_at") @db.Timestamptz(6)
+  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
+  @@map("notifications")
 }

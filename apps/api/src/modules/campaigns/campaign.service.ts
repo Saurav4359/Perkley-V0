@@ -2,6 +2,10 @@ import type { Campaign, CampaignStatus, Prisma } from "@prisma/client"
 
 import { badRequest, forbidden, notFound, unauthorized } from "../../lib/http-error"
 import { prisma } from "../../lib/prisma"
+import {
+  notifyNewCampaignPublished,
+  runNotificationSideEffect,
+} from "../notifications/notification.publisher"
 import type { CreateCampaignInput, UpdateCampaignInput } from "./campaign.schemas"
 import {
   canArchiveCampaign,
@@ -333,6 +337,8 @@ export async function publishCampaign(userId: string, campaignId: string) {
       },
     },
   })
+
+  runNotificationSideEffect(notifyNewCampaignPublished(campaignId))
 
   return serializeCampaign(updated)
 }
