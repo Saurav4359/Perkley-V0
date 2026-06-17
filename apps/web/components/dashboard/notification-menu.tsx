@@ -6,10 +6,7 @@ import { Bell } from "lucide-react"
 
 import { NotificationItemRow } from "@/components/dashboard/notification-item"
 import { useNotifications } from "@/hooks/use-notifications"
-import {
-  getNotificationsHref,
-  markNotificationReadAndNotify,
-} from "@/lib/dashboard/notifications"
+import { getNotificationsHref } from "@/lib/dashboard/notifications"
 import { cn } from "@/lib/utils"
 
 const PREVIEW_COUNT = 5
@@ -21,7 +18,7 @@ type NotificationMenuProps = {
 export function NotificationMenu({ role }: NotificationMenuProps) {
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
-  const { items, unreadCount } = useNotifications(role)
+  const { items, unreadCount, markRead } = useNotifications()
   const previewItems = items.slice(0, PREVIEW_COUNT)
   const viewAllHref = getNotificationsHref(role)
 
@@ -50,7 +47,7 @@ export function NotificationMenu({ role }: NotificationMenuProps) {
   }, [open])
 
   function handleSelect(id: string) {
-    markNotificationReadAndNotify(id)
+    markRead(id)
     setOpen(false)
   }
 

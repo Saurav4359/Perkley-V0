@@ -3,21 +3,16 @@
 import { NotificationItemRow } from "@/components/dashboard/notification-item"
 import { Button } from "@/components/ui/button"
 import { useNotifications } from "@/hooks/use-notifications"
-import {
-  markAllNotificationsReadAndNotify,
-  markNotificationReadAndNotify,
-} from "@/lib/dashboard/notifications"
 
 type NotificationsViewProps = {
   role: "creator" | "brand"
 }
 
 export function NotificationsView({ role }: NotificationsViewProps) {
-  const { items, unreadCount, refresh } = useNotifications(role)
+  const { items, unreadCount, markRead, markAllRead } = useNotifications()
 
   function handleMarkAllRead() {
-    markAllNotificationsReadAndNotify(role)
-    refresh()
+    markAllRead()
   }
 
   return (
@@ -54,10 +49,7 @@ export function NotificationsView({ role }: NotificationsViewProps) {
               <NotificationItemRow
                 key={item.id}
                 item={item}
-                onSelect={() => {
-                  markNotificationReadAndNotify(item.id)
-                  refresh()
-                }}
+                onSelect={() => markRead(item.id)}
               />
             ))}
           </div>
