@@ -7,7 +7,6 @@ import { InrIcon } from "@/components/dashboard/inr-icon"
 import { ListingCard } from "@/components/dashboard/listing-card"
 import { usePublicCampaigns } from "@/hooks/use-campaigns"
 import { apiCampaignToFeedItem } from "@/lib/dashboard/campaign-adapter"
-import type { Campaign } from "@/lib/dashboard/mock-data"
 import { cn } from "@/lib/utils"
 
 type FeedFilter =
@@ -31,18 +30,15 @@ const FILTERS: { id: FeedFilter; label: string; icon?: ReactNode }[] = [
   { id: "campaign", label: "Campaigns", icon: <Circle className="size-3.5" /> },
 ]
 
-type CampaignFeedProps = {
-  /** Fallback campaigns shown while the live feed is loading. */
-  campaigns?: Campaign[]
-}
+type CampaignFeedProps = Record<string, never>
 
-export function CampaignFeed({ campaigns = [] }: CampaignFeedProps) {
+export function CampaignFeed(_props?: CampaignFeedProps) {
   const [filter, setFilter] = useState<FeedFilter>("all")
   const { data, isLoading } = usePublicCampaigns()
 
   const source = useMemo(
-    () => (data ? data.map(apiCampaignToFeedItem) : campaigns),
-    [data, campaigns]
+    () => (data ? data.map(apiCampaignToFeedItem) : []),
+    [data]
   )
 
   const filtered = useMemo(() => {

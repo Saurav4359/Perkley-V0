@@ -1,4 +1,4 @@
-import type { BrandCampaign, Campaign } from "@/lib/dashboard/mock-data"
+import type { BrandCampaign, Campaign } from "@/lib/dashboard/feed-types"
 import { LISTINGS } from "@/lib/dashboard/listings-data"
 import type { Listing } from "@/lib/dashboard/types"
 import { formatInr } from "@/lib/dashboard/utils"

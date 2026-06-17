@@ -3,8 +3,8 @@ import type {
   ApiCampaignStatus,
 } from "@/lib/api/campaigns"
 import type { ListingDetail } from "@/lib/dashboard/campaign-details"
-import type { BrandCampaign, Campaign } from "@/lib/dashboard/mock-data"
-import type { BrandCampaignStatus } from "@/lib/dashboard/mock-data"
+import type { BrandCampaign, Campaign } from "@/lib/dashboard/feed-types"
+import type { BrandCampaignStatus } from "@/lib/dashboard/feed-types"
 import type { Listing, ListingStatus } from "@/lib/dashboard/types"
 import { daysUntil, formatInr } from "@/lib/dashboard/utils"
 

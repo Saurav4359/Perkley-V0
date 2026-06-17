@@ -2,7 +2,7 @@ import Link from "next/link"
 import { ArrowRight, BadgeCheck, Flame } from "lucide-react"
 
 import { buttonVariants } from "@/components/ui/button"
-import type { BrandCampaign, Campaign } from "@/lib/dashboard/mock-data"
+import type { BrandCampaign, Campaign } from "@/lib/dashboard/feed-types"
 import { LISTING_TYPE_COPY } from "@/lib/dashboard/types"
 import { cn } from "@/lib/utils"
 

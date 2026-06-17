@@ -6,11 +6,7 @@ import { Filter } from "lucide-react"
 import { ListingCard } from "@/components/dashboard/listing-card"
 import { useMyCampaigns } from "@/hooks/use-campaigns"
 import { apiCampaignToBrandItem } from "@/lib/dashboard/campaign-adapter"
-import {
-  CAMPAIGN_CATEGORIES,
-  type BrandCampaign,
-  type CampaignCategory,
-} from "@/lib/dashboard/mock-data"
+import { CAMPAIGN_CATEGORIES, type CampaignCategory } from "@/lib/dashboard/feed-types"
 import { cn } from "@/lib/utils"
 
 const STATUS_FILTERS = [
@@ -27,20 +23,17 @@ const glassControlClass =
 const activeGlassControlClass =
   "border-white/60 bg-white/55 text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.82),0_12px_28px_rgba(15,23,42,0.10)] ring-1 ring-black/[0.04] backdrop-blur-xl dark:border-white/20 dark:bg-white/15 dark:text-foreground dark:ring-white/[0.04]"
 
-type BrandCampaignListProps = {
-  /** Fallback campaigns shown while the brand's live listings load. */
-  campaigns?: BrandCampaign[]
-}
+type BrandCampaignListProps = Record<string, never>
 
-export function BrandCampaignList({ campaigns = [] }: BrandCampaignListProps) {
+export function BrandCampaignList(_props?: BrandCampaignListProps) {
   const [status, setStatus] = useState<(typeof STATUS_FILTERS)[number]["id"]>("all")
   const [feedType, setFeedType] = useState<"all" | "bounty" | "campaign">("all")
   const [niche, setNiche] = useState<CampaignCategory | "all">("all")
   const { data, isLoading } = useMyCampaigns()
 
   const source = useMemo(
-    () => (data ? data.map(apiCampaignToBrandItem) : campaigns),
-    [data, campaigns]
+    () => (data ? data.map(apiCampaignToBrandItem) : []),
+    [data]
   )
 
   const filtered = useMemo(() => {
