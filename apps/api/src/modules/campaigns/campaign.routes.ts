@@ -3,6 +3,8 @@ import { Router } from "express"
 import { asyncRoute } from "../../middleware/async-route"
 import { optionalAuth, requireAuth, requireRoles } from "../../middleware/auth"
 import { validateBody } from "../../middleware/validate"
+import { campaignApplicationRoutes } from "../applications/application.routes"
+import { campaignSubmissionRoutes } from "../submissions/submission.routes"
 import {
   archiveCampaign,
   createCampaign,
@@ -40,6 +42,9 @@ campaignRoutes.get(
     res.json({ campaigns: await listMyCampaigns(req.auth!.id, query.status) })
   })
 )
+
+campaignRoutes.use("/:id", campaignApplicationRoutes)
+campaignRoutes.use("/:id", campaignSubmissionRoutes)
 
 campaignRoutes.get(
   "/:id",

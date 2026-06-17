@@ -5,6 +5,10 @@ import { requireAuth, requireRoles } from "../../middleware/auth"
 import { validateBody } from "../../middleware/validate"
 import { attachAssetSchema, assetIdParamSchema } from "../uploads/upload.schemas"
 import { attachBrandLogo, attachCreatorAvatar, attachPortfolioImage } from "../uploads/upload.service"
+import { listCreatorApplications } from "../applications/application.service"
+import { creatorApplicationsQuerySchema } from "../applications/application.schemas"
+import { listCreatorSubmissions } from "../submissions/submission.service"
+import { creatorSubmissionsQuerySchema } from "../submissions/submission.schemas"
 import {
   createPortfolioItemSchema,
   updateBrandProfileSchema,
@@ -26,6 +30,22 @@ export const creatorProfileRoutes = Router()
 export const brandProfileRoutes = Router()
 
 creatorProfileRoutes.use(requireAuth, requireRoles("creator"))
+
+creatorProfileRoutes.get(
+  "/applications",
+  asyncRoute(async (req, res) => {
+    const query = creatorApplicationsQuerySchema.parse(req.query)
+    res.json({ applications: await listCreatorApplications(req.auth!.id, query.status) })
+  })
+)
+
+creatorProfileRoutes.get(
+  "/submissions",
+  asyncRoute(async (req, res) => {
+    const query = creatorSubmissionsQuerySchema.parse(req.query)
+    res.json({ submissions: await listCreatorSubmissions(req.auth!.id, query.status) })
+  })
+)
 
 creatorProfileRoutes.get(
   "/profile",

@@ -72,6 +72,24 @@ enum ContentType {
   story
 }
 
+enum ApplicationStatus {
+  pending
+  accepted
+  rejected
+  withdrawn
+}
+
+enum SubmissionStatus {
+  submitted
+  competing
+  under_review
+  qualified
+  won
+  paid
+  not_qualified
+  rejected
+}
+
 model User {
   id            String     @id @default(uuid()) @db.Uuid
   email         String?    @unique
@@ -89,6 +107,10 @@ model User {
   oauthStates    OAuthState[]
   mediaAssets    MediaAsset[]
   campaigns      Campaign[]
+  applications   CampaignApplication[] @relation("CreatorApplications")
+  reviewedApplications CampaignApplication[] @relation("ReviewedApplications")
+  submissions    CampaignSubmission[] @relation("CreatorSubmissions")
+  reviewedSubmissions CampaignSubmission[] @relation("ReviewedSubmissions")
 
   @@index([role])
   @@map("users")
@@ -213,10 +235,66 @@ model Campaign {
   updatedAt         DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   brand User @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  applications CampaignApplication[]
+  submissions CampaignSubmission[]
 
   @@index([brandId, status])
   @@index([status, deadline])
   @@map("campaigns")
+}
+
+model CampaignApplication {
+  id          String            @id @default(uuid()) @db.Uuid
+  campaignId  String            @map("campaign_id") @db.Uuid
+  creatorId   String            @map("creator_id") @db.Uuid
+  status      ApplicationStatus @default(pending)
+  message     String?
+  reviewedAt  DateTime?         @map("reviewed_at") @db.Timestamptz(6)
+  reviewedBy  String?           @map("reviewed_by") @db.Uuid
+  createdAt   DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  creator  User     @relation("CreatorApplications", fields: [creatorId], references: [id], onDelete: Cascade)
+  reviewer User?    @relation("ReviewedApplications", fields: [reviewedBy], references: [id], onDelete: SetNull)
+  submission CampaignSubmission?
+
+  @@unique([campaignId, creatorId])
+  @@index([campaignId, status])
+  @@index([creatorId, status])
+  @@map("campaign_applications")
+}
+
+model CampaignSubmission {
+  id               String           @id @default(uuid()) @db.Uuid
+  applicationId    String           @unique @map("application_id") @db.Uuid
+  campaignId       String           @map("campaign_id") @db.Uuid
+  creatorId        String           @map("creator_id") @db.Uuid
+  postUrl          String           @map("post_url")
+  note             String?
+  platform         Platform         @default(instagram)
+  platformMediaId  String?          @map("platform_media_id")
+  status           SubmissionStatus @default(submitted)
+  validationResult Json             @default("{}") @map("validation_result")
+  views            Int              @default(0)
+  likes            Int              @default(0)
+  comments         Int              @default(0)
+  engagementScore  Int              @default(0) @map("engagement_score")
+  rejectionReason  String?          @map("rejection_reason")
+  validatedAt      DateTime?        @map("validated_at") @db.Timestamptz(6)
+  reviewedAt       DateTime?        @map("reviewed_at") @db.Timestamptz(6)
+  reviewedBy       String?          @map("reviewed_by") @db.Uuid
+  createdAt        DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  application CampaignApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  campaign    Campaign            @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  creator     User                @relation("CreatorSubmissions", fields: [creatorId], references: [id], onDelete: Cascade)
+  reviewer    User?               @relation("ReviewedSubmissions", fields: [reviewedBy], references: [id], onDelete: SetNull)
+
+  @@index([campaignId, status])
+  @@index([creatorId, status])
+  @@map("campaign_submissions")
 }
 
 model MediaAsset {
