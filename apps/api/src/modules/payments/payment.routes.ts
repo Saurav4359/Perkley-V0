@@ -15,10 +15,14 @@ import { confirmEscrowSchema, releasePaymentsSchema } from "./payment.schemas"
 
 export const campaignPaymentRoutes = Router({ mergeParams: true })
 
-campaignPaymentRoutes.use(requireAuth, requireRoles("brand"))
+// NOTE: auth is applied per-route (not router-level). This router is mounted on
+// the shared "/:id" path alongside the public GET /:id detail route, so a
+// router-level requireAuth would also intercept (and 401) that public request.
+const brandOnly = [requireAuth, requireRoles("brand")]
 
 campaignPaymentRoutes.get(
   "/escrow",
+  brandOnly,
   asyncRoute(async (req, res) => {
     const { id } = campaignIdParamSchema.parse(req.params)
     res.json(await getCampaignEscrow(req.auth!.id, id))
@@ -27,6 +31,7 @@ campaignPaymentRoutes.get(
 
 campaignPaymentRoutes.post(
   "/escrow/fund",
+  brandOnly,
   asyncRoute(async (req, res) => {
     const { id } = campaignIdParamSchema.parse(req.params)
     res.json(await initiateCampaignEscrowFunding(req.auth!.id, id))
@@ -35,6 +40,7 @@ campaignPaymentRoutes.post(
 
 campaignPaymentRoutes.post(
   "/escrow/confirm",
+  brandOnly,
   validateBody(confirmEscrowSchema),
   asyncRoute(async (req, res) => {
     const { id } = campaignIdParamSchema.parse(req.params)
@@ -44,6 +50,7 @@ campaignPaymentRoutes.post(
 
 campaignPaymentRoutes.post(
   "/escrow/refund",
+  brandOnly,
   asyncRoute(async (req, res) => {
     const { id } = campaignIdParamSchema.parse(req.params)
     res.json(await refundCampaignEscrow(req.auth!.id, id))
@@ -52,6 +59,7 @@ campaignPaymentRoutes.post(
 
 campaignPaymentRoutes.post(
   "/payments/release",
+  brandOnly,
   validateBody(releasePaymentsSchema),
   asyncRoute(async (req, res) => {
     const { id } = campaignIdParamSchema.parse(req.params)

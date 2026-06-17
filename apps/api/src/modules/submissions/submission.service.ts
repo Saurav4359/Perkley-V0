@@ -2,6 +2,7 @@ import type { CampaignSubmission, Prisma, SubmissionStatus } from "@prisma/clien
 
 import { badRequest, conflict, forbidden, notFound, unauthorized } from "../../lib/http-error"
 import { prisma } from "../../lib/prisma"
+import { applyToCampaign } from "../applications/application.service"
 import {
   notifySubmissionReviewed,
   runNotificationSideEffect,
@@ -247,16 +248,32 @@ export async function createSubmission(
 ) {
   await requireCreatorUser(creatorId)
   const campaign = await loadCampaignContext(campaignId)
-  const application = await loadAcceptedApplication(campaignId, creatorId)
+  let application = await loadAcceptedApplication(campaignId, creatorId)
+
+  // Bounties are open competitions with no separate apply step, so submitting an
+  // entry implicitly enters the bounty. Create the auto-accepted application on
+  // demand (this enforces the same eligibility rules as applying, e.g. minimum
+  // followers) so the submission has the required parent application.
+  if (!application && campaign.type === "bounty") {
+    await applyToCampaign(creatorId, campaignId, {})
+    application = await loadAcceptedApplication(campaignId, creatorId)
+  }
+
+  if (!application) {
+    throw badRequest(
+      "You must be accepted to this campaign before submitting.",
+      "application_not_accepted"
+    )
+  }
 
   const existing = await prisma.campaignSubmission.findUnique({
-    where: { applicationId: application?.id ?? "" },
+    where: { applicationId: application.id },
   })
 
   const eligibility = canSubmitSubmission({
     campaignStatus: campaign.status,
     campaignDeadline: campaign.deadline,
-    applicationStatus: application?.status ?? null,
+    applicationStatus: application.status,
     hasExistingSubmission: Boolean(existing),
   })
 
@@ -269,7 +286,7 @@ export async function createSubmission(
   }
 
   const data = buildValidatedSubmissionData({
-    applicationId: application!.id,
+    applicationId: application.id,
     campaignId,
     creatorId,
     postUrl: input.postUrl,

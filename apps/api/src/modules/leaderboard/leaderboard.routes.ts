@@ -5,7 +5,7 @@ import { requireAuth, requireRoles } from "../../middleware/auth"
 import { getCampaignLeaderboard, selectCampaignWinners } from "./leaderboard.service"
 import { campaignIdParamSchema } from "./leaderboard.schemas"
 
-export const campaignLeaderboardRoutes = Router()
+export const campaignLeaderboardRoutes = Router({ mergeParams: true })
 
 campaignLeaderboardRoutes.get(
   "/leaderboard",

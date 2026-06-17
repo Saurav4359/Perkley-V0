@@ -17,7 +17,7 @@ import {
   listApplicationsQuerySchema,
 } from "./application.schemas"
 
-export const campaignApplicationRoutes = Router()
+export const campaignApplicationRoutes = Router({ mergeParams: true })
 
 campaignApplicationRoutes.post(
   "/apply",

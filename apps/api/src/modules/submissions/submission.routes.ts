@@ -22,7 +22,7 @@ import {
   updateSubmissionSchema,
 } from "./submission.schemas"
 
-export const campaignSubmissionRoutes = Router()
+export const campaignSubmissionRoutes = Router({ mergeParams: true })
 
 campaignSubmissionRoutes.post(
   "/submissions",
