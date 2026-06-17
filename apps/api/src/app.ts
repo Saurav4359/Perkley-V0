@@ -8,6 +8,10 @@ import { requestLog } from "./lib/request-log"
 import { errorHandler } from "./middleware/error-handler"
 import { authRoutes } from "./modules/auth/auth.routes"
 import { campaignRoutes } from "./modules/campaigns/campaign.routes"
+import {
+  brandDashboardRoutes,
+  creatorDashboardRoutes,
+} from "./modules/dashboard/dashboard.routes"
 import { brandProfileRoutes, creatorProfileRoutes } from "./modules/profiles/profile.routes"
 import { mediaRoutes, uploadRoutes } from "./modules/uploads/upload.routes"
 import { userRoutes } from "./modules/users/user.routes"
@@ -48,6 +52,8 @@ export function createApp() {
 
   app.use("/api/auth", authRoutes)
   app.use("/api/campaigns", campaignRoutes)
+  app.use("/api/dashboard/creator", creatorDashboardRoutes)
+  app.use("/api/dashboard/brand", brandDashboardRoutes)
   app.use("/api/users", userRoutes)
   app.use("/api/creator", creatorProfileRoutes)
   app.use("/api/brand", brandProfileRoutes)

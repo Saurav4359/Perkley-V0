@@ -9,6 +9,13 @@ import {
   canPublishCampaign,
   validateCampaignForPublish,
 } from "./campaign.utils"
+import {
+  buildCampaignSearchHaystack,
+  campaignMatchesRewardRange,
+  matchesSearchQuery,
+  sortCampaigns,
+  type CampaignListSort,
+} from "./campaign-list.utils"
 
 function serializeCampaign(
   campaign: Campaign & {
@@ -127,6 +134,11 @@ export async function listPublicCampaigns(filters: {
   type?: Campaign["type"]
   niche?: string
   contentType?: Campaign["contentType"]
+  platform?: Campaign["platform"]
+  q?: string
+  minReward?: number
+  maxReward?: number
+  sort?: CampaignListSort
 }) {
   const campaigns = await prisma.campaign.findMany({
     where: {
@@ -134,6 +146,7 @@ export async function listPublicCampaigns(filters: {
       type: filters.type,
       niche: filters.niche,
       contentType: filters.contentType,
+      platform: filters.platform,
     },
     include: {
       brand: {
@@ -151,7 +164,24 @@ export async function listPublicCampaigns(filters: {
     orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
   })
 
-  return campaigns.map(serializeCampaign)
+  const filtered = campaigns.filter((campaign) => {
+    if (filters.q) {
+      const haystack = buildCampaignSearchHaystack({
+        id: campaign.id,
+        title: campaign.title,
+        description: campaign.description,
+        niche: campaign.niche,
+        type: campaign.type,
+        platform: campaign.platform,
+        brandName: campaign.brand.brandProfile?.brandName,
+      })
+      if (!matchesSearchQuery(haystack, filters.q)) return false
+    }
+
+    return campaignMatchesRewardRange(campaign, filters.minReward, filters.maxReward)
+  })
+
+  return sortCampaigns(filtered, filters.sort ?? "published_at_desc").map(serializeCampaign)
 }
 
 export async function listMyCampaigns(userId: string, status?: CampaignStatus) {

@@ -51,6 +51,25 @@ export const campaignListQuerySchema = z.object({
   type: campaignTypeSchema.optional(),
   niche: nicheSchema.optional(),
   contentType: contentTypeSchema.optional(),
+  platform: z.literal("instagram").optional(),
+  q: z.string().trim().min(1).max(120).optional(),
+  minReward: z.coerce.number().int().min(0).optional(),
+  maxReward: z.coerce.number().int().positive().optional(),
+  sort: z
+    .enum([
+      "published_at_desc",
+      "published_at_asc",
+      "reward_desc",
+      "reward_asc",
+      "deadline_asc",
+      "deadline_desc",
+    ])
+    .default("published_at_desc"),
+})
+
+export const campaignSearchQuerySchema = z.object({
+  q: z.string().trim().min(1).max(120),
+  limit: z.coerce.number().int().min(1).max(50).default(8),
 })
 
 export const myCampaignsQuerySchema = z.object({
