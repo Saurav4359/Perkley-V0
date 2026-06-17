@@ -6,11 +6,16 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 import { AuthShell } from "@/components/auth/auth-shell"
+import { GoogleIcon } from "@/components/auth/auth-social-icons"
 import {
   authInputClassName,
   authPrimaryButtonClassName,
+  authSocialButtonClassName,
 } from "@/components/auth/auth-styles"
 import { PasswordField } from "@/components/auth/password-field"
+import { ApiError } from "@/lib/api/client"
+import { signInWithGoogle } from "@/lib/supabase/oauth"
+import { useSignup } from "@/hooks/use-auth"
 import {
   initBrandSession,
   initCreatorSession,
@@ -38,7 +43,75 @@ export function SignupPage() {
   const [brandName, setBrandName] = useState("")
   const [workEmail, setWorkEmail] = useState("")
   const [website, setWebsite] = useState("")
+  const [fullName, setFullName] = useState("")
+  const [creatorEmail, setCreatorEmail] = useState("")
+  const [instagramHandle, setInstagramHandle] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState<string | null>(null)
+  const [googleLoading, setGoogleLoading] = useState(false)
   const router = useRouter()
+  const signup = useSignup()
+  const submitting = signup.isPending
+
+  async function handleGoogle() {
+    if (!role || googleLoading) return
+    setError(null)
+    setGoogleLoading(true)
+    try {
+      await signInWithGoogle(role)
+    } catch {
+      setError("Unable to start Google sign-in. Please try again.")
+      setGoogleLoading(false)
+    }
+  }
+
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault()
+    if (!role || submitting) return
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.")
+      return
+    }
+
+    setError(null)
+
+    try {
+      if (role === "brand") {
+        await signup.mutateAsync({
+          role: "brand",
+          email: workEmail.trim(),
+          password,
+          brandName: brandName.trim(),
+        })
+        initBrandSession(
+          {
+            name: brandName.trim(),
+            website: website.trim(),
+            workEmail: workEmail.trim(),
+          },
+          { fromSignup: true }
+        )
+        router.push("/brand-onboarding")
+        return
+      }
+
+      await signup.mutateAsync({
+        role: "creator",
+        email: creatorEmail.trim(),
+        password,
+        displayName: fullName.trim() || undefined,
+      })
+      initCreatorSession()
+      router.push("/onboarding")
+    } catch (err) {
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : "Unable to create your account. Please try again."
+      )
+    }
+  }
 
   return (
     <AuthShell variant="signup" formClassName="max-w-lg">
@@ -115,36 +188,37 @@ export function SignupPage() {
               </p>
             </div>
 
-            <form
-              className="space-y-5"
-              onSubmit={(event) => {
-                event.preventDefault()
-                if (role === "brand") {
-                  initBrandSession(
-                    {
-                      name: brandName.trim(),
-                      website: website.trim(),
-                      workEmail: workEmail.trim(),
-                    },
-                    { fromSignup: true }
-                  )
-                  router.push("/brand-onboarding")
-                  return
-                }
-                initCreatorSession()
-                router.push("/onboarding")
-              }}
-            >
+            <form className="space-y-5" onSubmit={handleSubmit}>
               {role === "creator" ? (
                 <>
-                  <Field label="Full name" type="text" placeholder="Saurav Kumar" />
-                  <Field label="Email" type="email" placeholder="you@example.com" />
+                  <Field
+                    label="Full name"
+                    type="text"
+                    placeholder="Saurav Kumar"
+                    value={fullName}
+                    onChange={setFullName}
+                  />
+                  <Field
+                    label="Email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={creatorEmail}
+                    onChange={setCreatorEmail}
+                    required
+                  />
                   <Field
                     label="Instagram handle"
                     type="text"
                     placeholder="@yourhandle"
+                    value={instagramHandle}
+                    onChange={setInstagramHandle}
                   />
-                  <PasswordField autoComplete="new-password" />
+                  <PasswordField
+                    autoComplete="new-password"
+                    value={password}
+                    onChange={setPassword}
+                    required
+                  />
                 </>
               ) : (
                 <>
@@ -171,13 +245,54 @@ export function SignupPage() {
                     value={website}
                     onChange={setWebsite}
                   />
-                  <PasswordField autoComplete="new-password" />
+                  <PasswordField
+                    autoComplete="new-password"
+                    value={password}
+                    onChange={setPassword}
+                    required
+                  />
                 </>
               )}
-              <button type="submit" className={authPrimaryButtonClassName}>
-                Create account
+              {error ? (
+                <p className="text-sm text-destructive" role="alert">
+                  {error}
+                </p>
+              ) : null}
+              <button
+                type="submit"
+                disabled={submitting}
+                className={cn(
+                  authPrimaryButtonClassName,
+                  submitting && "cursor-not-allowed opacity-70"
+                )}
+              >
+                {submitting ? "Creating account…" : "Create account"}
               </button>
             </form>
+
+            <div className="space-y-5">
+              <div className="flex items-center gap-3">
+                <div className="h-px flex-1 bg-border" />
+                <span className="text-xs text-muted-foreground">
+                  or continue with
+                </span>
+                <div className="h-px flex-1 bg-border" />
+              </div>
+              <div className="flex justify-center">
+                <button
+                  type="button"
+                  onClick={handleGoogle}
+                  disabled={googleLoading}
+                  aria-label="Continue with Google"
+                  className={cn(
+                    authSocialButtonClassName,
+                    googleLoading && "cursor-not-allowed opacity-70"
+                  )}
+                >
+                  <GoogleIcon />
+                </button>
+              </div>
+            </div>
           </>
         )}
 

@@ -13,6 +13,10 @@ import {
   authSocialButtonClassName,
 } from "@/components/auth/auth-styles"
 import { PasswordField } from "@/components/auth/password-field"
+import { ApiError } from "@/lib/api/client"
+import { oauthStartUrl } from "@/lib/api/auth"
+import { signInWithGoogle } from "@/lib/supabase/oauth"
+import { useSignin } from "@/hooks/use-auth"
 import {
   clearOnboardingPending,
   initBrandSession,
@@ -24,20 +28,53 @@ import { cn } from "@/lib/utils"
 export function LoginPage() {
   const [role, setRole] = useState<"creator" | "brand">("creator")
   const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState<string | null>(null)
+  const [googleLoading, setGoogleLoading] = useState(false)
   const router = useRouter()
+  const signin = useSignin()
+  const submitting = signin.isPending
 
-  function handleLogin(event: React.FormEvent) {
-    event.preventDefault()
-
-    if (role === "brand") {
-      initBrandSession({ workEmail: email.trim() })
-      router.push(getBrandDashboardPath())
-      return
+  async function handleGoogle() {
+    if (googleLoading) return
+    setError(null)
+    setGoogleLoading(true)
+    try {
+      await signInWithGoogle(role)
+    } catch {
+      setError("Unable to start Google sign-in. Please try again.")
+      setGoogleLoading(false)
     }
+  }
 
-    setUserRole("creator")
-    clearOnboardingPending()
-    router.push("/dashboard")
+  async function handleLogin(event: React.FormEvent) {
+    event.preventDefault()
+    if (submitting) return
+
+    setError(null)
+
+    try {
+      const user = await signin.mutateAsync({
+        email: email.trim(),
+        password,
+      })
+
+      if (user.role === "brand") {
+        initBrandSession({ workEmail: user.email ?? email.trim() })
+        router.push(getBrandDashboardPath())
+        return
+      }
+
+      setUserRole("creator")
+      clearOnboardingPending()
+      router.push("/dashboard")
+    } catch (err) {
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : "Unable to sign in. Please try again."
+      )
+    }
   }
 
   return (
@@ -85,6 +122,9 @@ export function LoginPage() {
             />
           </div>
           <PasswordField
+            value={password}
+            onChange={setPassword}
+            required
             labelAction={
               <Link
                 href="#"
@@ -94,8 +134,20 @@ export function LoginPage() {
               </Link>
             }
           />
-          <button type="submit" className={authPrimaryButtonClassName}>
-            Login
+          {error ? (
+            <p className="text-sm text-destructive" role="alert">
+              {error}
+            </p>
+          ) : null}
+          <button
+            type="submit"
+            disabled={submitting}
+            className={cn(
+              authPrimaryButtonClassName,
+              submitting && "cursor-not-allowed opacity-70"
+            )}
+          >
+            {submitting ? "Signing in…" : "Login"}
           </button>
         </form>
 
@@ -108,18 +160,23 @@ export function LoginPage() {
           <div className="flex justify-center gap-3">
             <button
               type="button"
+              onClick={handleGoogle}
+              disabled={googleLoading}
               aria-label="Continue with Google"
-              className={authSocialButtonClassName}
+              className={cn(
+                authSocialButtonClassName,
+                googleLoading && "cursor-not-allowed opacity-70"
+              )}
             >
               <GoogleIcon />
             </button>
-            <button
-              type="button"
+            <a
+              href={oauthStartUrl("instagram", role)}
               aria-label="Continue with Instagram"
               className={authSocialButtonClassName}
             >
               <InstagramIcon />
-            </button>
+            </a>
           </div>
         </div>
 

@@ -10,6 +10,10 @@ type PasswordFieldProps = {
   placeholder?: string
   labelAction?: React.ReactNode
   autoComplete?: "current-password" | "new-password"
+  value?: string
+  onChange?: (value: string) => void
+  required?: boolean
+  name?: string
 }
 
 export function PasswordField({
@@ -17,6 +21,10 @@ export function PasswordField({
   placeholder = "••••••••",
   labelAction,
   autoComplete = "current-password",
+  value,
+  onChange,
+  required,
+  name,
 }: PasswordFieldProps) {
   const [showPassword, setShowPassword] = useState(false)
 
@@ -31,6 +39,10 @@ export function PasswordField({
           type={showPassword ? "text" : "password"}
           placeholder={placeholder}
           autoComplete={autoComplete}
+          name={name}
+          required={required}
+          value={value}
+          onChange={(event) => onChange?.(event.target.value)}
           className={`${authInputClassName} pr-12`}
         />
         <button
