@@ -13,12 +13,12 @@ This file is the source of truth for backend scope, status, and acceptance crite
 | Campaigns | 6 | 0 | 0 |
 | File uploads | 3 | 0 | 0 |
 | Security foundation | 4 | 0 | 0 |
-| Search & filters | 1 | 3 | 1 |
+| Search & filters | 5 | 0 | 0 |
 | Instagram integration | 1 | 1 | 3 |
 | Applications | 4 | 0 | 0 |
 | Submissions | 5 | 1 | 0 |
-| Leaderboard | 0 | 0 | 3 |
-| Dashboard | 0 | 0 | 4 |
+| Leaderboard | 3 | 0 | 0 |
+| Dashboard | 4 | 0 | 0 |
 | Notifications | 0 | 0 | 5 |
 | Payments | 0 | 0 | 4 |
 | Analytics | 0 | 0 | 4 |
@@ -26,9 +26,9 @@ This file is the source of truth for backend scope, status, and acceptance crite
 | Background jobs | 0 | 0 | 4 |
 | Future | 0 | 0 | 6 |
 
-**Estimated completion:** ~44% of the full product backend (Steps 1–6 done locally; Steps 7–13 not started).
+**Estimated completion:** ~56% of the full product backend (Steps 1–8 done locally; Steps 9–13 not started).
 
-Last audited: 2026-06-17 (Step 6 submissions)
+Last audited: 2026-06-17 (Step 8 dashboard)
 
 ## Feature Status Matrix
 
@@ -113,28 +113,30 @@ Partial: hashtag/mention verification is URL/format only; Instagram API sync def
 
 | Feature | Status | Notes |
 | --- | --- | --- |
-| Generate Leaderboard | Not started | Step 7 |
-| Ranking Logic | Not started | Step 7 |
-| Winner Selection | Not started | Step 7 |
+| Generate Leaderboard | Done | `GET /api/campaigns/:id/leaderboard` |
+| Ranking Logic | Done | Score → views → earliest submission |
+| Winner Selection | Done | `POST /api/campaigns/:id/leaderboard/select-winners` |
 
 ### Dashboard
 
 | Feature | Status | Notes |
 | --- | --- | --- |
-| Creator Dashboard | Not started | Step 8 |
-| Brand Dashboard | Not started | Step 8 |
-| Stats API | Not started | Step 8 |
-| Recent Activity | Not started | Step 8 |
+| Creator Dashboard | Done | `GET /api/dashboard/creator` |
+| Brand Dashboard | Done | `GET /api/dashboard/brand` |
+| Stats API | Done | `GET /api/dashboard/creator/stats`, `.../brand/stats` |
+| Recent Activity | Done | `GET /api/dashboard/creator/activity`, `.../brand/activity` |
+
+Also done: `GET /api/dashboard/creator/search`, `GET /api/dashboard/brand/search`.
 
 ### Search & Filters
 
 | Feature | Status | Notes |
 | --- | --- | --- |
-| Search Campaigns | Partial | Public list only; no text search |
+| Search Campaigns | Done | `GET /api/campaigns?q=` and dashboard search endpoints |
 | Filter by Niche | Done | `GET /api/campaigns?niche=` |
-| Filter by Platform | Partial | Platform fixed to Instagram; no filter param |
-| Filter by Reward | Not started | Step 8 |
-| Sort | Partial | `publishedAt desc` only |
+| Filter by Platform | Done | `GET /api/campaigns?platform=instagram` |
+| Filter by Reward | Done | `GET /api/campaigns?minReward=&maxReward=` |
+| Sort | Done | `sort=published_at_desc|reward_desc|deadline_asc|...` |
 
 ### Notifications
 
@@ -634,10 +636,128 @@ Status: Done for local backend foundation
 - Connect frontend submit dialog and brand review tables to these APIs.
 - Instagram API verification of hashtag, mention, and live metrics (Steps 11/13).
 
+## Step 7: Leaderboard And Winner Selection
+
+Status: Done for local backend foundation
+
+### Goals
+
+- Bounty campaigns expose a public leaderboard ranked by engagement score.
+- Tiebreakers use views, then earliest submission time.
+- Prize tiers map ranks 1–3 and top-20 bonus slots to campaign prize fields.
+- Brands can select winners after the campaign deadline.
+- Winner selection marks top ranked competing submissions as `won` and completes the campaign.
+
+### Endpoints
+
+| Method | Path | Status | RBAC | Notes |
+| --- | --- | --- | --- | --- |
+| GET | `/api/campaigns/:id/leaderboard` | Done | Public | Bounty leaderboard + prize tiers |
+| POST | `/api/campaigns/:id/leaderboard/select-winners` | Done | `brand` owner | Select bounty winners after deadline |
+
+### Ranking Rules
+
+- Score = views + (likes × 2) + (comments × 3).
+- Higher score ranks first.
+- Tiebreaker 1: higher views.
+- Tiebreaker 2: earlier `createdAt` submission.
+- Only `competing` and `won` submissions appear on the leaderboard.
+
+### Prize Mapping
+
+- Rank 1 → `prizeFirst`
+- Rank 2 → `prizeSecond`
+- Rank 3 → `prizeThird`
+- Ranks 4–23 → `prizeTop20Each` each
+
+### Winner Selection Rules
+
+- Bounty campaigns only.
+- Campaign deadline must have passed.
+- Campaign must be `active` or `archived`.
+- Winners cannot be selected twice for the same campaign.
+- Top ranked `competing` submissions up to the configured prize slots become `won`.
+- Campaign status moves to `completed` after winner selection.
+
+### Security Acceptance Criteria
+
+- Leaderboard generation is public for active, archived, or completed bounty campaigns.
+- Winner selection requires authenticated brand ownership.
+- Non-bounty campaigns return a validation error for leaderboard endpoints.
+
+### Tests
+
+- Prize tier generation and rank-to-prize mapping
+- Leaderboard ranking and tiebreaker logic
+- Live leaderboard state detection
+- Winner selection eligibility rules
+- Winner submission id selection from ranked entries
+
+### Remaining In Step 7
+
+- Add DB-backed integration tests for leaderboard routes.
+- Connect frontend bounty leaderboard and winner selection UI to these APIs.
+- Background refresh of metrics before ranking (Step 13).
+
+## Step 8: Dashboard APIs, Search, And Filters
+
+Status: Done for local backend foundation
+
+### Goals
+
+- Creators and brands each get a dashboard summary with stats and recent activity.
+- Stats endpoints expose role-specific counts for applications, submissions, and campaigns.
+- Recent activity is built from applications, submissions, and campaign publish events.
+- Public campaign listing supports text search, reward filters, platform filter, and sort options.
+- Role-aware dashboard search helps creators and brands find listings quickly.
+
+### Endpoints
+
+| Method | Path | Status | RBAC | Notes |
+| --- | --- | --- | --- | --- |
+| GET | `/api/dashboard/creator` | Done | `creator` | Stats + recent activity |
+| GET | `/api/dashboard/creator/stats` | Done | `creator` | Creator counts and estimated earnings |
+| GET | `/api/dashboard/creator/activity` | Done | `creator` | Recent activity feed |
+| GET | `/api/dashboard/creator/search` | Done | `creator` | Search active campaigns |
+| GET | `/api/dashboard/brand` | Done | `brand` | Stats + recent activity |
+| GET | `/api/dashboard/brand/stats` | Done | `brand` | Brand campaign/application/submission counts |
+| GET | `/api/dashboard/brand/activity` | Done | `brand` | Recent applications/submissions/publishes |
+| GET | `/api/dashboard/brand/search` | Done | `brand` | Search marketplace + own campaigns |
+| GET | `/api/campaigns` | Done | Public | Extended filters: `q`, `platform`, `minReward`, `maxReward`, `sort` |
+
+### Creator Stats
+
+- Application counts by status
+- Submission counts by status
+- Estimated earnings from `qualified`, `won`, and `paid` submissions
+- Open active campaign count
+
+### Brand Stats
+
+- Campaign counts by status
+- Application and submission totals
+- Pending review count for submissions needing brand action
+
+### Search And Sort Rules
+
+- `q` matches title, description, niche, type, platform, and brand name tokens.
+- Reward filter uses `fixedReward` for campaigns and `prizeFirst` fallback to `totalBudget` for bounties.
+- Sort options: `published_at_desc`, `published_at_asc`, `reward_desc`, `reward_asc`, `deadline_asc`, `deadline_desc`.
+
+### Tests
+
+- Campaign list reward/search/sort utilities
+- Dashboard activity mapping and earnings estimation
+- Activity feed merge/limit behavior
+
+### Remaining In Step 8
+
+- Add DB-backed integration tests for dashboard routes.
+- Connect frontend dashboard shell, search, and analytics cards to these APIs.
+- Richer earnings totals after payments land in Step 10.
+
 ## Future Steps
 
-- Step 7: Leaderboard and winner selection
-- Step 8: Dashboard APIs, stats, recent activity, search, filters, sort
 - Step 9: Notifications (campaign, application, submission, winner, payment)
 - Step 10: Payments and escrow
 - Step 11: Analytics and Instagram metrics sync
