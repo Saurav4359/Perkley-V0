@@ -30,7 +30,22 @@ export function createApp() {
   app.use(helmet())
   app.use(
     cors({
-      origin: env.CORS_ORIGIN,
+      origin(origin, callback) {
+        const allowedOrigins = env.CORS_ORIGIN
+
+        // Non-browser clients (Postman, server-side) may omit Origin.
+        if (!origin) {
+          callback(null, true)
+          return
+        }
+
+        if (allowedOrigins.includes(origin)) {
+          callback(null, origin)
+          return
+        }
+
+        callback(new Error(`Origin ${origin} not allowed by CORS`))
+      },
       credentials: true,
       methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
     })

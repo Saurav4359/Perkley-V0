@@ -1,5 +1,13 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "installCommand": "cd ../.. && bun install",
-  "buildCommand": "cd ../.. && bun run build --filter=web"
+  "buildCommand": "cd ../.. && bun run build --filter=web",
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "www.perkley.in" }],
+      "destination": "https://perkley.in/:path*",
+      "permanent": true
+    }
+  ]
 }

@@ -5,7 +5,16 @@ const envSchema = z.object({
     .enum(["development", "test", "production", "staging"])
     .default("development"),
   PORT: z.coerce.number().int().positive().default(3001),
-  CORS_ORIGIN: z.string().url().default("http://localhost:3000"),
+  CORS_ORIGIN: z
+    .string()
+    .default("http://localhost:3000")
+    .transform((value) =>
+      value
+        .split(",")
+        .map((entry) => entry.trim())
+        .filter(Boolean)
+    )
+    .pipe(z.array(z.string().url()).min(1)),
   FRONTEND_URL: z.string().url().default("http://localhost:3000"),
   SESSION_COOKIE_NAME: z.string().min(1).default("perkley_session"),
   REFRESH_COOKIE_NAME: z.string().min(1).optional(),
