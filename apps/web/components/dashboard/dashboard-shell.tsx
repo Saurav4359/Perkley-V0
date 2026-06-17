@@ -3,9 +3,13 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { Search } from "lucide-react"
 
 import { PerkleyLogo } from "@/components/brand/perkley-logo"
+import {
+  DashboardSearch,
+  DashboardSearchMobilePanel,
+  DashboardSearchMobileTrigger,
+} from "@/components/dashboard/dashboard-search"
 import { InrIcon } from "@/components/dashboard/inr-icon"
 import { NotificationMenu } from "@/components/dashboard/notification-menu"
 import { UserMenu } from "@/components/dashboard/user-menu"
@@ -37,6 +41,7 @@ export function DashboardShell({
   const isDetail = variant === "detail"
   const isBrand = nav.some((item) => item.href.startsWith("/dashboard/brand"))
   const [headerName, setHeaderName] = useState(userName)
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const avatarInitial = headerName.slice(0, 1).toUpperCase()
 
   useEffect(() => {
@@ -61,9 +66,9 @@ export function DashboardShell({
         isDetail ? "bg-background" : "bg-[#f9fafb] dark:bg-background"
       )}
     >
-      <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur-md">
-        <div className="mx-auto flex h-14 max-w-[1400px] items-center gap-4 px-4 sm:h-16 sm:px-6">
-          <Link href="/dashboard" className="shrink-0">
+      <header className="sticky top-0 z-40 overflow-visible border-b border-border bg-background/95 backdrop-blur-md">
+        <div className="relative mx-auto flex h-14 max-w-[1400px] items-center gap-4 px-4 sm:h-16 sm:px-6">
+          <Link href={isBrand ? "/dashboard/brand" : "/dashboard"} className="shrink-0">
             <PerkleyLogo
               markClassName="h-8 w-8 sm:h-9 sm:w-9"
               textClassName="text-base sm:text-[1.05rem]"
@@ -87,28 +92,15 @@ export function DashboardShell({
             ))}
           </nav>
 
-          <div className="mx-4 hidden min-w-0 flex-1 lg:block">
-            <label className="relative block">
-              <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <input
-                type="search"
-                placeholder="Search campaigns, brands..."
-                className="h-10 w-full rounded-full border border-border bg-muted/40 pl-10 pr-14 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/25"
-              />
-              <kbd className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded-md border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground sm:inline">
-                ⌘K
-              </kbd>
-            </label>
+          <div className="mx-4 hidden min-w-0 flex-1 md:block">
+            <DashboardSearch mode={isBrand ? "brand" : "creator"} />
           </div>
 
           <div className="ml-auto flex items-center gap-1 sm:gap-2">
-            <button
-              type="button"
-              aria-label="Search"
-              className="inline-flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground lg:hidden"
-            >
-              <Search className="size-4" />
-            </button>
+            <DashboardSearchMobileTrigger
+              mode={isBrand ? "brand" : "creator"}
+              onOpenChange={setMobileSearchOpen}
+            />
             <ThemeToggle />
             <NotificationMenu role={isBrand ? "brand" : "creator"} />
             <div className="hidden items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-sm font-medium sm:flex">
@@ -131,6 +123,12 @@ export function DashboardShell({
             />
           </div>
         </div>
+
+        <DashboardSearchMobilePanel
+          mode={isBrand ? "brand" : "creator"}
+          open={mobileSearchOpen}
+          onClose={() => setMobileSearchOpen(false)}
+        />
       </header>
 
       <main
