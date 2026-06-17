@@ -19,8 +19,8 @@ export function BountyLeaderboard({ entries, isLive, prizeTiers }: BountyLeaderb
     <section className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-[15px] font-semibold text-foreground">Leaderboard</h2>
-          <p className="text-xs text-muted-foreground">
+          <h2 className="text-base font-semibold text-foreground">Leaderboard</h2>
+          <p className="mt-1 text-sm leading-6 text-foreground/70">
             Ranked by engagement score — views ×1 + likes ×2 + comments ×3. Syncs every 6h.
           </p>
         </div>

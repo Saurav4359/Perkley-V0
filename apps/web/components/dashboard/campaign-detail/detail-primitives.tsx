@@ -10,7 +10,7 @@ export function DetailSectionLabel({
   return (
     <p
       className={cn(
-        "font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground",
+        "font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-foreground/55",
         className
       )}
     >
@@ -29,7 +29,7 @@ export function DetailMetaItem({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 text-[13px] text-muted-foreground",
+        "inline-flex items-center gap-1.5 text-sm text-foreground/70",
         className
       )}
     >

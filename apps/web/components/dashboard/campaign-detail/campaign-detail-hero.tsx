@@ -25,21 +25,21 @@ type CampaignDetailHeroProps = {
 
 export function CampaignDetailHero({ listing, tagline }: CampaignDetailHeroProps) {
   return (
-    <header className="border-b border-border px-4 py-6 sm:px-6 sm:py-8 lg:px-10">
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+    <header className="border-b border-border bg-card/30 px-4 py-6 sm:px-6 sm:py-7 lg:px-10">
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex min-w-0 gap-4 sm:gap-5">
           <div
-            className="flex size-[4.25rem] shrink-0 items-center justify-center rounded-xl text-lg font-semibold text-white sm:size-[4.75rem]"
+            className="flex size-16 shrink-0 items-center justify-center rounded-xl text-xl font-semibold text-white sm:size-[4.75rem]"
             style={{ backgroundColor: listing.brandAccent }}
           >
             {listing.brandInitials}
           </div>
 
-          <div className="min-w-0 space-y-3">
-            <h1 className="font-display text-[1.65rem] leading-[1.12] tracking-tight text-foreground sm:text-[2rem]">
+          <div className="min-w-0 space-y-2.5 sm:space-y-3">
+            <h1 className="text-[1.75rem] font-semibold leading-[1.15] tracking-tight text-foreground sm:text-[2.125rem]">
               {listing.title}
             </h1>
-            <p className="text-sm text-muted-foreground">{tagline}</p>
+            <p className="text-base font-medium text-foreground/75">{tagline}</p>
 
             <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
               <DetailMetaItem>

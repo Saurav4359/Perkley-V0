@@ -40,7 +40,7 @@ export function ListingDetailView({
       <div className="border-b border-border px-4 py-3 sm:px-6 lg:px-10">
         <Link
           href={backHref}
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="inline-flex items-center gap-1 text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
         >
           <ChevronLeft className="size-4" />
           {backLabel}
@@ -56,7 +56,7 @@ export function ListingDetailView({
         <div className="min-w-0">
           <CampaignDetailBody sections={listing.sections} />
           {listing.type === "bounty" ? (
-            <div className="border-t border-border px-4 py-8 sm:px-6 lg:px-8">
+            <div className="border-t border-border bg-muted/20 px-4 py-6 dark:bg-muted/10 sm:px-6 sm:py-7 lg:px-8">
               <BountyLeaderboard
                 entries={listing.leaderboard}
                 isLive={listing.status === "active"}

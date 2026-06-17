@@ -71,35 +71,37 @@ export function CampaignDetailSidebar({
 
   return (
     <aside className="lg:sticky lg:top-16 lg:self-start">
-      <section className="border-b border-border px-4 py-6 sm:px-6 lg:px-8">
+      <section className="border-b border-border bg-card/20 px-4 py-6 sm:px-6 lg:px-8">
         <DetailSectionLabel>{isBounty ? "Prize pool" : "Reward"}</DetailSectionLabel>
         {isBounty ? (
           <>
             <div className="mt-4 flex items-center gap-1.5">
               <InrIcon className="size-5" />
-              <span className="text-2xl font-bold tabular-nums text-foreground">
+              <span className="text-3xl font-bold tabular-nums text-foreground">
                 {formatInr(listing.totalBudget)}
               </span>
             </div>
-            <ol className="mt-6 space-y-4">
+            <ol className="mt-6 space-y-3.5">
               {listing.prizeTiers.map((tier) => (
-                <li key={tier.label} className="flex items-center justify-between gap-3 text-sm">
-                  <span className="text-muted-foreground">{tier.label}</span>
-                  <span className="font-semibold tabular-nums">₹{tier.amount}</span>
+                <li key={tier.label} className="flex items-center justify-between gap-3 text-base">
+                  <span className="text-foreground/70">{tier.label}</span>
+                  <span className="font-semibold tabular-nums text-foreground">₹{tier.amount}</span>
                 </li>
               ))}
             </ol>
           </>
         ) : (
           <>
-            <p className="mt-4 text-2xl font-bold text-foreground">
+            <p className="mt-4 text-3xl font-bold text-foreground">
               ₹{formatInr(listing.fixedReward)}
-              <span className="block text-sm font-medium text-muted-foreground">per creator</span>
+              <span className="mt-1 block text-base font-medium text-foreground/70">
+                per creator
+              </span>
             </p>
-            <p className="mt-3 text-sm text-muted-foreground">
+            <p className="mt-3 text-base text-foreground/75">
               Min {listing.minViewsThreshold.toLocaleString("en-IN")} views to qualify
             </p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-base text-foreground/75">
               {listing.spotsLeft} of {listing.maxCreators} spots left
             </p>
           </>
@@ -108,22 +110,22 @@ export function CampaignDetailSidebar({
 
       <section className="grid grid-cols-2 border-b border-border">
         <div className="border-r border-border px-4 py-5 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-1.5 text-muted-foreground">
-            <Briefcase className="size-3.5" />
-            <DetailSectionLabel className="text-[9px]">
+          <div className="flex items-center gap-1.5 text-foreground/65">
+            <Briefcase className="size-4" />
+            <DetailSectionLabel className="text-[10px]">
               {isBounty ? "Competing" : "Submitted"}
             </DetailSectionLabel>
           </div>
-          <p className="mt-2 text-2xl font-semibold tabular-nums">
+          <p className="mt-2 text-2xl font-semibold tabular-nums text-foreground">
             {isBounty ? listing.competingCount : listing.maxCreators - listing.spotsLeft}
           </p>
         </div>
         <div className="px-4 py-5 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-1.5 text-muted-foreground">
-            <Clock className="size-3.5" />
-            <DetailSectionLabel className="text-[9px]">Remaining</DetailSectionLabel>
+          <div className="flex items-center gap-1.5 text-foreground/65">
+            <Clock className="size-4" />
+            <DetailSectionLabel className="text-[10px]">Remaining</DetailSectionLabel>
           </div>
-          <p className="mt-2 text-lg font-semibold tabular-nums">
+          <p className="mt-2 text-xl font-semibold tabular-nums text-foreground">
             <CampaignCountdown dueInDays={listing.dueInDays} />
           </p>
         </div>
@@ -133,7 +135,7 @@ export function CampaignDetailSidebar({
         {mode === "creator" ? (
           <SubmitListingButton listing={listing} />
         ) : mode === "brand-browse" ? (
-          <p className="rounded-lg border border-dashed border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+          <p className="rounded-lg border border-dashed border-border bg-muted/40 px-4 py-3.5 text-base leading-7 text-foreground/80">
             Reference listing from {listing.brandName}. Brands can browse how others
             structure bounties and campaigns — applying is for creators only.
           </p>
@@ -159,11 +161,13 @@ export function CampaignDetailSidebar({
         ) : null}
       </section>
 
-      <section className="space-y-2 border-b border-border px-4 py-6 sm:px-6 lg:px-8 text-sm">
+      <section className="space-y-3 border-b border-border bg-card/10 px-4 py-6 sm:px-6 lg:px-8">
         <DetailSectionLabel>Requirements</DetailSectionLabel>
-        <p>{listing.requiredHashtag}</p>
-        <p>{listing.requiredMention}</p>
-        <p className="capitalize">{listing.contentType} on Instagram</p>
+        <ul className="space-y-2.5 text-base leading-7 text-foreground/90">
+          <li>{listing.requiredHashtag}</li>
+          <li>{listing.requiredMention}</li>
+          <li className="capitalize">{listing.contentType} on Instagram</li>
+        </ul>
       </section>
 
       {related.length > 0 ? (
