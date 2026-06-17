@@ -11,9 +11,19 @@ import {
   textareaClassName,
 } from "@/components/dashboard/forms/form-field"
 import { buttonVariants } from "@/components/ui/button"
+import { useCreateCampaign, usePublishCampaign } from "@/hooks/use-campaigns"
+import { ApiError } from "@/lib/api/client"
+import { fundAndConfirmEscrow } from "@/lib/api/payments"
+import type { ContentType, Niche } from "@/lib/dashboard/types"
 import { CONTENT_TYPES, NICHES } from "@/lib/dashboard/types"
 import { calcCampaignBudget, formatInr } from "@/lib/dashboard/utils"
 import { cn } from "@/lib/utils"
+
+function withPrefix(value: string, prefix: string): string {
+  const trimmed = value.trim()
+  if (!trimmed) return trimmed
+  return trimmed.startsWith(prefix) ? trimmed : `${prefix}${trimmed}`
+}
 
 export function CreateCampaignForm() {
   const [title, setTitle] = useState("")
@@ -27,24 +37,73 @@ export function CreateCampaignForm() {
   const [fixedReward, setFixedReward] = useState("5000")
   const [maxCreators, setMaxCreators] = useState("20")
   const [deadline, setDeadline] = useState("")
-  const [paid, setPaid] = useState(false)
+  const [result, setResult] = useState<"published" | "draft" | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  const createCampaign = useCreateCampaign()
+  const publishCampaign = usePublishCampaign()
+  const submitting = createCampaign.isPending || publishCampaign.isPending
 
   const totalBudget = useMemo(
     () => calcCampaignBudget(Number(fixedReward) || 0, Number(maxCreators) || 0),
     [fixedReward, maxCreators]
   )
 
-  function handlePay(event: React.FormEvent) {
+  async function handlePay(event: React.FormEvent) {
     event.preventDefault()
-    setPaid(true)
+    if (submitting) return
+    setError(null)
+
+    try {
+      const campaign = await createCampaign.mutateAsync({
+        type: "campaign",
+        title: title.trim(),
+        description: description.trim(),
+        niche: niche as Niche,
+        contentType: contentType as ContentType,
+        minFollowers: Number(minFollowers) || 0,
+        requiredHashtag: withPrefix(hashtag, "#"),
+        requiredMention: withPrefix(mention, "@"),
+        deadline: new Date(deadline).toISOString(),
+        totalBudget,
+        maxCreators: Number(maxCreators) || undefined,
+        minViewsThreshold: Number(minViews) || undefined,
+        fixedReward: Number(fixedReward) || undefined,
+      })
+
+      // Publishing requires a funded escrow. Fund it (dev provider settles
+      // immediately) and then publish. If a real Razorpay checkout is required,
+      // leave the campaign as a draft until payment completes.
+      try {
+        const { requiresCheckout } = await fundAndConfirmEscrow(campaign.id)
+        if (requiresCheckout) {
+          setResult("draft")
+          return
+        }
+        await publishCampaign.mutateAsync(campaign.id)
+        setResult("published")
+      } catch {
+        setResult("draft")
+      }
+    } catch (err) {
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : "Couldn't create the campaign. Please check the fields and try again."
+      )
+    }
   }
 
-  if (paid) {
+  if (result) {
     return (
       <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-8 text-center">
-        <p className="text-lg font-semibold text-foreground">Campaign published</p>
+        <p className="text-lg font-semibold text-foreground">
+          {result === "published" ? "Campaign published" : "Campaign saved as draft"}
+        </p>
         <p className="text-sm text-muted-foreground">
-          ₹{formatInr(totalBudget)} paid upfront via Razorpay (mock). Status: active.
+          {result === "published"
+            ? `Status: active. Total budget ₹${formatInr(totalBudget)}.`
+            : `Fund the ₹${formatInr(totalBudget)} escrow to publish this campaign.`}
         </p>
         <Link
           href="/dashboard/brand/campaigns"
@@ -134,14 +193,21 @@ export function CreateCampaignForm() {
         <span className="text-lg font-bold tabular-nums text-foreground">₹{formatInr(totalBudget)}</span>
       </div>
 
+      {error ? (
+        <p className="text-sm text-destructive" role="alert">
+          {error}
+        </p>
+      ) : null}
+
       <button
         type="submit"
+        disabled={submitting}
         className={cn(
           buttonVariants({ size: "lg" }),
-          "inline-flex h-11 w-full rounded-lg bg-brand text-white hover:bg-brand/90 sm:w-auto sm:px-8"
+          "inline-flex h-11 w-full rounded-lg bg-brand text-white hover:bg-brand/90 disabled:opacity-60 sm:w-auto sm:px-8"
         )}
       >
-        Pay ₹{formatInr(totalBudget)} via Razorpay
+        {submitting ? "Creating…" : `Pay ₹${formatInr(totalBudget)} via Razorpay`}
         <ArrowUpRight className="size-4" />
       </button>
     </form>

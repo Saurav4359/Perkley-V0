@@ -21,9 +21,19 @@ import {
   textareaClassName,
 } from "@/components/dashboard/forms/form-field"
 import { buttonVariants } from "@/components/ui/button"
+import { useCreateCampaign, usePublishCampaign } from "@/hooks/use-campaigns"
+import { ApiError } from "@/lib/api/client"
+import { fundAndConfirmEscrow } from "@/lib/api/payments"
+import type { ContentType, Niche } from "@/lib/dashboard/types"
 import { CONTENT_TYPES, NICHES } from "@/lib/dashboard/types"
 import { calcBountyBudget, formatInr } from "@/lib/dashboard/utils"
 import { cn } from "@/lib/utils"
+
+function withPrefix(value: string, prefix: string): string {
+  const trimmed = value.trim()
+  if (!trimmed) return trimmed
+  return trimmed.startsWith(prefix) ? trimmed : `${prefix}${trimmed}`
+}
 
 const TITLE_MAX = 80
 const DESCRIPTION_MAX = 500
@@ -58,7 +68,12 @@ export function CreateBountyForm() {
   const [second, setSecond] = useState("15000")
   const [third, setThird] = useState("10000")
   const [top20, setTop20] = useState("2500")
-  const [paid, setPaid] = useState(false)
+  const [result, setResult] = useState<"published" | "draft" | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  const createCampaign = useCreateCampaign()
+  const publishCampaign = usePublishCampaign()
+  const submitting = createCampaign.isPending || publishCampaign.isPending
 
   const totalBudget = useMemo(
     () =>
@@ -71,9 +86,47 @@ export function CreateBountyForm() {
     [first, second, third, top20]
   )
 
-  function handlePay(event: React.FormEvent) {
+  async function handlePay(event: React.FormEvent) {
     event.preventDefault()
-    setPaid(true)
+    if (submitting) return
+    setError(null)
+
+    try {
+      const campaign = await createCampaign.mutateAsync({
+        type: "bounty",
+        title: title.trim(),
+        description: description.trim(),
+        niche: niche as Niche,
+        contentType: contentType as ContentType,
+        minFollowers: Number(minFollowers) || 0,
+        requiredHashtag: withPrefix(hashtag, "#"),
+        requiredMention: withPrefix(mention, "@"),
+        deadline: new Date(deadline).toISOString(),
+        totalBudget,
+        prizeFirst: Number(first) || undefined,
+        prizeSecond: Number(second) || undefined,
+        prizeThird: Number(third) || undefined,
+        prizeTop20Each: Number(top20) || undefined,
+      })
+
+      try {
+        const { requiresCheckout } = await fundAndConfirmEscrow(campaign.id)
+        if (requiresCheckout) {
+          setResult("draft")
+          return
+        }
+        await publishCampaign.mutateAsync(campaign.id)
+        setResult("published")
+      } catch {
+        setResult("draft")
+      }
+    } catch (err) {
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : "Couldn't create the bounty. Please check the fields and try again."
+      )
+    }
   }
 
   function handleContinue(event: React.FormEvent) {
@@ -81,12 +134,16 @@ export function CreateBountyForm() {
     setStep(2)
   }
 
-  if (paid) {
+  if (result) {
     return (
       <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-10 text-center">
-        <p className="text-lg font-semibold text-foreground">Bounty published</p>
+        <p className="text-lg font-semibold text-foreground">
+          {result === "published" ? "Bounty published" : "Bounty saved as draft"}
+        </p>
         <p className="mt-2 text-sm text-muted-foreground">
-          ₹{formatInr(totalBudget)} paid upfront via Razorpay (mock). Status: active.
+          {result === "published"
+            ? `Status: active. Total budget ₹${formatInr(totalBudget)}.`
+            : `Fund the ₹${formatInr(totalBudget)} escrow to publish this bounty.`}
         </p>
         <Link
           href="/dashboard/brand/campaigns"
@@ -297,15 +354,22 @@ export function CreateBountyForm() {
             </div>
           </section>
 
+          {error ? (
+            <p className="text-sm text-destructive" role="alert">
+              {error}
+            </p>
+          ) : null}
+
           <div className="flex justify-end">
             <button
               type="submit"
+              disabled={submitting}
               className={cn(
                 buttonVariants({ size: "lg" }),
-                "inline-flex h-11 items-center gap-2 rounded-xl bg-brand px-6 text-sm font-semibold text-white hover:bg-brand/90"
+                "inline-flex h-11 items-center gap-2 rounded-xl bg-brand px-6 text-sm font-semibold text-white hover:bg-brand/90 disabled:opacity-60"
               )}
             >
-              Pay ₹{formatInr(totalBudget)} via Razorpay
+              {submitting ? "Creating…" : `Pay ₹${formatInr(totalBudget)} via Razorpay`}
               <ArrowRight className="size-4" strokeWidth={2.5} />
             </button>
           </div>
