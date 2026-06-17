@@ -14,6 +14,8 @@ import { InrIcon } from "@/components/dashboard/inr-icon"
 import { NotificationMenu } from "@/components/dashboard/notification-menu"
 import { UserMenu } from "@/components/dashboard/user-menu"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { useSignout } from "@/hooks/use-auth"
+import { useBrandProfile, useCreatorProfile } from "@/hooks/use-profile"
 import { clearUserSession } from "@/lib/onboarding/storage"
 import { getBrandHeaderName } from "@/lib/dashboard/brand-profile-storage"
 import { cn } from "@/lib/utils"
@@ -38,11 +40,15 @@ export function DashboardShell({
   variant = "default",
 }: DashboardShellProps) {
   const router = useRouter()
+  const signout = useSignout()
   const isDetail = variant === "detail"
   const isBrand = nav.some((item) => item.href.startsWith("/dashboard/brand"))
   const [headerName, setHeaderName] = useState(userName)
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const avatarInitial = headerName.slice(0, 1).toUpperCase()
+
+  const creatorProfile = useCreatorProfile(!isBrand)
+  const brandProfile = useBrandProfile(isBrand)
 
   useEffect(() => {
     if (!isBrand) {
@@ -58,6 +64,14 @@ export function DashboardShell({
     window.addEventListener("perkley-brand-profile-updated", syncBrandName)
     return () => window.removeEventListener("perkley-brand-profile-updated", syncBrandName)
   }, [isBrand, userName])
+
+  // Prefer the authenticated profile name from the backend once it loads.
+  useEffect(() => {
+    const apiName = isBrand
+      ? brandProfile.data?.brandName
+      : creatorProfile.data?.displayName
+    if (apiName) setHeaderName(apiName)
+  }, [isBrand, brandProfile.data?.brandName, creatorProfile.data?.displayName])
 
   return (
     <div
@@ -116,7 +130,12 @@ export function DashboardShell({
               settingsHref={
                 isBrand ? "/dashboard/brand/settings" : "/dashboard/settings"
               }
-              onLogout={() => {
+              onLogout={async () => {
+                try {
+                  await signout.mutateAsync()
+                } catch {
+                  // Clear the local session regardless of API outcome.
+                }
                 clearUserSession()
                 router.replace("/")
               }}
