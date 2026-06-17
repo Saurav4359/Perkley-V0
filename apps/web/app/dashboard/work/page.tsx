@@ -1,10 +1,10 @@
 import { MySubmissionsPanel } from "@/components/dashboard/my-submissions-panel"
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
-import { getCreatorNav } from "@/lib/dashboard/mock-data"
+import { getCreatorNav } from "@/lib/dashboard/navigation"
 
 export default function CreatorWorkPage() {
   return (
-    <DashboardShell nav={getCreatorNav("/dashboard/work")} userName="Saurav">
+    <DashboardShell nav={getCreatorNav("/dashboard/work")}>
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">My submissions</h1>

@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 
 import { CampaignDetailClient } from "@/components/dashboard/campaign-detail-client"
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
-import { getCreatorNav } from "@/lib/dashboard/mock-data"
+import { getCreatorNav } from "@/lib/dashboard/navigation"
 
 type CreatorListingDetailPageProps = {
   params: Promise<{ id: string }>
@@ -19,7 +19,7 @@ export default async function CreatorListingDetailPage({
   const { id } = await params
 
   return (
-    <DashboardShell nav={getCreatorNav(`/dashboard/campaigns/${id}`)} userName="Saurav" variant="detail">
+    <DashboardShell nav={getCreatorNav(`/dashboard/campaigns/${id}`)} variant="detail">
       <CampaignDetailClient campaignId={id} mode="creator" />
     </DashboardShell>
   )
