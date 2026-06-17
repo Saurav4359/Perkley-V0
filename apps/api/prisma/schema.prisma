@@ -1,0 +1,280 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  creator
+  brand
+  admin
+}
+
+enum UserStatus {
+  active
+  suspended
+  deleted
+}
+
+enum OAuthProvider {
+  google
+  instagram
+}
+
+enum VerificationStatus {
+  none
+  pending
+  verified
+  rejected
+}
+
+enum PayoutMethodType {
+  upi
+  bank
+}
+
+enum MediaPurpose {
+  brand_logo
+  creator_avatar
+  portfolio_image
+}
+
+enum MediaAssetStatus {
+  pending
+  uploaded
+  attached
+  deleted
+  failed
+}
+
+enum CampaignType {
+  bounty
+  campaign
+}
+
+enum CampaignStatus {
+  draft
+  active
+  archived
+  completed
+  cancelled
+}
+
+enum Platform {
+  instagram
+}
+
+enum ContentType {
+  reel
+  post
+  story
+}
+
+model User {
+  id            String     @id @default(uuid()) @db.Uuid
+  email         String?    @unique
+  passwordHash  String?    @map("password_hash")
+  role          UserRole
+  status        UserStatus @default(active)
+  emailVerified Boolean    @default(false) @map("email_verified")
+  lastLoginAt   DateTime?  @map("last_login_at") @db.Timestamptz(6)
+  createdAt     DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  creatorProfile CreatorProfile?
+  brandProfile   BrandProfile?
+  oauthAccounts  OAuthAccount[]
+  oauthStates    OAuthState[]
+  mediaAssets    MediaAsset[]
+  campaigns      Campaign[]
+
+  @@index([role])
+  @@map("users")
+}
+
+model CreatorProfile {
+  userId             String             @id @map("user_id") @db.Uuid
+  displayName        String             @map("display_name")
+  instagramHandle    String?            @map("instagram_handle")
+  instagramUserId    String?            @map("instagram_user_id")
+  followersCount     Int?               @map("followers_count")
+  averageViews       Int?               @map("average_views")
+  averageLikes       Int?               @map("average_likes")
+  avatarUrl          String?            @map("avatar_url")
+  location           String?
+  niches             String[]           @default([])
+  contentTypes       String[]           @default([]) @map("content_types")
+  verificationStatus VerificationStatus @default(none) @map("verification_status")
+  trustScore         Decimal            @default(100) @map("trust_score") @db.Decimal(5, 2)
+  createdAt          DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime           @updatedAt @map("updated_at") @db.Timestamptz(6)
+  avatarAssetId      String?            @unique @map("avatar_asset_id") @db.Uuid
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payoutMethods CreatorPayoutMethod[]
+  portfolioItems CreatorPortfolioItem[]
+  avatarAsset MediaAsset? @relation("CreatorAvatar", fields: [avatarAssetId], references: [id], onDelete: SetNull)
+
+  @@index([instagramHandle])
+  @@map("creator_profiles")
+}
+
+model CreatorPayoutMethod {
+  id                 String             @id @default(uuid()) @db.Uuid
+  creatorId          String             @map("creator_id") @db.Uuid
+  type               PayoutMethodType
+  upiIdEncrypted     String?            @map("upi_id_encrypted")
+  upiIdMasked        String?            @map("upi_id_masked")
+  accountHolderEnc   String?            @map("account_holder_enc")
+  accountNumberLast4 String?            @map("account_number_last4")
+  accountNumberEnc   String?            @map("account_number_enc")
+  ifscEncrypted      String?            @map("ifsc_encrypted")
+  isDefault          Boolean            @default(true) @map("is_default")
+  verificationStatus VerificationStatus @default(pending) @map("verification_status")
+  createdAt          DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime           @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  creator CreatorProfile @relation(fields: [creatorId], references: [userId], onDelete: Cascade)
+
+  @@index([creatorId])
+  @@map("creator_payout_methods")
+}
+
+model CreatorPortfolioItem {
+  id          String   @id @default(uuid()) @db.Uuid
+  creatorId   String   @map("creator_id") @db.Uuid
+  title       String
+  url         String
+  platform    String   @default("instagram")
+  contentType String   @map("content_type")
+  thumbnailUrl String? @map("thumbnail_url")
+  imageAssetId String? @unique @map("image_asset_id") @db.Uuid
+  metrics     Json     @default("{}")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  creator CreatorProfile @relation(fields: [creatorId], references: [userId], onDelete: Cascade)
+  imageAsset MediaAsset? @relation("PortfolioImage", fields: [imageAssetId], references: [id], onDelete: SetNull)
+
+  @@index([creatorId, sortOrder])
+  @@map("creator_portfolio_items")
+}
+
+model BrandProfile {
+  userId             String             @id @map("user_id") @db.Uuid
+  brandName          String             @map("brand_name")
+  bio                String?
+  industry           String?
+  website            String?
+  workEmail          String?            @map("work_email")
+  logoUrl            String?            @map("logo_url")
+  socialLinks        Json               @default("{}") @map("social_links")
+  verificationStatus VerificationStatus @default(none) @map("verification_status")
+  visibility         String             @default("public")
+  trustScore         Decimal            @default(100) @map("trust_score") @db.Decimal(5, 2)
+  logoAssetId        String?            @unique @map("logo_asset_id") @db.Uuid
+  createdAt          DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime           @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  logoAsset MediaAsset? @relation("BrandLogo", fields: [logoAssetId], references: [id], onDelete: SetNull)
+
+  @@map("brand_profiles")
+}
+
+model Campaign {
+  id                String         @id @default(uuid()) @db.Uuid
+  brandId           String         @map("brand_id") @db.Uuid
+  type              CampaignType
+  title             String
+  description       String
+  niche             String
+  platform          Platform       @default(instagram)
+  contentType       ContentType    @map("content_type")
+  minFollowers      Int            @default(0) @map("min_followers")
+  requiredHashtag   String         @map("required_hashtag")
+  requiredMention   String         @map("required_mention")
+  deadline          DateTime       @db.Timestamptz(6)
+  status            CampaignStatus @default(draft)
+  totalBudget       Int            @map("total_budget")
+  maxCreators       Int?           @map("max_creators")
+  minViewsThreshold Int?           @map("min_views_threshold")
+  fixedReward       Int?           @map("fixed_reward")
+  prizeFirst        Int?           @map("prize_first")
+  prizeSecond       Int?           @map("prize_second")
+  prizeThird        Int?           @map("prize_third")
+  prizeTop20Each    Int?           @map("prize_top20_each")
+  publishedAt       DateTime?      @map("published_at") @db.Timestamptz(6)
+  archivedAt        DateTime?      @map("archived_at") @db.Timestamptz(6)
+  createdAt         DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  brand User @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@index([brandId, status])
+  @@index([status, deadline])
+  @@map("campaigns")
+}
+
+model MediaAsset {
+  id               String           @id @default(uuid()) @db.Uuid
+  ownerId          String           @map("owner_id") @db.Uuid
+  purpose          MediaPurpose
+  status           MediaAssetStatus @default(pending)
+  storageKey       String           @unique @map("storage_key")
+  originalFilename String          @map("original_filename")
+  mimeType         String           @map("mime_type")
+  byteSizeExpected Int             @map("byte_size_expected")
+  byteSizeActual   Int?            @map("byte_size_actual")
+  publicUrl        String?         @map("public_url")
+  uploadedAt       DateTime?       @map("uploaded_at") @db.Timestamptz(6)
+  createdAt        DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime        @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  owner             User                  @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  brandLogoFor      BrandProfile?         @relation("BrandLogo")
+  creatorAvatarFor  CreatorProfile?       @relation("CreatorAvatar")
+  portfolioImageFor CreatorPortfolioItem? @relation("PortfolioImage")
+
+  @@index([ownerId, purpose, status])
+  @@map("media_assets")
+}
+
+model OAuthAccount {
+  userId            String        @map("user_id") @db.Uuid
+  provider          OAuthProvider
+  providerAccountId String        @map("provider_account_id")
+  email             String?
+  username          String?
+  accessToken       String?       @map("access_token")
+  refreshToken      String?       @map("refresh_token")
+  expiresAt         DateTime?     @map("expires_at") @db.Timestamptz(6)
+  rawProfile        Json          @default("{}") @map("raw_profile")
+  createdAt         DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+  @@index([userId])
+  @@map("oauth_accounts")
+}
+
+model OAuthState {
+  stateHash    String        @id @map("state_hash")
+  provider     OAuthProvider
+  role         UserRole      @default(creator)
+  userId       String?       @map("user_id") @db.Uuid
+  redirectTo   String?       @map("redirect_to")
+  codeVerifier String?       @map("code_verifier")
+  expiresAt    DateTime      @map("expires_at") @db.Timestamptz(6)
+  consumedAt   DateTime?     @map("consumed_at") @db.Timestamptz(6)
+  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("oauth_states")
+}
