@@ -7,13 +7,13 @@ import { InrIcon } from "@/components/dashboard/inr-icon"
 import { SubmitListingButton } from "@/components/dashboard/submit-listing-button"
 import { buttonVariants } from "@/components/ui/button"
 import type { ListingDetail } from "@/lib/dashboard/campaign-details"
-import type { Listing } from "@/lib/dashboard/types"
+import type { Campaign } from "@/lib/dashboard/feed-types"
 import { formatInr } from "@/lib/dashboard/utils"
 import { cn } from "@/lib/utils"
 
 type CampaignDetailSidebarProps = {
   listing: ListingDetail
-  related: Listing[]
+  related: Campaign[]
   mode?: "brand" | "brand-browse" | "creator"
 }
 
@@ -21,11 +21,13 @@ function RelatedListing({
   item,
   hrefPrefix,
 }: {
-  item: Listing
+  item: Campaign
   hrefPrefix: string
 }) {
   const amount =
-    item.type === "bounty" ? formatInr(item.totalBudget) : formatInr(item.fixedReward)
+    item.type === "bounty"
+      ? formatInr(item.totalBudget ?? 0)
+      : formatInr(item.fixedReward ?? 0)
 
   return (
     <Link
@@ -34,9 +36,9 @@ function RelatedListing({
     >
       <div
         className="flex size-10 items-center justify-center rounded-lg text-xs font-semibold text-white"
-        style={{ backgroundColor: item.brandAccent }}
+        style={{ backgroundColor: item.accent }}
       >
-        {item.brandInitials}
+        {item.initials}
       </div>
       <div className="min-w-0">
         <p className="truncate text-sm font-medium group-hover:text-brand">{item.title}</p>

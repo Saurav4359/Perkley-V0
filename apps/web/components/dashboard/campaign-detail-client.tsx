@@ -1,13 +1,13 @@
 "use client"
 
 import { notFound } from "next/navigation"
+import { useMemo } from "react"
 
 import { BrandCampaignReview } from "@/components/dashboard/brand-campaign-review"
 import { ListingDetailView } from "@/components/dashboard/listing-detail-view"
-import { useCampaign } from "@/hooks/use-campaigns"
+import { useCampaign, usePublicCampaigns } from "@/hooks/use-campaigns"
 import { useCampaignLeaderboard } from "@/hooks/use-leaderboard"
-import { apiCampaignToListingDetail } from "@/lib/dashboard/campaign-adapter"
-import { getListingDetail, type ListingDetail } from "@/lib/dashboard/campaign-details"
+import { apiCampaignToFeedItem, apiCampaignToListingDetail } from "@/lib/dashboard/campaign-adapter"
 import { ApiError } from "@/lib/api/client"
 import type { LeaderboardEntry } from "@/lib/dashboard/types"
 
@@ -18,38 +18,28 @@ type CampaignDetailClientProps = {
   backLabel?: string
 }
 
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-
 export function CampaignDetailClient({
   campaignId,
   mode = "creator",
   backHref,
   backLabel,
 }: CampaignDetailClientProps) {
-  const isUuid = UUID_RE.test(campaignId)
-
-  // Legacy mock ids (e.g. "b1") still resolve from local sample data.
-  const mockListing: ListingDetail | undefined = isUuid
-    ? undefined
-    : getListingDetail(campaignId)
-
-  const { data, isLoading, error } = useCampaign(isUuid ? campaignId : undefined)
+  const { data, isLoading, error } = useCampaign(campaignId)
+  const relatedQuery = usePublicCampaigns(
+    data ? { type: data.type, niche: data.niche } : {}
+  )
   const leaderboardQuery = useCampaignLeaderboard(
-    isUuid ? campaignId : undefined,
+    campaignId,
     data?.type === "bounty"
   )
 
-  if (mockListing) {
-    return (
-      <ListingDetailView
-        listing={mockListing}
-        mode={mode}
-        backHref={backHref}
-        backLabel={backLabel}
-      />
-    )
-  }
+  const relatedListings = useMemo(() => {
+    if (!data || !relatedQuery.data) return []
+    return relatedQuery.data
+      .filter((item) => item.id !== data.id && item.status === "active")
+      .slice(0, 3)
+      .map(apiCampaignToFeedItem)
+  }, [data, relatedQuery.data])
 
   if (isLoading) {
     return (
@@ -96,6 +86,7 @@ export function CampaignDetailClient({
         mode={mode}
         backHref={backHref}
         backLabel={backLabel}
+        relatedListings={relatedListings}
       />
       {mode === "brand" ? <BrandCampaignReview campaignId={data.id} /> : null}
     </>

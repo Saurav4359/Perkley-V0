@@ -6,7 +6,7 @@ import { CampaignDetailBody } from "@/components/dashboard/campaign-detail/campa
 import { CampaignDetailHero } from "@/components/dashboard/campaign-detail/campaign-detail-hero"
 import { CampaignDetailSidebar } from "@/components/dashboard/campaign-detail/campaign-detail-sidebar"
 import type { ListingDetail } from "@/lib/dashboard/campaign-details"
-import { LISTINGS } from "@/lib/dashboard/listings-data"
+import type { Campaign } from "@/lib/dashboard/feed-types"
 import { LISTING_TYPE_COPY } from "@/lib/dashboard/types"
 
 type ListingDetailViewProps = {
@@ -14,6 +14,7 @@ type ListingDetailViewProps = {
   mode?: "brand" | "brand-browse" | "creator"
   backHref?: string
   backLabel?: string
+  relatedListings?: Campaign[]
 }
 
 export function ListingDetailView({
@@ -21,10 +22,9 @@ export function ListingDetailView({
   mode = "creator",
   backHref = "/dashboard",
   backLabel = "Back to listings",
+  relatedListings = [],
 }: ListingDetailViewProps) {
-  const related = LISTINGS.filter(
-    (item) => item.id !== listing.id && item.status === "active" && item.type === listing.type
-  ).slice(0, 3)
+  const related = relatedListings
 
   const prizeTiersForBoard =
     listing.type === "bounty"
