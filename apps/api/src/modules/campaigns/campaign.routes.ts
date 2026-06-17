@@ -5,6 +5,7 @@ import { optionalAuth, requireAuth, requireRoles } from "../../middleware/auth"
 import { validateBody } from "../../middleware/validate"
 import { campaignApplicationRoutes } from "../applications/application.routes"
 import { campaignLeaderboardRoutes } from "../leaderboard/leaderboard.routes"
+import { campaignPaymentRoutes } from "../payments/payment.routes"
 import { campaignSubmissionRoutes } from "../submissions/submission.routes"
 import {
   archiveCampaign,
@@ -47,6 +48,7 @@ campaignRoutes.get(
 campaignRoutes.use("/:id", campaignApplicationRoutes)
 campaignRoutes.use("/:id", campaignSubmissionRoutes)
 campaignRoutes.use("/:id", campaignLeaderboardRoutes)
+campaignRoutes.use("/:id", campaignPaymentRoutes)
 
 campaignRoutes.get(
   "/:id",

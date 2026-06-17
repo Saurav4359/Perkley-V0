@@ -98,6 +98,22 @@ enum NotificationType {
   payment_released
 }
 
+enum EscrowStatus {
+  pending
+  funded
+  released
+  refunded
+  failed
+}
+
+enum PayoutStatus {
+  pending
+  processing
+  paid
+  failed
+  on_hold
+}
+
 model User {
   id            String     @id @default(uuid()) @db.Uuid
   email         String?    @unique
@@ -120,6 +136,8 @@ model User {
   submissions    CampaignSubmission[] @relation("CreatorSubmissions")
   reviewedSubmissions CampaignSubmission[] @relation("ReviewedSubmissions")
   notifications Notification[]
+  escrowTransactions EscrowTransaction[] @relation("BrandEscrow")
+  payouts        Payout[] @relation("CreatorPayouts")
 
   @@index([role])
   @@map("users")
@@ -246,6 +264,8 @@ model Campaign {
   brand User @relation(fields: [brandId], references: [id], onDelete: Cascade)
   applications CampaignApplication[]
   submissions CampaignSubmission[]
+  escrow EscrowTransaction?
+  payouts Payout[]
 
   @@index([brandId, status])
   @@index([status, deadline])
@@ -300,6 +320,7 @@ model CampaignSubmission {
   campaign    Campaign            @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   creator     User                @relation("CreatorSubmissions", fields: [creatorId], references: [id], onDelete: Cascade)
   reviewer    User?               @relation("ReviewedSubmissions", fields: [reviewedBy], references: [id], onDelete: SetNull)
+  payout      Payout?
 
   @@index([campaignId, status])
   @@index([creatorId, status])
@@ -383,4 +404,53 @@ model Notification {
   @@index([userId, readAt])
   @@index([userId, createdAt])
   @@map("notifications")
+}
+
+model EscrowTransaction {
+  id                String        @id @default(uuid()) @db.Uuid
+  campaignId        String        @unique @map("campaign_id") @db.Uuid
+  brandId           String        @map("brand_id") @db.Uuid
+  amountInr         Int           @map("amount_inr")
+  releasedAmountInr Int           @default(0) @map("released_amount_inr")
+  razorpayOrderId   String?       @map("razorpay_order_id")
+  razorpayPaymentId String?       @map("razorpay_payment_id")
+  status            EscrowStatus  @default(pending)
+  failureReason     String?       @map("failure_reason")
+  fundedAt          DateTime?     @map("funded_at") @db.Timestamptz(6)
+  releasedAt        DateTime?     @map("released_at") @db.Timestamptz(6)
+  refundedAt        DateTime?     @map("refunded_at") @db.Timestamptz(6)
+  createdAt         DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  brand    User     @relation("BrandEscrow", fields: [brandId], references: [id], onDelete: Cascade)
+  payouts  Payout[]
+
+  @@index([brandId, status])
+  @@map("escrow_transactions")
+}
+
+model Payout {
+  id              String        @id @default(uuid()) @db.Uuid
+  escrowId        String        @map("escrow_id") @db.Uuid
+  campaignId      String        @map("campaign_id") @db.Uuid
+  submissionId    String        @unique @map("submission_id") @db.Uuid
+  creatorId       String        @map("creator_id") @db.Uuid
+  amountInr       Int           @map("amount_inr")
+  razorpayPayoutId String?      @map("razorpay_payout_id")
+  status          PayoutStatus  @default(pending)
+  failureReason   String?       @map("failure_reason")
+  paidAt          DateTime?     @map("paid_at") @db.Timestamptz(6)
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  escrow     EscrowTransaction  @relation(fields: [escrowId], references: [id], onDelete: Cascade)
+  campaign   Campaign           @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  submission CampaignSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  creator    User               @relation("CreatorPayouts", fields: [creatorId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId, status])
+  @@index([creatorId, status])
+  @@index([escrowId])
+  @@map("payouts")
 }

@@ -20,15 +20,15 @@ This file is the source of truth for backend scope, status, and acceptance crite
 | Leaderboard | 3 | 0 | 0 |
 | Dashboard | 4 | 0 | 0 |
 | Notifications | 5 | 0 | 0 |
-| Payments | 0 | 0 | 4 |
+| Payments | 4 | 0 | 0 |
 | Analytics | 0 | 0 | 4 |
 | Admin | 0 | 0 | 6 |
 | Background jobs | 0 | 0 | 4 |
 | Future | 0 | 0 | 6 |
 
-**Estimated completion:** ~62% of the full product backend (Steps 1–9 done locally; Steps 10–13 not started).
+**Estimated completion:** ~68% of the full product backend (Steps 1–10 done locally; Steps 11–13 not started).
 
-Last audited: 2026-06-17 (Step 9 notifications)
+Last audited: 2026-06-17 (Step 10 payments)
 
 ## Feature Status Matrix
 
@@ -146,16 +146,16 @@ Also done: `GET /api/dashboard/creator/search`, `GET /api/dashboard/brand/search
 | Application Accepted | Done | Bounty auto-accept + brand accept |
 | Submission Reviewed | Done | Approve/reject submission |
 | Winner Announced | Done | Winner selection on bounty leaderboard |
-| Payment Released | Partial | Publisher stub ready; wired in Step 10 |
+| Payment Released | Done | Fires on payout release |
 
 ### Payments
 
 | Feature | Status | Notes |
 | --- | --- | --- |
-| Escrow | Not started | Step 10 |
-| Release Payment | Not started | Step 10 |
-| Refund | Not started | Step 10 |
-| Transaction History | Not started | Step 10 |
+| Escrow | Done | Fund/confirm/refund per campaign; publish requires funded escrow |
+| Release Payment | Done | Release to qualified (`campaign`) or won (`bounty`) submissions |
+| Refund | Done | Refund remaining escrow balance to brand |
+| Transaction History | Done | `GET /api/creator/payments`, `GET /api/brand/payments` |
 
 ### Analytics
 
@@ -797,11 +797,60 @@ Status: Done for local backend foundation
 
 - DB-backed integration tests for notification routes and publish fan-out.
 - Connect frontend notification bell and list to these APIs.
-- Wire `notifyPaymentReleased` from payments module in Step 10.
+
+## Step 10: Payments And Escrow
+
+Status: Done for local backend foundation
+
+### Goals
+
+- Brands fund campaign escrow before publishing.
+- Escrow tracks funded, released, and refunded balances per campaign.
+- Brands release payouts to eligible creators from escrow.
+- Creators and brands can view payment history.
+- Payment release triggers `payment_released` notifications.
+
+### Endpoints
+
+| Method | Path | Status | RBAC | Notes |
+| --- | --- | --- | --- | --- |
+| GET | `/api/campaigns/:id/escrow` | Done | `brand` owner | Escrow status and balances |
+| POST | `/api/campaigns/:id/escrow/fund` | Done | `brand` owner | Create Razorpay order (or dev order) |
+| POST | `/api/campaigns/:id/escrow/confirm` | Done | `brand` owner | Confirm payment and mark escrow funded |
+| POST | `/api/campaigns/:id/escrow/refund` | Done | `brand` owner | Refund remaining escrow balance |
+| POST | `/api/campaigns/:id/payments/release` | Done | `brand` owner | Release payouts; optional `submissionIds` |
+| GET | `/api/creator/payments` | Done | `creator` | Payout history |
+| GET | `/api/brand/payments` | Done | `brand` | Escrow + recent payout history |
+
+### Workflow Rules
+
+- Escrow amount equals campaign `totalBudget`.
+- Only `draft` campaigns can initiate escrow funding.
+- Publish requires escrow status `funded`.
+- `campaign` payouts go to `qualified` submissions at `fixedReward`.
+- `bounty` payouts go to `won` submissions using leaderboard prize tiers.
+- Creators must have a default payout method before release.
+- Successful release marks submissions `paid` and decrements escrow balance.
+- Refund allowed when escrow is `funded`, balance remains, and no active payouts are in flight.
+
+### Razorpay Integration
+
+- When `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` are set, fund flow creates real Razorpay orders and verifies signatures on confirm.
+- Without Razorpay keys, dev mode accepts synthetic order/payment IDs for local testing.
+
+### Tests
+
+- Escrow eligibility, release rules, payout amount calculation, and balance tracking utilities
+
+### Remaining In Step 10
+
+- Run Prisma migration against Neon (`escrow_transactions`, `payouts`).
+- Add DB-backed integration tests for payment routes.
+- Connect frontend earnings and brand billing UI to these APIs.
+- Production Razorpay payout API (current release marks payouts paid in-platform).
 
 ## Future Steps
 
-- Step 10: Payments and escrow
 - Step 11: Analytics and Instagram metrics sync
 - Step 12: Admin (users, brands, creators, campaigns, payments, reports)
 - Step 13: Background jobs (verification, leaderboard, notifications, expiry)

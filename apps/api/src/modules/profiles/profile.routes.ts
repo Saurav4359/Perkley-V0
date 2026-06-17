@@ -9,6 +9,11 @@ import { listCreatorApplications } from "../applications/application.service"
 import { creatorApplicationsQuerySchema } from "../applications/application.schemas"
 import { listCreatorSubmissions } from "../submissions/submission.service"
 import { creatorSubmissionsQuerySchema } from "../submissions/submission.schemas"
+import { paymentHistoryQuerySchema } from "../payments/payment.schemas"
+import {
+  listBrandPaymentHistory,
+  listCreatorPaymentHistory,
+} from "../payments/payment.service"
 import {
   createPortfolioItemSchema,
   updateBrandProfileSchema,
@@ -44,6 +49,19 @@ creatorProfileRoutes.get(
   asyncRoute(async (req, res) => {
     const query = creatorSubmissionsQuerySchema.parse(req.query)
     res.json({ submissions: await listCreatorSubmissions(req.auth!.id, query.status) })
+  })
+)
+
+creatorProfileRoutes.get(
+  "/payments",
+  asyncRoute(async (req, res) => {
+    const query = paymentHistoryQuerySchema.parse(req.query)
+    res.json({
+      payments: await listCreatorPaymentHistory(req.auth!.id, {
+        limit: query.limit,
+        status: query.status,
+      }),
+    })
   })
 )
 
@@ -115,6 +133,16 @@ creatorProfileRoutes.patch(
 )
 
 brandProfileRoutes.use(requireAuth, requireRoles("brand"))
+
+brandProfileRoutes.get(
+  "/payments",
+  asyncRoute(async (req, res) => {
+    const query = paymentHistoryQuerySchema.parse(req.query)
+    res.json({
+      payments: await listBrandPaymentHistory(req.auth!.id, { limit: query.limit }),
+    })
+  })
+)
 
 brandProfileRoutes.get(
   "/profile",

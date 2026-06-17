@@ -6,6 +6,7 @@ import {
   notifyNewCampaignPublished,
   runNotificationSideEffect,
 } from "../notifications/notification.publisher"
+import { assertEscrowFundedForPublish } from "../payments/payment.service"
 import type { CreateCampaignInput, UpdateCampaignInput } from "./campaign.schemas"
 import {
   canArchiveCampaign,
@@ -315,6 +316,8 @@ export async function publishCampaign(userId: string, campaignId: string) {
       "campaign_not_publishable"
     )
   }
+
+  await assertEscrowFundedForPublish(campaignId)
 
   const updated = await prisma.campaign.update({
     where: { id: campaignId },
