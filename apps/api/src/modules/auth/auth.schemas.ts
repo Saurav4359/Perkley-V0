@@ -36,6 +36,11 @@ export const oauthStartQuerySchema = z.object({
     .optional(),
 })
 
+export const supabaseBridgeSchema = z.object({
+  accessToken: z.string().min(1),
+  role: authRoleSchema.default("creator"),
+})
+
 export const oauthCallbackQuerySchema = z.object({
   code: z.string().min(1).optional(),
   state: z.string().min(1).optional(),
@@ -45,5 +50,6 @@ export const oauthCallbackQuerySchema = z.object({
 
 export type SignupInput = z.infer<typeof signupSchema>
 export type SigninInput = z.infer<typeof signinSchema>
+export type SupabaseBridgeInput = z.infer<typeof supabaseBridgeSchema>
 export type OAuthStartQuery = z.infer<typeof oauthStartQuerySchema>
 export type OAuthCallbackQuery = z.infer<typeof oauthCallbackQuerySchema>

@@ -5,7 +5,7 @@ import { conflict, unauthorized } from "../../lib/http-error"
 import { prisma } from "../../lib/prisma"
 import { encryptSecret } from "../../lib/secrets"
 import type { SigninInput, SignupInput } from "./auth.schemas"
-import type { GoogleProfile, InstagramProfile } from "./oauth"
+import type { GoogleProfile, InstagramProfile, SupabaseGoogleProfile } from "./oauth"
 import { signSession, type SessionUser } from "./session"
 
 const passwordCost = 12
@@ -298,6 +298,87 @@ export async function completeGoogleOAuth(input: {
       creatorProfile: true,
       brandProfile: true,
     },
+  })
+
+  return {
+    user: publicUser(updated),
+    token: await issueSession(updated),
+  }
+}
+
+/**
+ * Bridges a verified Supabase Google identity onto a Perkley account. Supabase
+ * only proves the Google identity — this mints the app's own `perkley_session`
+ * so every existing API call, role check, and dashboard keeps working. Matches
+ * the same user whether they previously signed in via the API's Google OAuth
+ * (shared Google `sub`) or by email.
+ */
+export async function completeSupabaseOAuth(input: {
+  profile: SupabaseGoogleProfile
+  role: UserRole
+  linkUserId?: string | null
+}) {
+  const { profile } = input
+
+  let user: UserWithProfiles | null = null
+
+  if (profile.googleSub) {
+    const existingOAuth = await prisma.oAuthAccount.findUnique({
+      where: {
+        provider_providerAccountId: {
+          provider: "google",
+          providerAccountId: profile.googleSub,
+        },
+      },
+      include: {
+        user: { include: { creatorProfile: true, brandProfile: true } },
+      },
+    })
+    user = existingOAuth?.user ?? null
+  }
+
+  if (!user && input.linkUserId) {
+    user = await prisma.user.findUnique({
+      where: { id: input.linkUserId },
+      include: { creatorProfile: true, brandProfile: true },
+    })
+  }
+
+  if (!user) {
+    const existingEmailUser = await prisma.user.findUnique({
+      where: { email: profile.email },
+      include: { creatorProfile: true, brandProfile: true },
+    })
+
+    user =
+      existingEmailUser ??
+      (await createOAuthUser({
+        role: input.role,
+        email: profile.email,
+        emailVerified: profile.emailVerified,
+        displayName: profile.name ?? profile.email.split("@")[0],
+      }))
+  }
+
+  assertActive(user)
+
+  if (profile.googleSub) {
+    await upsertOAuthAccount({
+      userId: user.id,
+      provider: "google",
+      providerAccountId: profile.googleSub,
+      email: profile.email,
+      rawProfile: profile.rawProfile as Prisma.InputJsonObject,
+    })
+  }
+
+  const updated = await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      emailVerified: user.email === profile.email ? profile.emailVerified : undefined,
+      lastLoginAt: new Date(),
+    },
+    include: { creatorProfile: true, brandProfile: true },
   })
 
   return {

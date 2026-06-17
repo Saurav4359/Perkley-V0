@@ -3,8 +3,13 @@ import { createHash, randomBytes } from "node:crypto"
 import type { OAuthProvider, UserRole } from "@prisma/client"
 import { decodeJwt, jwtVerify, createRemoteJWKSet } from "jose"
 
-import { getEnv, isGoogleConfigured, isInstagramConfigured } from "../../lib/env"
-import { badRequest } from "../../lib/http-error"
+import {
+  getEnv,
+  isGoogleConfigured,
+  isInstagramConfigured,
+  requireSupabaseAuthEnv,
+} from "../../lib/env"
+import { badRequest, unauthorized } from "../../lib/http-error"
 import { prisma } from "../../lib/prisma"
 
 const googleJwks = createRemoteJWKSet(new URL("https://www.googleapis.com/oauth2/v3/certs"))
@@ -162,6 +167,87 @@ export async function exchangeGoogleCode(code: string): Promise<GoogleProfile> {
     refreshToken: token.refresh_token ?? null,
     expiresAt: token.expires_in ? new Date(Date.now() + token.expires_in * 1000) : null,
     rawProfile: profile,
+  }
+}
+
+export type SupabaseGoogleProfile = {
+  supabaseUserId: string
+  googleSub: string | null
+  email: string
+  emailVerified: boolean
+  name: string | null
+  picture: string | null
+  rawProfile: Record<string, unknown>
+}
+
+type GoTrueUser = {
+  id: string
+  email?: string | null
+  email_confirmed_at?: string | null
+  user_metadata?: Record<string, unknown> | null
+  app_metadata?: { provider?: string; providers?: string[] } | null
+  identities?: Array<{
+    provider?: string
+    id?: string
+    identity_data?: Record<string, unknown>
+  }> | null
+}
+
+/**
+ * Verifies a Supabase access token by calling the GoTrue `/auth/v1/user`
+ * endpoint. Supabase validates the token's signature and expiry server-side, so
+ * a 200 response is proof the token is genuine. We then extract the Google
+ * identity so the caller can link/mint a Perkley user.
+ */
+export async function fetchSupabaseUser(accessToken: string): Promise<SupabaseGoogleProfile> {
+  const { url, apiKey } = requireSupabaseAuthEnv()
+
+  const response = await fetch(`${url}/auth/v1/user`, {
+    headers: {
+      apikey: apiKey,
+      authorization: `Bearer ${accessToken}`,
+    },
+  })
+
+  if (response.status === 401 || response.status === 403) {
+    throw unauthorized("Invalid or expired Supabase session.")
+  }
+  if (!response.ok) {
+    throw badRequest("Could not verify the Supabase session.")
+  }
+
+  const user = (await response.json()) as GoTrueUser
+  const metadata = user.user_metadata ?? {}
+
+  const email =
+    typeof user.email === "string" && user.email
+      ? user.email.toLowerCase()
+      : typeof metadata.email === "string"
+        ? (metadata.email as string).toLowerCase()
+        : null
+
+  if (!email) {
+    throw badRequest("Supabase account did not return an email address.")
+  }
+
+  const googleIdentity = user.identities?.find((identity) => identity.provider === "google")
+  const name =
+    (typeof metadata.full_name === "string" && metadata.full_name) ||
+    (typeof metadata.name === "string" && metadata.name) ||
+    null
+  const picture =
+    (typeof metadata.avatar_url === "string" && metadata.avatar_url) ||
+    (typeof metadata.picture === "string" && metadata.picture) ||
+    null
+
+  return {
+    supabaseUserId: user.id,
+    googleSub: googleIdentity?.id ?? (typeof metadata.sub === "string" ? metadata.sub : null),
+    email,
+    emailVerified: Boolean(user.email_confirmed_at) || metadata.email_verified === true,
+    name,
+    picture,
+    rawProfile: { id: user.id, email, app_metadata: user.app_metadata ?? {} },
   }
 }
 

@@ -11,10 +11,12 @@ import {
   oauthStartQuerySchema,
   signinSchema,
   signupSchema,
+  supabaseBridgeSchema,
 } from "./auth.schemas"
 import {
   completeGoogleOAuth,
   completeInstagramOAuth,
+  completeSupabaseOAuth,
   getCurrentUser,
   signin,
   signup,
@@ -24,6 +26,7 @@ import {
   createOAuthState,
   exchangeGoogleCode,
   exchangeInstagramCode,
+  fetchSupabaseUser,
   getGoogleAuthorizationUrl,
   getInstagramAuthorizationUrl,
 } from "./oauth"
@@ -73,6 +76,30 @@ authRoutes.get(
   asyncRoute(async (req, res) => {
     const user = await getCurrentUser(req.auth!.id)
     res.json({ user })
+  })
+)
+
+/**
+ * Bridges a Supabase Google sign-in into a Perkley session. The web app
+ * authenticates with Supabase, then posts the resulting Supabase access token
+ * here; we verify it with Supabase, link/mint the Perkley user, and set the
+ * usual `perkley_session` cookie so the rest of the app is unaffected.
+ */
+authRoutes.post(
+  "/supabase",
+  authRateLimit,
+  validateBody(supabaseBridgeSchema),
+  asyncRoute(async (req, res) => {
+    const profile = await fetchSupabaseUser(req.body.accessToken)
+    const session = await getOptionalSession(req)
+    const result = await completeSupabaseOAuth({
+      profile,
+      role: req.body.role,
+      linkUserId: session?.id,
+    })
+
+    setSessionCookie(res, result.token)
+    res.json({ user: result.user })
   })
 )
 
