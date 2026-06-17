@@ -25,12 +25,27 @@ function secretKey() {
   return encoder.encode(requireJwtSecret())
 }
 
-function cookieOptions(maxAgeSeconds: number) {
+function isCrossOriginDeployment() {
   const env = getEnv()
+  return env.NODE_ENV === "production" || env.NODE_ENV === "staging"
+}
+
+function sessionCookieSameSite(): "lax" | "none" {
+  // Vercel (perkley.in) + Render (onrender.com) are different sites; credentialed
+  // fetches require SameSite=None with Secure in production.
+  return isCrossOriginDeployment() ? "none" : "lax"
+}
+
+function sessionCookieSecure() {
+  const env = getEnv()
+  return isCrossOriginDeployment() || env.NODE_ENV === "production"
+}
+
+function cookieOptions(maxAgeSeconds: number) {
   return {
     httpOnly: true,
-    sameSite: "lax" as const,
-    secure: env.NODE_ENV === "production",
+    sameSite: sessionCookieSameSite(),
+    secure: sessionCookieSecure(),
     maxAge: maxAgeSeconds * 1000,
   }
 }
@@ -144,18 +159,20 @@ export function setSessionCookie(res: Response, token: string) {
 
 export function clearSessionCookies(res: Response) {
   const env = getEnv()
+  const sameSite = sessionCookieSameSite()
+  const secure = sessionCookieSecure()
 
   res.clearCookie(env.SESSION_COOKIE_NAME, {
     httpOnly: true,
-    sameSite: "lax",
-    secure: env.NODE_ENV === "production",
+    sameSite,
+    secure,
     path: "/",
   })
 
   res.clearCookie(getRefreshCookieName(env), {
     httpOnly: true,
-    sameSite: "lax",
-    secure: env.NODE_ENV === "production",
+    sameSite,
+    secure,
     path: "/api/auth/refresh",
   })
 }
