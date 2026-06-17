@@ -21,14 +21,14 @@ This file is the source of truth for backend scope, status, and acceptance crite
 | Dashboard | 4 | 0 | 0 |
 | Notifications | 5 | 0 | 0 |
 | Payments | 4 | 0 | 0 |
-| Analytics | 0 | 0 | 4 |
+| Analytics | 4 | 0 | 0 |
 | Admin | 0 | 0 | 6 |
 | Background jobs | 0 | 0 | 4 |
 | Future | 0 | 0 | 6 |
 
-**Estimated completion:** ~68% of the full product backend (Steps 1–10 done locally; Steps 11–13 not started).
+**Estimated completion:** ~74% of the full product backend (Steps 1–11 done locally; Steps 12–13 not started).
 
-Last audited: 2026-06-17 (Step 10 payments)
+Last audited: 2026-06-17 (Step 11 analytics + Instagram metrics)
 
 ## Feature Status Matrix
 
@@ -161,10 +161,10 @@ Also done: `GET /api/dashboard/creator/search`, `GET /api/dashboard/brand/search
 
 | Feature | Status | Notes |
 | --- | --- | --- |
-| Campaign Analytics | Not started | Step 11 |
-| Creator Analytics | Not started | Step 11 |
-| Brand Analytics | Not started | Step 11 |
-| Engagement Metrics | Not started | Step 11 |
+| Campaign Analytics | Done | `GET /api/campaigns/:id/analytics` |
+| Creator Analytics | Done | `GET /api/analytics/creator` |
+| Brand Analytics | Done | `GET /api/analytics/brand` |
+| Engagement Metrics | Done | Views/likes/comments totals + engagement rate |
 
 ### Instagram
 
@@ -172,9 +172,9 @@ Also done: `GET /api/dashboard/creator/search`, `GET /api/dashboard/brand/search
 | --- | --- | --- |
 | OAuth | Done | Login/link via Instagram OAuth |
 | Fetch Profile | Partial | Profile stored on OAuth callback |
-| Verify Followers | Not started | Step 11 / background jobs |
-| Fetch Metrics | Not started | Step 11 |
-| Sync Data | Not started | Background jobs |
+| Verify Followers | Partial | Stored from OAuth; no periodic re-check yet |
+| Fetch Metrics | Done | `POST /api/campaigns/:id/submissions/:submissionId/sync-metrics` |
+| Sync Data | Partial | On-demand sync done; scheduled sync in Step 13 |
 
 ### Admin
 
@@ -849,9 +849,51 @@ Status: Done for local backend foundation
 - Connect frontend earnings and brand billing UI to these APIs.
 - Production Razorpay payout API (current release marks payouts paid in-platform).
 
-## Future Steps
+## Step 11: Analytics And Instagram Metrics Sync
 
-- Step 11: Analytics and Instagram metrics sync
+Status: Done for local backend foundation
+
+### Goals
+
+- Creators see aggregate analytics across their submissions (engagement, win rate, earnings).
+- Brands see portfolio analytics across their campaigns (engagement, applications, spend).
+- Brands see per-campaign analytics with top performers and status breakdown.
+- Submission engagement metrics can be synced from Instagram (or simulated in dev).
+
+### Endpoints
+
+| Method | Path | Status | RBAC | Notes |
+| --- | --- | --- | --- | --- |
+| GET | `/api/analytics/creator` | Done | `creator` | Engagement, status breakdown, win rate, earnings |
+| GET | `/api/analytics/brand` | Done | `brand` | Engagement, applications, escrow spend totals |
+| GET | `/api/campaigns/:id/analytics` | Done | `brand` owner | Per-campaign engagement + top performers |
+| POST | `/api/campaigns/:id/submissions/:submissionId/sync-metrics` | Done | `creator` self / `brand` owner | Refresh views/likes/comments and engagement score |
+
+### Metrics Rules
+
+- Engagement rate = (likes + comments) / views × 100.
+- Engagement score = views + likes×2 + comments×3 (shared with leaderboard ranking).
+- Win rate = (won + paid submissions) / total submissions × 100.
+- Brand spend totals derive from escrow `amountInr` and `releasedAmountInr`.
+
+### Instagram Sync
+
+- When Instagram is configured and the submission has a `platformMediaId` plus a creator access token, metrics are fetched from `graph.instagram.com`.
+- Otherwise a deterministic simulated metric set (seeded by submission id) is used for local/dev.
+- Submissions must be validated (not `submitted`) before syncing.
+
+### Tests
+
+- Analytics aggregation utilities (sum, rate, win rate, top performers, summary)
+- Instagram metric normalization, deterministic simulation, and synced-metric building
+
+### Remaining In Step 11
+
+- DB-backed integration tests for analytics and sync routes.
+- Periodic follower re-verification and scheduled metric sync (Step 13).
+- Connect frontend analytics views to these APIs.
+
+## Future Steps
 - Step 12: Admin (users, brands, creators, campaigns, payments, reports)
 - Step 13: Background jobs (verification, leaderboard, notifications, expiry)
 - Post-MVP: AI matching, recommendations, referrals, chat, teams, email, webhooks

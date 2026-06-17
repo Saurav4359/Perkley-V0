@@ -3,7 +3,9 @@ import { Router } from "express"
 import { asyncRoute } from "../../middleware/async-route"
 import { optionalAuth, requireAuth, requireRoles } from "../../middleware/auth"
 import { validateBody } from "../../middleware/validate"
+import { campaignAnalyticsRoutes } from "../analytics/analytics.routes"
 import { campaignApplicationRoutes } from "../applications/application.routes"
+import { campaignInstagramRoutes } from "../instagram/instagram.routes"
 import { campaignLeaderboardRoutes } from "../leaderboard/leaderboard.routes"
 import { campaignPaymentRoutes } from "../payments/payment.routes"
 import { campaignSubmissionRoutes } from "../submissions/submission.routes"
@@ -49,6 +51,8 @@ campaignRoutes.use("/:id", campaignApplicationRoutes)
 campaignRoutes.use("/:id", campaignSubmissionRoutes)
 campaignRoutes.use("/:id", campaignLeaderboardRoutes)
 campaignRoutes.use("/:id", campaignPaymentRoutes)
+campaignRoutes.use("/:id", campaignInstagramRoutes)
+campaignRoutes.use("/:id", campaignAnalyticsRoutes)
 
 campaignRoutes.get(
   "/:id",

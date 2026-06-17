@@ -469,6 +469,8 @@ export async function approveSubmission(
 
   return serializeSubmission(updated)
 }
+
+export async function rejectSubmission(
   brandId: string,
   campaignId: string,
   submissionId: string,

@@ -1,4 +1,4 @@
-import type { NotificationType } from "@prisma/client"
+import type { NotificationType, Prisma } from "@prisma/client"
 
 import { prisma } from "../../lib/prisma"
 import {
@@ -15,7 +15,7 @@ type CreateNotificationInput = {
   title: string
   body: string
   href?: string | null
-  metadata?: Record<string, unknown>
+  metadata?: Prisma.InputJsonValue
 }
 
 export async function createNotification(input: CreateNotificationInput) {

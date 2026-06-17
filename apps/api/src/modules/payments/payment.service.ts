@@ -278,7 +278,7 @@ export async function releaseCampaignPayments(
   const ranked =
     campaign.type === "bounty" ? await rankBountySubmissions(campaign) : []
 
-  const payoutPlans = []
+  const payoutPlans: Array<{ submission: (typeof submissions)[number]; amountInr: number }> = []
   for (const submission of submissions) {
     const hasPayoutMethod = await creatorHasPayoutMethod(submission.creatorId)
     if (!hasPayoutMethod) {
