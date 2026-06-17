@@ -15,6 +15,7 @@ import {
 
 import { RewardAmount } from "@/components/dashboard/reward-amount"
 import { buttonVariants } from "@/components/ui/button"
+import { useBrandAnalytics } from "@/hooks/use-analytics"
 import {
   BUDGET_UTILIZATION,
   BRAND_ANALYTICS_KPIS,
@@ -25,6 +26,7 @@ import {
   NICHE_BREAKDOWN,
   SPEND_OVER_TIME,
   TOP_CREATORS,
+  type AnalyticsKpi,
   type AnalyticsPeriod,
 } from "@/lib/dashboard/brand-analytics"
 import { formatInr } from "@/lib/dashboard/utils"
@@ -179,9 +181,55 @@ function statusClass(status: string) {
 
 export function BrandAnalyticsView() {
   const [period, setPeriod] = useState<AnalyticsPeriod>("30d")
-  const utilizationPct = Math.round(
-    (BUDGET_UTILIZATION.spent / BUDGET_UTILIZATION.allocated) * 100
-  )
+  const { data: analytics } = useBrandAnalytics()
+
+  const kpis: AnalyticsKpi[] = analytics
+    ? [
+        {
+          label: "Released spend",
+          value: `₹${formatInr(analytics.spend.releasedInr)}`,
+          hint: "Paid out to creators",
+        },
+        {
+          label: "Active campaigns",
+          value: String(analytics.activeCampaigns),
+          hint: `${analytics.campaigns} total`,
+        },
+        {
+          label: "Applications",
+          value: formatInr(analytics.totalApplications),
+          hint: "Across all campaigns",
+        },
+        {
+          label: "Total views",
+          value: formatInr(analytics.engagement.totalViews),
+          hint: `${analytics.engagement.submissions} submissions`,
+        },
+        {
+          label: "Engagement rate",
+          value: `${analytics.engagement.engagementRate}%`,
+          hint: "Likes + comments / views",
+        },
+        {
+          label: "Completed campaigns",
+          value: String(analytics.completedCampaigns),
+          hint: "Paid and closed",
+        },
+      ]
+    : BRAND_ANALYTICS_KPIS
+
+  const budget = analytics
+    ? {
+        allocated: analytics.spend.totalBudgetInr,
+        spent: analytics.spend.releasedInr,
+        remaining: analytics.spend.remainingInr,
+      }
+    : BUDGET_UTILIZATION
+
+  const utilizationPct =
+    budget.allocated > 0
+      ? Math.round((budget.spent / budget.allocated) * 100)
+      : 0
 
   return (
     <div className="space-y-8">
@@ -235,7 +283,7 @@ export function BrandAnalyticsView() {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {BRAND_ANALYTICS_KPIS.map((kpi) => (
+        {kpis.map((kpi) => (
           <KpiCard key={kpi.label} kpi={kpi} />
         ))}
       </div>
@@ -363,7 +411,7 @@ export function BrandAnalyticsView() {
           <div className="mt-6">
             <div className="flex items-end justify-between">
               <p className="text-3xl font-semibold tabular-nums">{utilizationPct}%</p>
-              <p className="text-xs text-muted-foreground">of ₹{formatInr(BUDGET_UTILIZATION.allocated)}</p>
+              <p className="text-xs text-muted-foreground">of ₹{formatInr(budget.allocated)}</p>
             </div>
             <div className="mt-3 h-3 overflow-hidden rounded-full bg-muted">
               <div
@@ -374,12 +422,12 @@ export function BrandAnalyticsView() {
             <dl className="mt-4 space-y-2 text-sm">
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Spent</dt>
-                <dd className="font-medium tabular-nums">₹{formatInr(BUDGET_UTILIZATION.spent)}</dd>
+                <dd className="font-medium tabular-nums">₹{formatInr(budget.spent)}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Remaining</dt>
                 <dd className="font-medium tabular-nums">
-                  ₹{formatInr(BUDGET_UTILIZATION.remaining)}
+                  ₹{formatInr(budget.remaining)}
                 </dd>
               </div>
             </dl>
