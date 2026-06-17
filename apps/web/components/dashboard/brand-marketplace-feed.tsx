@@ -5,6 +5,8 @@ import { CalendarDays, Circle, Gem, ListFilter, Zap } from "lucide-react"
 
 import { InrIcon } from "@/components/dashboard/inr-icon"
 import { ListingCard } from "@/components/dashboard/listing-card"
+import { usePublicCampaigns } from "@/hooks/use-campaigns"
+import { apiCampaignToFeedItem } from "@/lib/dashboard/campaign-adapter"
 import type { Campaign } from "@/lib/dashboard/mock-data"
 import { cn } from "@/lib/utils"
 
@@ -30,14 +32,21 @@ const FILTERS: { id: FeedFilter; label: string; icon?: ReactNode }[] = [
 ]
 
 type BrandMarketplaceFeedProps = {
-  listings: Campaign[]
+  /** Fallback listings shown while the live feed loads. */
+  listings?: Campaign[]
 }
 
-export function BrandMarketplaceFeed({ listings }: BrandMarketplaceFeedProps) {
+export function BrandMarketplaceFeed({ listings = [] }: BrandMarketplaceFeedProps) {
   const [filter, setFilter] = useState<FeedFilter>("all")
+  const { data, isLoading } = usePublicCampaigns()
+
+  const source = useMemo(
+    () => (data ? data.map(apiCampaignToFeedItem) : listings),
+    [data, listings]
+  )
 
   const filtered = useMemo(() => {
-    let items = [...listings]
+    let items = [...source]
 
     switch (filter) {
       case "trending":
@@ -60,7 +69,7 @@ export function BrandMarketplaceFeed({ listings }: BrandMarketplaceFeedProps) {
     }
 
     return items
-  }, [listings, filter])
+  }, [source, filter])
 
   return (
     <section id="browse-listings" className="scroll-mt-24 space-y-3">
@@ -110,7 +119,9 @@ export function BrandMarketplaceFeed({ listings }: BrandMarketplaceFeedProps) {
         ))}
         {filtered.length === 0 ? (
           <p className="px-4 py-12 text-center text-sm text-muted-foreground">
-            Nothing here yet — try another filter.
+            {isLoading
+              ? "Loading listings…"
+              : "Nothing here yet — try another filter."}
           </p>
         ) : null}
       </div>

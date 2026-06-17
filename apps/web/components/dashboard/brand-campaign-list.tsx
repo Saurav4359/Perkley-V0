@@ -4,6 +4,8 @@ import { useMemo, useState } from "react"
 import { Filter } from "lucide-react"
 
 import { ListingCard } from "@/components/dashboard/listing-card"
+import { useMyCampaigns } from "@/hooks/use-campaigns"
+import { apiCampaignToBrandItem } from "@/lib/dashboard/campaign-adapter"
 import {
   CAMPAIGN_CATEGORIES,
   type BrandCampaign,
@@ -26,16 +28,23 @@ const activeGlassControlClass =
   "border-white/60 bg-white/55 text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.82),0_12px_28px_rgba(15,23,42,0.10)] ring-1 ring-black/[0.04] backdrop-blur-xl dark:border-white/20 dark:bg-white/15 dark:text-foreground dark:ring-white/[0.04]"
 
 type BrandCampaignListProps = {
-  campaigns: BrandCampaign[]
+  /** Fallback campaigns shown while the brand's live listings load. */
+  campaigns?: BrandCampaign[]
 }
 
-export function BrandCampaignList({ campaigns }: BrandCampaignListProps) {
+export function BrandCampaignList({ campaigns = [] }: BrandCampaignListProps) {
   const [status, setStatus] = useState<(typeof STATUS_FILTERS)[number]["id"]>("all")
   const [feedType, setFeedType] = useState<"all" | "bounty" | "campaign">("all")
   const [niche, setNiche] = useState<CampaignCategory | "all">("all")
+  const { data, isLoading } = useMyCampaigns()
+
+  const source = useMemo(
+    () => (data ? data.map(apiCampaignToBrandItem) : campaigns),
+    [data, campaigns]
+  )
 
   const filtered = useMemo(() => {
-    return campaigns.filter((item) => {
+    return source.filter((item) => {
       const statusMatch = status === "all" || item.status === status
       const typeMatch =
         feedType === "all" ||
@@ -44,7 +53,7 @@ export function BrandCampaignList({ campaigns }: BrandCampaignListProps) {
       const nicheMatch = niche === "all" || item.niche === niche
       return statusMatch && typeMatch && nicheMatch
     })
-  }, [campaigns, status, feedType, niche])
+  }, [source, status, feedType, niche])
 
   return (
     <section className="space-y-5">
@@ -134,7 +143,9 @@ export function BrandCampaignList({ campaigns }: BrandCampaignListProps) {
         ))}
         {filtered.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-white/45 bg-white/[0.18] px-4 py-10 text-center text-sm text-muted-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.60),0_12px_36px_rgba(15,23,42,0.055)] ring-1 ring-black/[0.02] backdrop-blur-xl supports-[backdrop-filter]:bg-white/[0.12] dark:border-white/10 dark:bg-white/[0.04] dark:ring-white/[0.025]">
-            No listings match these filters yet.
+            {isLoading
+              ? "Loading your listings…"
+              : "No listings match these filters yet."}
           </p>
         ) : null}
       </div>
