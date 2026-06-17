@@ -3,26 +3,32 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 
+import { useAuth } from "@/hooks/use-auth"
 import { canLaunchBrandCampaigns } from "@/lib/brand-onboarding/progress"
 import {
   getBrandOnboardingState,
   isBrandOnboardingComplete,
 } from "@/lib/brand-onboarding/storage"
-import { getUserRole } from "@/lib/onboarding/storage"
 
 export function BrandOnboardingRouteGate({ children }: { children: React.ReactNode }) {
   const router = useRouter()
+  const { user, isLoading, isAuthenticated } = useAuth()
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    const role = getUserRole()
+    if (isLoading) return
 
-    if (role === "creator") {
+    if (!isAuthenticated || !user) {
+      router.replace("/login")
+      return
+    }
+
+    if (user.role === "creator") {
       router.replace("/onboarding")
       return
     }
 
-    if (role !== "brand") {
+    if (user.role !== "brand") {
       router.replace("/login")
       return
     }
@@ -34,9 +40,9 @@ export function BrandOnboardingRouteGate({ children }: { children: React.ReactNo
     }
 
     setReady(true)
-  }, [router])
+  }, [isAuthenticated, isLoading, router, user])
 
-  if (!ready) {
+  if (isLoading || !ready) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="size-8 animate-spin rounded-full border-2 border-border border-t-brand" />

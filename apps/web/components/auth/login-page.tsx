@@ -20,9 +20,7 @@ import { useSignin } from "@/hooks/use-auth"
 import {
   clearOnboardingPending,
   initBrandSession,
-  setUserRole,
 } from "@/lib/onboarding/storage"
-import { getBrandDashboardPath } from "@/lib/brand-onboarding/storage"
 import { cn } from "@/lib/utils"
 
 export function LoginPage() {
@@ -61,11 +59,10 @@ export function LoginPage() {
 
       if (user.role === "brand") {
         initBrandSession({ workEmail: user.email ?? email.trim() })
-        router.push(getBrandDashboardPath())
+        router.push("/dashboard/brand")
         return
       }
 
-      setUserRole("creator")
       clearOnboardingPending()
       router.push("/dashboard")
     } catch (err) {

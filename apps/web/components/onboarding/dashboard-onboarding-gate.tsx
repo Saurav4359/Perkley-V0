@@ -5,7 +5,6 @@ import { usePathname, useRouter } from "next/navigation"
 
 import { useAuth } from "@/hooks/use-auth"
 import { getBrandDashboardPath } from "@/lib/brand-onboarding/storage"
-import { getUserRole } from "@/lib/onboarding/storage"
 
 // Decision derived during render (no setState-in-effect):
 //   null      → still checking the session, show spinner
@@ -25,8 +24,8 @@ export function DashboardOnboardingGate({ children }: { children: React.ReactNod
     // Authoritative protection: no app session → back to login.
     if (!isAuthenticated) return "/login"
 
-    // Prefer the role from the verified session; fall back to local hint.
-    const role = user?.role === "brand" ? "brand" : getUserRole()
+    const role = user?.role
+    if (!role) return "/login"
 
     if (role === "brand") {
       if (pathname.startsWith("/brand-onboarding")) return undefined

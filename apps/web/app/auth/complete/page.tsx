@@ -7,11 +7,9 @@ import { useQueryClient } from "@tanstack/react-query"
 import { authQueryKey } from "@/hooks/use-auth"
 import { bridgeSupabaseSession } from "@/lib/api/auth"
 import { createSupabaseBrowserClient } from "@/lib/supabase/client"
-import { getBrandDashboardPath } from "@/lib/brand-onboarding/storage"
 import {
   clearOnboardingPending,
   initBrandSession,
-  setUserRole,
 } from "@/lib/onboarding/storage"
 
 function CompleteSignIn() {
@@ -54,11 +52,10 @@ function CompleteSignIn() {
 
         if (user.role === "brand") {
           initBrandSession({ workEmail: user.email ?? "" })
-          router.replace(getBrandDashboardPath())
+          router.replace("/dashboard/brand")
           return
         }
 
-        setUserRole("creator")
         clearOnboardingPending()
         router.replace("/dashboard")
       } catch {

@@ -5,12 +5,9 @@ import {
   USER_ROLE_STORAGE_KEY,
 } from "@/lib/onboarding/constants"
 import {
-  BRAND_ONBOARDING_STORAGE_KEY,
-} from "@/lib/brand-onboarding/constants"
-import {
   clearBrandOnboardingState,
+  clearBrandOnboardingPending,
   initBrandOnboardingSession,
-  markBrandOnboardingPending,
 } from "@/lib/brand-onboarding/storage"
 import {
   clearBrandProfileState,
@@ -20,11 +17,7 @@ import {
 } from "@/lib/dashboard/brand-profile-storage"
 import { canParticipateInListings } from "@/lib/onboarding/progress"
 import { createInitialOnboardingState } from "@/lib/onboarding/state"
-import type { OnboardingState, UserRole } from "@/lib/onboarding/types"
-
-function isUserRole(value: string | null): value is UserRole {
-  return value === "creator" || value === "brand"
-}
+import type { OnboardingState } from "@/lib/onboarding/types"
 
 export function normalizeOnboardingState(value: Partial<OnboardingState> | null): OnboardingState {
   const defaults = createInitialOnboardingState()
@@ -40,27 +33,6 @@ export function normalizeOnboardingState(value: Partial<OnboardingState> | null)
       Math.max(value.currentStep ?? defaults.currentStep, 1),
       ONBOARDING_STEP_COUNT
     ) as OnboardingState["currentStep"],
-  }
-}
-
-export function getUserRole(): UserRole | null {
-  if (typeof window === "undefined") return null
-
-  try {
-    const stored = localStorage.getItem(USER_ROLE_STORAGE_KEY)
-    return isUserRole(stored) ? stored : null
-  } catch {
-    return null
-  }
-}
-
-export function setUserRole(role: UserRole) {
-  if (typeof window === "undefined") return
-
-  try {
-    localStorage.setItem(USER_ROLE_STORAGE_KEY, role)
-  } catch {
-    // ignore storage failures
   }
 }
 
@@ -155,7 +127,6 @@ export function isOnboardingPending(): boolean {
 }
 
 export function initCreatorSession() {
-  setUserRole("creator")
   markOnboardingPending()
   return resetOnboardingState()
 }
@@ -164,7 +135,6 @@ export function initBrandSession(
   seed?: BrandProfileSeed,
   options?: { fromSignup?: boolean }
 ) {
-  setUserRole("brand")
   if (typeof window !== "undefined") {
     try {
       localStorage.removeItem(ONBOARDING_STORAGE_KEY)
@@ -191,18 +161,9 @@ export function initBrandSession(
     return
   }
 
+  // Returning brand login — hydrate profile hints only; onboarding runs once after signup.
   mergeBrandProfileSeed(profileSeed)
-
-  const existingOnboarding = typeof window !== "undefined"
-    ? localStorage.getItem(BRAND_ONBOARDING_STORAGE_KEY)
-    : null
-
-  if (!existingOnboarding) {
-    initBrandOnboardingSession(profileSeed)
-    return
-  }
-
-  markBrandOnboardingPending()
+  clearBrandOnboardingPending()
 }
 
 export function getCreatorDashboardPath(): string {
