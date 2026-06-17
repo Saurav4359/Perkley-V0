@@ -12,9 +12,22 @@ import { Button } from "@/components/ui/button"
 import type { BrandProfileData } from "@/lib/dashboard/brand-profile"
 import { brandProfilePatchFromData } from "@/lib/dashboard/brand-profile"
 import { brandInitialsFromName, patchBrandProfileState } from "@/lib/dashboard/brand-profile-storage"
+import { useUpdateBrandProfile } from "@/hooks/use-profile"
+import { ApiError } from "@/lib/api/client"
+import type { BrandSocialLinks, UpdateBrandProfileInput } from "@/lib/api/profile"
 import type { Niche } from "@/lib/dashboard/types"
 import { NICHES } from "@/lib/dashboard/types"
 import { cn } from "@/lib/utils"
+
+function asUrl(value: string): string | undefined {
+  const trimmed = value.trim()
+  return /^https?:\/\//i.test(trimmed) ? trimmed : undefined
+}
+
+function asEmail(value: string): string | undefined {
+  const trimmed = value.trim()
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed) ? trimmed : undefined
+}
 
 type EditSection = "identity" | "links" | "media"
 
@@ -69,6 +82,8 @@ export function EditBrandProfileDialog({
   const [workEmail, setWorkEmail] = useState(profile.workEmail ?? "")
   const [instagram, setInstagram] = useState(profile.social.instagram ?? "")
   const [twitter, setTwitter] = useState(profile.social.twitter ?? "")
+  const [error, setError] = useState<string | null>(null)
+  const updateProfile = useUpdateBrandProfile()
 
   useEffect(() => {
     if (!open) return
@@ -100,8 +115,9 @@ export function EditBrandProfileDialog({
     onOpenChange(false)
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!name.trim()) return
+    setError(null)
 
     const updates: Partial<BrandProfileData> = {
       name: name.trim(),
@@ -116,6 +132,34 @@ export function EditBrandProfileDialog({
       },
     }
     const stored = patchBrandProfileState(brandProfilePatchFromData(updates))
+
+    // Persist to the backend. Only send fields the API accepts (valid URLs/email).
+    const socialLinks: BrandSocialLinks = {}
+    const instagramUrl = asUrl(instagram)
+    const twitterUrl = asUrl(twitter)
+    if (instagramUrl) socialLinks.instagram = instagramUrl
+    if (twitterUrl) socialLinks.twitter = twitterUrl
+
+    const payload: UpdateBrandProfileInput = {
+      brandName: name.trim(),
+      bio: bio.trim() || undefined,
+      industry: industry || undefined,
+      website: asUrl(website),
+      workEmail: asEmail(workEmail),
+      ...(Object.keys(socialLinks).length ? { socialLinks } : {}),
+    }
+
+    try {
+      await updateProfile.mutateAsync(payload)
+    } catch (err) {
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : "Saved locally, but couldn't sync to the server."
+      )
+      return
+    }
+
     onSaved({
       ...updates,
       initials: brandInitialsFromName(stored.name),
@@ -296,9 +340,20 @@ export function EditBrandProfileDialog({
               </div>
             ) : null}
 
+            {error ? (
+              <p className="mt-5 text-sm text-destructive" role="alert">
+                {error}
+              </p>
+            ) : null}
+
             <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-border pt-5">
-              <Button type="button" className="rounded-full" onClick={handleSave}>
-                Save changes
+              <Button
+                type="button"
+                className="rounded-full"
+                onClick={handleSave}
+                disabled={updateProfile.isPending}
+              >
+                {updateProfile.isPending ? "Saving…" : "Save changes"}
               </Button>
               <Button
                 type="button"

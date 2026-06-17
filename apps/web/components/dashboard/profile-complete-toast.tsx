@@ -16,13 +16,14 @@ export function ProfileCompleteToast() {
 
     setVisible(true)
     router.replace("/dashboard")
-
-    const timer = window.setTimeout(() => {
-      setVisible(false)
-    }, 2000)
-
-    return () => window.clearTimeout(timer)
   }, [router, searchParams])
+
+  useEffect(() => {
+    if (!visible) return
+
+    const timer = window.setTimeout(() => setVisible(false), 1000)
+    return () => window.clearTimeout(timer)
+  }, [visible])
 
   if (!visible) return null
 

@@ -16,7 +16,36 @@ import { PaymentForm } from "@/components/onboarding/payment-form"
 import { Button } from "@/components/ui/button"
 import type { PaymentDetails } from "@/lib/onboarding/types"
 import { getOnboardingState, patchOnboardingState } from "@/lib/onboarding/storage"
+import {
+  useCreatorProfile,
+  useSaveCreatorPaymentDetails,
+  useUpdateCreatorProfile,
+} from "@/hooks/use-profile"
+import type { UpsertPaymentDetailsInput } from "@/lib/api/profile"
 import { cn } from "@/lib/utils"
+
+const CONTENT_TYPE_VALUES = ["reel", "post", "story"] as const
+
+function toContentTypes(values: string[]): Array<"reel" | "post" | "story"> {
+  return values.filter((value): value is "reel" | "post" | "story" =>
+    (CONTENT_TYPE_VALUES as readonly string[]).includes(value)
+  )
+}
+
+function toPaymentInput(details: PaymentDetails): UpsertPaymentDetailsInput | null {
+  if (details.method === "upi") {
+    if (!details.upi.upiId.trim()) return null
+    return { type: "upi", upiId: details.upi.upiId.trim() }
+  }
+  const { accountHolder, accountNumber, ifsc } = details.bank
+  if (!accountHolder.trim() || !accountNumber.trim() || !ifsc.trim()) return null
+  return {
+    type: "bank",
+    accountHolder: accountHolder.trim(),
+    accountNumber: accountNumber.trim(),
+    ifsc: ifsc.trim(),
+  }
+}
 
 type EditSection = "about" | "creator" | "payout" | "instagram"
 
@@ -49,6 +78,10 @@ export function EditCreatorProfileDialog({
   const [savedMessage, setSavedMessage] = useState<string | null>(null)
   const [savedSection, setSavedSection] = useState<EditSection | null>(null)
 
+  const profileQuery = useCreatorProfile(open)
+  const updateProfile = useUpdateCreatorProfile()
+  const savePaymentDetails = useSaveCreatorPaymentDetails()
+
   useEffect(() => {
     if (!open) return
 
@@ -64,6 +97,18 @@ export function EditCreatorProfileDialog({
     setSavedMessage(null)
     setSavedSection(null)
   }, [open])
+
+  // Prefer server-persisted values once the profile loads.
+  useEffect(() => {
+    const profile = profileQuery.data
+    if (!profile) return
+    setDisplayName((current) => profile.displayName || current)
+    if (profile.location) setInstagramLocation(profile.location)
+    if (profile.niches.length) setNiches(profile.niches)
+    if (profile.contentTypes.length) setContentTypes(profile.contentTypes)
+    if (profile.instagramHandle) setInstagramHandle(profile.instagramHandle)
+    if (profile.followersCount) setInstagramFollowers(profile.followersCount)
+  }, [profileQuery.data])
 
   useEffect(() => {
     if (!open) return
@@ -92,23 +137,53 @@ export function EditCreatorProfileDialog({
     }, 2000)
   }
 
-  function saveAbout() {
+  function showError(section: EditSection, message = "Couldn't save. Try again.") {
+    setSavedSection(section)
+    setSavedMessage(message)
+    window.setTimeout(() => {
+      setSavedMessage(null)
+      setSavedSection(null)
+    }, 3000)
+  }
+
+  async function saveAbout() {
     if (!displayName.trim()) return
-    patchOnboardingState({
-      displayName: displayName.trim(),
-    })
-    showSaved("about")
+    patchOnboardingState({ displayName: displayName.trim() })
+    try {
+      await updateProfile.mutateAsync({ displayName: displayName.trim() })
+      showSaved("about")
+    } catch {
+      showError("about")
+    }
   }
 
-  function saveCreatorProfile() {
+  async function saveCreatorProfile() {
     patchOnboardingState({ niches, contentTypes })
-    showSaved("creator")
+    try {
+      await updateProfile.mutateAsync({
+        niches,
+        contentTypes: toContentTypes(contentTypes),
+      })
+      showSaved("creator")
+    } catch {
+      showError("creator")
+    }
   }
 
-  function savePayment(next: PaymentDetails) {
+  async function savePayment(next: PaymentDetails) {
     patchOnboardingState({ payment: next })
     setPayment(next)
-    showSaved("payout", "Payout details saved")
+    const input = toPaymentInput(next)
+    if (!input) {
+      showSaved("payout", "Payout details saved")
+      return
+    }
+    try {
+      await savePaymentDetails.mutateAsync(input)
+      showSaved("payout", "Payout details saved")
+    } catch {
+      showError("payout")
+    }
   }
 
   return (
