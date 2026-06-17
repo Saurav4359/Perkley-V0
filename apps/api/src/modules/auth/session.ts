@@ -2,11 +2,12 @@ import type { UserRole } from "@prisma/client"
 import type { Request, Response } from "express"
 import { jwtVerify, SignJWT } from "jose"
 
-import { getEnv, requireJwtSecret } from "../../lib/env"
+import { getEnv, getRefreshCookieName, requireJwtSecret } from "../../lib/env"
 import { unauthorized } from "../../lib/http-error"
 
 const encoder = new TextEncoder()
-const sessionTtlSeconds = 60 * 60 * 24 * 30
+const accessTtlSeconds = 60 * 15
+const refreshTtlSeconds = 60 * 60 * 24 * 30
 const sessionRoles = new Set<UserRole>(["admin", "brand", "creator"])
 
 export type SessionUser = {
@@ -15,20 +16,58 @@ export type SessionUser = {
   email: string | null
 }
 
+export type SessionTokens = {
+  accessToken: string
+  refreshToken: string
+}
+
 function secretKey() {
   return encoder.encode(requireJwtSecret())
 }
 
-export async function signSession(user: SessionUser) {
+function cookieOptions(maxAgeSeconds: number) {
+  const env = getEnv()
+  return {
+    httpOnly: true,
+    sameSite: "lax" as const,
+    secure: env.NODE_ENV === "production",
+    maxAge: maxAgeSeconds * 1000,
+  }
+}
+
+export async function signAccessToken(user: SessionUser) {
   return new SignJWT({
     role: user.role,
     email: user.email,
+    typ: "access",
   })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(user.id)
     .setIssuedAt()
-    .setExpirationTime(`${sessionTtlSeconds}s`)
+    .setExpirationTime(`${accessTtlSeconds}s`)
     .sign(secretKey())
+}
+
+export async function signRefreshToken(userId: string) {
+  return new SignJWT({ typ: "refresh" })
+    .setProtectedHeader({ alg: "HS256" })
+    .setSubject(userId)
+    .setIssuedAt()
+    .setExpirationTime(`${refreshTtlSeconds}s`)
+    .sign(secretKey())
+}
+
+/** @deprecated Use `createSessionTokens` for new sessions. */
+export async function signSession(user: SessionUser) {
+  return signAccessToken(user)
+}
+
+export async function createSessionTokens(user: SessionUser): Promise<SessionTokens> {
+  const [accessToken, refreshToken] = await Promise.all([
+    signAccessToken(user),
+    signRefreshToken(user.id),
+  ])
+  return { accessToken, refreshToken }
 }
 
 export async function verifySessionToken(token: string): Promise<SessionUser> {
@@ -47,6 +86,16 @@ export async function verifySessionToken(token: string): Promise<SessionUser> {
     role: payload.role as UserRole,
     email: typeof payload.email === "string" ? payload.email : null,
   }
+}
+
+export async function verifyRefreshToken(token: string): Promise<{ userId: string }> {
+  const { payload } = await jwtVerify(token, secretKey())
+
+  if (payload.typ !== "refresh" || !payload.sub) {
+    throw unauthorized()
+  }
+
+  return { userId: payload.sub }
 }
 
 export async function getOptionalSession(req: Request) {
@@ -69,19 +118,31 @@ export async function requireSession(req: Request) {
   return session
 }
 
+export function setSessionCookies(res: Response, tokens: SessionTokens) {
+  const env = getEnv()
+
+  res.cookie(env.SESSION_COOKIE_NAME, tokens.accessToken, {
+    ...cookieOptions(accessTtlSeconds),
+    path: "/",
+  })
+
+  res.cookie(getRefreshCookieName(env), tokens.refreshToken, {
+    ...cookieOptions(refreshTtlSeconds),
+    path: "/api/auth/refresh",
+  })
+}
+
+/** @deprecated Use `setSessionCookies` for new sessions. */
 export function setSessionCookie(res: Response, token: string) {
   const env = getEnv()
 
   res.cookie(env.SESSION_COOKIE_NAME, token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: env.NODE_ENV === "production",
-    maxAge: sessionTtlSeconds * 1000,
+    ...cookieOptions(accessTtlSeconds),
     path: "/",
   })
 }
 
-export function clearSessionCookie(res: Response) {
+export function clearSessionCookies(res: Response) {
   const env = getEnv()
 
   res.clearCookie(env.SESSION_COOKIE_NAME, {
@@ -90,4 +151,16 @@ export function clearSessionCookie(res: Response) {
     secure: env.NODE_ENV === "production",
     path: "/",
   })
+
+  res.clearCookie(getRefreshCookieName(env), {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: env.NODE_ENV === "production",
+    path: "/api/auth/refresh",
+  })
+}
+
+/** @deprecated Use `clearSessionCookies`. */
+export function clearSessionCookie(res: Response) {
+  clearSessionCookies(res)
 }

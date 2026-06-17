@@ -8,6 +8,7 @@ const envSchema = z.object({
   CORS_ORIGIN: z.string().url().default("http://localhost:3000"),
   FRONTEND_URL: z.string().url().default("http://localhost:3000"),
   SESSION_COOKIE_NAME: z.string().min(1).default("perkley_session"),
+  REFRESH_COOKIE_NAME: z.string().min(1).optional(),
   UPLOAD_STORAGE_DIR: z.string().min(1).default("./var/uploads"),
 
   SUPABASE_URL: z.string().url().optional(),
@@ -172,4 +173,8 @@ export function isGoogleConfigured(env: ApiEnv = getEnv()) {
   return Boolean(
     env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET && env.GOOGLE_REDIRECT_URI
   )
+}
+
+export function getRefreshCookieName(env: ApiEnv = getEnv()) {
+  return env.REFRESH_COOKIE_NAME ?? `${env.SESSION_COOKIE_NAME}_refresh`
 }

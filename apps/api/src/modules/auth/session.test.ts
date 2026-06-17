@@ -37,6 +37,28 @@ describe("session tokens", () => {
     await expect(session.getOptionalSession(req)).resolves.toBeNull()
   })
 
+  test("signs and verifies a refresh token", async () => {
+    const userId = "6a757691-8245-48fc-9b32-80295c1eb5c3"
+    const token = await session.signRefreshToken(userId)
+    const verified = await session.verifyRefreshToken(token)
+
+    expect(verified).toEqual({ userId })
+  })
+
+  test("issues paired access and refresh tokens", async () => {
+    const tokens = await session.createSessionTokens({
+      id: "6a757691-8245-48fc-9b32-80295c1eb5c3",
+      role: "creator",
+      email: "creator@example.com",
+    })
+
+    const access = await session.verifySessionToken(tokens.accessToken)
+    const refresh = await session.verifyRefreshToken(tokens.refreshToken)
+
+    expect(access.role).toBe("creator")
+    expect(refresh.userId).toBe("6a757691-8245-48fc-9b32-80295c1eb5c3")
+  })
+
   test("rejects session tokens with an invalid role", async () => {
     const token = await new (await import("jose")).SignJWT({
       role: "owner",
