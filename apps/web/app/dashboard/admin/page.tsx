@@ -1,10 +1,7 @@
-import { AdminSubmissionsTable } from "@/components/dashboard/admin-submissions-table"
+import { AdminConsole } from "@/components/dashboard/admin-console"
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
-import { getPendingAdminSubmissions } from "@/lib/dashboard/listings-data"
 
 export default function AdminPage() {
-  const submissions = getPendingAdminSubmissions()
-
   return (
     <DashboardShell
       nav={[{ label: "Admin", href: "/dashboard/admin", active: true }]}
@@ -14,10 +11,10 @@ export default function AdminPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Admin panel</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Review submissions, approve winners and qualifiers, release Razorpay payouts.
+            Manage users, verify creators and brands, moderate campaigns, and monitor payouts.
           </p>
         </div>
-        <AdminSubmissionsTable submissions={submissions} />
+        <AdminConsole />
       </div>
     </DashboardShell>
   )
