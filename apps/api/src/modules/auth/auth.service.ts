@@ -1,6 +1,7 @@
 import { Prisma, type OAuthProvider, type User, type UserRole } from "@prisma/client"
 import bcrypt from "bcryptjs"
 
+import { getEnv } from "../../lib/env"
 import { conflict, unauthorized } from "../../lib/http-error"
 import { prisma } from "../../lib/prisma"
 import { encryptSecret } from "../../lib/secrets"
@@ -8,7 +9,9 @@ import type { SigninInput, SignupInput } from "./auth.schemas"
 import type { GoogleProfile, InstagramProfile, SupabaseGoogleProfile } from "./oauth"
 import { createSessionTokens, type SessionUser, type SessionTokens } from "./session"
 
-const passwordCost = 12
+function passwordCost() {
+  return getEnv().BCRYPT_COST
+}
 
 type UserWithProfiles = User & {
   creatorProfile?: { displayName: string; instagramHandle: string | null } | null
@@ -50,7 +53,7 @@ function assertActive(user: Pick<User, "status">) {
 }
 
 export async function signup(input: SignupInput) {
-  const passwordHash = await bcrypt.hash(input.password, passwordCost)
+  const passwordHash = await bcrypt.hash(input.password, passwordCost())
 
   try {
     const user = await prisma.user.create({
@@ -116,18 +119,18 @@ export async function signin(input: SigninInput) {
     throw unauthorized("Invalid email or password.")
   }
 
-  const updated = await prisma.user.update({
-    where: { id: user.id },
-    data: { lastLoginAt: new Date() },
-    include: {
-      creatorProfile: true,
-      brandProfile: true,
-    },
-  })
+  void prisma.user
+    .update({
+      where: { id: user.id },
+      data: { lastLoginAt: new Date() },
+    })
+    .catch(() => {
+      // Non-blocking — don't delay the login response for a timestamp write.
+    })
 
   return {
-    user: publicUser(updated),
-    tokens: await issueSession(updated),
+    user: publicUser(user),
+    tokens: await issueSession(user),
   }
 }
 

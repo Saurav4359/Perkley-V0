@@ -18,6 +18,7 @@ const envSchema = z.object({
   FRONTEND_URL: z.string().url().default("http://localhost:3000"),
   SESSION_COOKIE_NAME: z.string().min(1).default("perkley_session"),
   REFRESH_COOKIE_NAME: z.string().min(1).optional(),
+  BCRYPT_COST: z.coerce.number().int().min(10).max(14).default(10),
   UPLOAD_STORAGE_DIR: z.string().min(1).default("./var/uploads"),
 
   SUPABASE_URL: z.string().url().optional(),
