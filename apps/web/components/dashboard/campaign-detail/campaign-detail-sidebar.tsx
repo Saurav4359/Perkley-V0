@@ -3,7 +3,7 @@ import { ArrowUpRight, Briefcase, Clock } from "lucide-react"
 
 import { CampaignCountdown } from "@/components/dashboard/campaign-detail/campaign-countdown"
 import { DetailSectionLabel } from "@/components/dashboard/campaign-detail/detail-primitives"
-import { InrIcon } from "@/components/dashboard/inr-icon"
+import { PrizePoolTimeline } from "@/components/dashboard/campaign-detail/prize-pool-timeline"
 import { SubmitListingButton } from "@/components/dashboard/submit-listing-button"
 import { buttonVariants } from "@/components/ui/button"
 import type { ListingDetail } from "@/lib/dashboard/campaign-details"
@@ -76,22 +76,11 @@ export function CampaignDetailSidebar({
       <section className="border-b border-border bg-card/20 px-4 py-6 sm:px-6 lg:px-8">
         <DetailSectionLabel>{isBounty ? "Prize pool" : "Reward"}</DetailSectionLabel>
         {isBounty ? (
-          <>
-            <div className="mt-4 flex items-center gap-1.5">
-              <InrIcon className="size-5" />
-              <span className="text-3xl font-bold tabular-nums text-foreground">
-                {formatInr(listing.totalBudget)}
-              </span>
-            </div>
-            <ol className="mt-6 space-y-3.5">
-              {listing.prizeTiers.map((tier) => (
-                <li key={tier.label} className="flex items-center justify-between gap-3 text-base">
-                  <span className="text-foreground/70">{tier.label}</span>
-                  <span className="font-semibold tabular-nums text-foreground">₹{tier.amount}</span>
-                </li>
-              ))}
-            </ol>
-          </>
+          <PrizePoolTimeline
+            className="mt-4"
+            totalBudget={listing.totalBudget}
+            tiers={listing.prizeTiers}
+          />
         ) : (
           <>
             <p className="mt-4 text-3xl font-bold text-foreground">

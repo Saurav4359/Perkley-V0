@@ -22,14 +22,38 @@ import {
   type CampaignListSort,
 } from "./campaign-list.utils"
 
-function serializeCampaign(
-  campaign: Campaign & {
-    brand: {
-      id: string
-      brandProfile: { brandName: string | null; logoUrl: string | null } | null
-    }
+const campaignBrandInclude = {
+  brand: {
+    select: {
+      id: true,
+      brandProfile: {
+        select: {
+          brandName: true,
+          logoUrl: true,
+        },
+      },
+    },
+  },
+  _count: {
+    select: {
+      submissions: {
+        where: {
+          status: { notIn: ["rejected", "not_qualified"] },
+        },
+      },
+    },
+  },
+} satisfies Prisma.CampaignInclude
+
+type CampaignWithBrand = Campaign & {
+  brand: {
+    id: string
+    brandProfile: { brandName: string | null; logoUrl: string | null } | null
   }
-) {
+  _count?: { submissions: number }
+}
+
+function serializeCampaign(campaign: CampaignWithBrand) {
   return {
     id: campaign.id,
     brandId: campaign.brandId,
@@ -58,6 +82,7 @@ function serializeCampaign(
     archivedAt: campaign.archivedAt,
     createdAt: campaign.createdAt,
     updatedAt: campaign.updatedAt,
+    competingCount: campaign._count?.submissions ?? 0,
   }
 }
 
@@ -74,19 +99,7 @@ async function requireBrandUser(userId: string) {
 async function loadCampaignForOwner(userId: string, campaignId: string) {
   const campaign = await prisma.campaign.findFirst({
     where: { id: campaignId, brandId: userId },
-    include: {
-      brand: {
-        select: {
-          id: true,
-          brandProfile: {
-            select: {
-              brandName: true,
-              logoUrl: true,
-            },
-          },
-        },
-      },
-    },
+    include: campaignBrandInclude,
   })
   if (!campaign) throw notFound("Campaign not found.")
   return campaign
@@ -117,19 +130,7 @@ export async function createCampaign(userId: string, input: CreateCampaignInput)
       prizeThird: input.prizeThird,
       prizeTop20Each: input.prizeTop20Each,
     },
-    include: {
-      brand: {
-        select: {
-          id: true,
-          brandProfile: {
-            select: {
-              brandName: true,
-              logoUrl: true,
-            },
-          },
-        },
-      },
-    },
+    include: campaignBrandInclude,
   })
 
   return serializeCampaign(campaign)
@@ -153,19 +154,7 @@ export async function listPublicCampaigns(filters: {
       contentType: filters.contentType,
       platform: filters.platform,
     },
-    include: {
-      brand: {
-        select: {
-          id: true,
-          brandProfile: {
-            select: {
-              brandName: true,
-              logoUrl: true,
-            },
-          },
-        },
-      },
-    },
+    include: campaignBrandInclude,
     orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
   })
 
@@ -196,19 +185,7 @@ export async function listMyCampaigns(userId: string, status?: CampaignStatus) {
       brandId: userId,
       status,
     },
-    include: {
-      brand: {
-        select: {
-          id: true,
-          brandProfile: {
-            select: {
-              brandName: true,
-              logoUrl: true,
-            },
-          },
-        },
-      },
-    },
+    include: campaignBrandInclude,
     orderBy: [{ updatedAt: "desc" }],
   })
 
@@ -218,19 +195,7 @@ export async function listMyCampaigns(userId: string, status?: CampaignStatus) {
 export async function getCampaign(campaignId: string, viewerId?: string | null) {
   const campaign = await prisma.campaign.findUnique({
     where: { id: campaignId },
-    include: {
-      brand: {
-        select: {
-          id: true,
-          brandProfile: {
-            select: {
-              brandName: true,
-              logoUrl: true,
-            },
-          },
-        },
-      },
-    },
+    include: campaignBrandInclude,
   })
   if (!campaign) throw notFound("Campaign not found.")
 
@@ -272,19 +237,7 @@ export async function updateCampaign(userId: string, campaignId: string, input: 
       prizeThird: input.prizeThird,
       prizeTop20Each: input.prizeTop20Each,
     },
-    include: {
-      brand: {
-        select: {
-          id: true,
-          brandProfile: {
-            select: {
-              brandName: true,
-              logoUrl: true,
-            },
-          },
-        },
-      },
-    },
+    include: campaignBrandInclude,
   })
 
   return serializeCampaign(campaign)
@@ -326,19 +279,7 @@ export async function publishCampaign(userId: string, campaignId: string) {
       publishedAt: new Date(),
       archivedAt: null,
     },
-    include: {
-      brand: {
-        select: {
-          id: true,
-          brandProfile: {
-            select: {
-              brandName: true,
-              logoUrl: true,
-            },
-          },
-        },
-      },
-    },
+    include: campaignBrandInclude,
   })
 
   runNotificationSideEffect(notifyNewCampaignPublished(campaignId))
@@ -360,19 +301,7 @@ export async function archiveCampaign(userId: string, campaignId: string) {
       status: "archived",
       archivedAt: new Date(),
     },
-    include: {
-      brand: {
-        select: {
-          id: true,
-          brandProfile: {
-            select: {
-              brandName: true,
-              logoUrl: true,
-            },
-          },
-        },
-      },
-    },
+    include: campaignBrandInclude,
   })
 
   return serializeCampaign(updated)

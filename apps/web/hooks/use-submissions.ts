@@ -20,6 +20,8 @@ import {
   type SubmissionStatus,
   type UpdateSubmissionInput,
 } from "@/lib/api/submissions"
+import { campaignKeys } from "@/hooks/use-campaigns"
+import type { ApiCampaign } from "@/lib/api/campaigns"
 
 export const submissionKeys = {
   campaign: (campaignId: string, status?: SubmissionStatus) =>
@@ -63,6 +65,13 @@ export function useCreateSubmission(campaignId: string) {
       createSubmission(campaignId, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["submissions"] })
+      queryClient.setQueryData<ApiCampaign>(campaignKeys.detail(campaignId), (current) =>
+        current
+          ? { ...current, competingCount: (current.competingCount ?? 0) + 1 }
+          : current
+      )
+      queryClient.invalidateQueries({ queryKey: campaignKeys.all })
+      queryClient.invalidateQueries({ queryKey: ["leaderboard"] })
     },
   })
 }

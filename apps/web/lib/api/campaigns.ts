@@ -37,6 +37,7 @@ export type ApiCampaign = {
   archivedAt: string | null
   createdAt: string
   updatedAt: string
+  competingCount: number
 }
 
 export type CampaignListFilters = {

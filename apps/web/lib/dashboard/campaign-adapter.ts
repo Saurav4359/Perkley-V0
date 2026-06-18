@@ -71,6 +71,7 @@ export function apiCampaignToFeedItem(campaign: ApiCampaign): Campaign {
   const fixedReward = campaign.fixedReward ?? 0
   const rewardSortValue = isBounty ? campaign.totalBudget : fixedReward
   const maxCreators = campaign.maxCreators ?? 0
+  const competingCount = campaign.competingCount ?? 0
 
   return {
     id: campaign.id,
@@ -82,7 +83,7 @@ export function apiCampaignToFeedItem(campaign: ApiCampaign): Campaign {
       ? formatInr(campaign.totalBudget)
       : formatInr(fixedReward),
     dueInDays: daysUntil(campaign.deadline),
-    slotsLeft: maxCreators,
+    slotsLeft: isBounty ? competingCount : Math.max(0, maxCreators - competingCount),
     initials: brandInitials(campaign.brandName),
     accent: accentFor(campaign.brandId || campaign.brandName),
     tagline: isBounty
@@ -94,7 +95,7 @@ export function apiCampaignToFeedItem(campaign: ApiCampaign): Campaign {
     status: toListingStatus(campaign.status),
     fixedReward: isBounty ? undefined : fixedReward,
     totalBudget: campaign.totalBudget,
-    competingCount: isBounty ? 0 : undefined,
+    competingCount: isBounty ? competingCount : undefined,
     verified: false,
     trending: false,
     isNew: isNew(campaign.publishedAt),
@@ -106,16 +107,18 @@ export function apiCampaignToBrandItem(campaign: ApiCampaign): BrandCampaign {
   const base = apiCampaignToFeedItem(campaign)
   const isBounty = campaign.type === "bounty"
   const spots = isBounty ? 0 : campaign.maxCreators ?? 0
+  const competingCount = campaign.competingCount ?? 0
 
   return {
     ...base,
     status: toBrandStatus(campaign.status),
-    submissions: 0,
+    submissions: competingCount,
     spots,
   }
 }
 
 function apiCampaignToListing(campaign: ApiCampaign): Listing {
+  const competingCount = campaign.competingCount ?? 0
   const base = {
     id: campaign.id,
     brandName: campaign.brandName,
@@ -145,7 +148,7 @@ function apiCampaignToListing(campaign: ApiCampaign): Listing {
         top20Each: campaign.prizeTop20Each ?? 0,
       },
       totalBudget: campaign.totalBudget,
-      competingCount: 0,
+      competingCount,
     }
   }
 
@@ -156,7 +159,7 @@ function apiCampaignToListing(campaign: ApiCampaign): Listing {
     minViewsThreshold: campaign.minViewsThreshold ?? 0,
     fixedReward: campaign.fixedReward ?? 0,
     maxCreators,
-    spotsLeft: maxCreators,
+    spotsLeft: Math.max(0, maxCreators - competingCount),
     totalBudget: campaign.totalBudget,
   }
 }
