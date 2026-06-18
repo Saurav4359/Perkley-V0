@@ -16,17 +16,6 @@ export function formatInr(amount: number) {
   return amount.toLocaleString("en-IN")
 }
 
-/** e.g. 350000 → "₹3.5L", 100000 → "₹1L" */
-export function formatInrLakhs(amount: number) {
-  if (amount < 100_000) {
-    return `₹${formatInr(amount)}`
-  }
-
-  const lakhs = amount / 100_000
-  const rounded = Math.round(lakhs * 10) / 10
-  return `₹${Number.isInteger(rounded) ? rounded : rounded.toFixed(1)}L`
-}
-
 export function daysUntil(deadline: string) {
   const diff = new Date(deadline).getTime() - Date.now()
   return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))

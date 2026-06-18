@@ -6,8 +6,6 @@ import { cn } from "@/lib/utils"
 
 type CreatorHeroProps = {
   userName: string
-  totalRewardLabel?: string
-  socialProof?: string
 }
 
 const AVATARS: { initials: string; from: string; to: string }[] = [
@@ -18,11 +16,7 @@ const AVATARS: { initials: string; from: string; to: string }[] = [
   { initials: "SL", from: "#A7F3D0", to: "#10B981" },
 ]
 
-export function CreatorHero({
-  userName,
-  totalRewardLabel = "—",
-  socialProof = "Live campaigns on Perkley",
-}: CreatorHeroProps) {
+export function CreatorHero({ userName }: CreatorHeroProps) {
   return (
     <section
       aria-labelledby="creator-hero-heading"
@@ -78,7 +72,7 @@ export function CreatorHero({
                   className="relative z-[1] bg-gradient-to-br from-[#FF6B2C] to-[#FF8547] bg-clip-text text-transparent"
                   style={{ WebkitBackgroundClip: "text" }}
                 >
-                  {totalRewardLabel}
+                  ₹35L
                 </span>
               </span>{" "}
               waiting for you
@@ -164,7 +158,7 @@ export function CreatorHero({
               className="font-medium text-[#888888]"
               style={{ fontSize: 14, letterSpacing: "-0.005em" }}
             >
-              {socialProof}
+              12K+ creators are earning on Perkley
             </p>
           </div>
         </div>
