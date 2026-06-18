@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 
+import { AuthGuestGate } from "@/components/auth/auth-guest-gate"
 import { LoginPage } from "@/components/auth/login-page"
 
 export const metadata: Metadata = {
@@ -8,5 +9,9 @@ export const metadata: Metadata = {
 }
 
 export default function LoginRoute() {
-  return <LoginPage />
+  return (
+    <AuthGuestGate>
+      <LoginPage />
+    </AuthGuestGate>
+  )
 }
