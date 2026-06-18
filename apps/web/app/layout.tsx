@@ -5,6 +5,7 @@ import { QueryProvider } from "@/components/query-provider"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ThemeScript } from "@/components/theme-script"
 import { SiteFooter } from "@/components/landing/footer"
+import { getServerSession } from "@/lib/auth/server"
 
 import "./globals.css"
 
@@ -36,11 +37,13 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const initialUser = await getServerSession()
+
   return (
     <html
       lang="en"
@@ -51,7 +54,7 @@ export default function RootLayout({
         <ThemeScript />
       </head>
       <body className="min-h-full bg-background text-foreground">
-        <QueryProvider>
+        <QueryProvider initialUser={initialUser}>
           <ThemeProvider>
             <div className="flex min-h-full flex-col">
               {children}

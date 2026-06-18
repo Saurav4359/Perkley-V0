@@ -44,7 +44,7 @@ export function useAuth() {
     queryFn: getCurrentUser,
     staleTime: 60_000,
     refetchOnWindowFocus: true,
-    refetchOnMount: true,
+    refetchOnMount: false,
   })
 
   useEffect(() => {
