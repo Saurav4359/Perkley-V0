@@ -171,8 +171,14 @@ export function DashboardSidebar({
                 <ActivityIcon kind={item.kind} />
                 <div className="min-w-0 space-y-0.5">
                   <p className="text-sm text-foreground">
-                    <span className="font-medium">{item.user}</span>{" "}
-                    <span className="text-muted-foreground">{item.action}</span>
+                    {item.user ? (
+                      <>
+                        <span className="font-medium">{item.user}</span>{" "}
+                        <span className="text-muted-foreground">{item.action}</span>
+                      </>
+                    ) : (
+                      <span className="font-medium">{item.action}</span>
+                    )}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {item.campaign} · {item.time}
