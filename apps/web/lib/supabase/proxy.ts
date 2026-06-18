@@ -11,10 +11,8 @@ import { getSupabaseConfig, isSupabaseConfigured } from "./env"
  * if needed, and writes any updated cookies back onto the response so both the
  * browser and downstream Server Components see the latest session.
  *
- * Route protection for the dashboard is enforced by the real app session
- * (`perkley_session`, an HTTP-only cookie on the API origin) via a client guard
- * that calls `/api/auth/me`. That cookie lives on a different origin and is not
- * visible here, so we intentionally do not gate routes from the proxy.
+ * Perkley dashboard auth is enforced in `proxy.ts` via the session cookie.
+ * Supabase cookies are refreshed here for Google OAuth only.
  */
 export async function updateSupabaseSession(
   request: NextRequest
