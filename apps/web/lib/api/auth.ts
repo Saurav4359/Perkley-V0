@@ -1,4 +1,4 @@
-import { API_BASE_URL, apiFetch } from "@/lib/api/client"
+import { apiFetch, getApiBaseUrl } from "@/lib/api/client"
 
 export type AuthRole = "creator" | "brand"
 
@@ -9,7 +9,7 @@ export function oauthStartUrl(
 ): string {
   const params = new URLSearchParams({ role })
   if (redirectTo) params.set("redirectTo", redirectTo)
-  return `${API_BASE_URL}/api/auth/oauth/${provider}/start?${params.toString()}`
+  return `${getApiBaseUrl()}/api/auth/oauth/${provider}/start?${params.toString()}`
 }
 
 export type AuthUser = {

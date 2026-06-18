@@ -1,5 +1,25 @@
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "http://localhost:3001"
+const DEFAULT_BACKEND_URL = "http://localhost:3001"
+
+/**
+ * Browser requests use same-origin `/api/*` (proxied to the backend in
+ * next.config.ts) so session cookies are first-party on perkley.in and work
+ * across tabs. Server-side code talks to the backend URL directly.
+ */
+export function getApiBaseUrl(): string {
+  if (typeof window !== "undefined") {
+    return ""
+  }
+
+  const serverUrl =
+    process.env.BACKEND_API_URL ??
+    process.env.NEXT_PUBLIC_API_URL ??
+    DEFAULT_BACKEND_URL
+
+  return serverUrl.replace(/\/$/, "")
+}
+
+/** @deprecated Use getApiBaseUrl() so browser vs server resolution stays correct. */
+export const API_BASE_URL = getApiBaseUrl()
 
 export class ApiError extends Error {
   readonly status: number
@@ -28,7 +48,7 @@ async function tryRefreshSession(): Promise<boolean> {
   if (!refreshPromise) {
     refreshPromise = (async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+        const response = await fetch(`${getApiBaseUrl()}/api/auth/refresh`, {
           method: "POST",
           credentials: "include",
         })
@@ -60,7 +80,7 @@ export async function apiFetch<T>(
   const { body, headers, ...rest } = options
 
   async function sendRequest() {
-    return fetch(`${API_BASE_URL}${path}`, {
+    return fetch(`${getApiBaseUrl()}${path}`, {
       ...rest,
       credentials: "include",
       headers: {

@@ -4,7 +4,7 @@ import { Suspense, useEffect, useRef, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useQueryClient } from "@tanstack/react-query"
 
-import { authQueryKey } from "@/hooks/use-auth"
+import { authQueryKey, notifyAuthSignedIn } from "@/hooks/use-auth"
 import { bridgeSupabaseSession } from "@/lib/api/auth"
 import { createSupabaseBrowserClient } from "@/lib/supabase/client"
 import {
@@ -44,6 +44,7 @@ function CompleteSignIn() {
           role,
         })
         queryClient.setQueryData(authQueryKey, user)
+        notifyAuthSignedIn()
 
         if (next) {
           router.replace(next)

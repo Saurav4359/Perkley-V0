@@ -1,4 +1,4 @@
-import { API_BASE_URL, ApiError, apiFetch } from "@/lib/api/client"
+import { ApiError, apiFetch, getApiBaseUrl } from "@/lib/api/client"
 
 export type UploadPurpose = "brand_logo" | "creator_avatar" | "portfolio_image"
 
@@ -51,7 +51,7 @@ export async function uploadFile(
     byteSize: file.size,
   })
 
-  const response = await fetch(`${API_BASE_URL}${prepared.upload.url}`, {
+  const response = await fetch(`${getApiBaseUrl()}${prepared.upload.url}`, {
     method: prepared.upload.method,
     headers: prepared.upload.headers,
     body: file,
