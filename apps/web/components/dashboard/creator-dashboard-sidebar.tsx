@@ -4,14 +4,12 @@ import { useMemo } from "react"
 
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar"
 import { useCreatorActivity, useCreatorStats } from "@/hooks/use-dashboard"
-import { useCreatorProfile } from "@/hooks/use-profile"
 import { useOnboardingProgress } from "@/hooks/use-onboarding-progress"
 import { dashboardActivityToSidebar } from "@/lib/dashboard/dashboard-adapter"
 import { formatInr } from "@/lib/dashboard/utils"
 
 export function CreatorDashboardSidebar() {
   const { canParticipate, requirements } = useOnboardingProgress()
-  const profileQuery = useCreatorProfile()
   const statsQuery = useCreatorStats()
   const activityQuery = useCreatorActivity()
 
@@ -33,21 +31,9 @@ export function CreatorDashboardSidebar() {
 
   const steps = canParticipate
     ? [
-        {
-          label: "Complete your creator profile",
-          done:
-            canParticipate || (profileQuery.data?.completion ?? 0) >= 80,
-        },
-        {
-          label: "Join your first bounty or campaign",
-          done:
-            (statsQuery.data?.acceptedApplications ?? 0) > 0 ||
-            (statsQuery.data?.applications ?? 0) > 0,
-        },
-        {
-          label: "Submit work and track earnings",
-          done: (statsQuery.data?.submissions ?? 0) > 0,
-        },
+        { label: "Complete your creator profile", done: true },
+        { label: "Join your first bounty or campaign", done: false },
+        { label: "Submit work and track earnings", done: false },
       ]
     : requirements.map((item) => ({
         label: item.label,
