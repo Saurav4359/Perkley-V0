@@ -1,13 +1,13 @@
 import { cookies } from "next/headers"
 import { cache } from "react"
 
+import {
+  REFRESH_COOKIE_NAME,
+  SESSION_COOKIE_NAME,
+} from "@/lib/auth/constants"
+import { getDashboardPathForRole } from "@/lib/auth/session"
 import type { AuthUser } from "@/lib/api/auth"
 import { getApiBaseUrl } from "@/lib/api/client"
-
-const SESSION_COOKIE_NAME =
-  process.env.SESSION_COOKIE_NAME ?? "perkley_session"
-const REFRESH_COOKIE_NAME =
-  process.env.REFRESH_COOKIE_NAME ?? `${SESSION_COOKIE_NAME}_refresh`
 
 function buildCookieHeader(
   cookieStore: Awaited<ReturnType<typeof cookies>>
@@ -124,7 +124,5 @@ export const getServerSession = cache(async (): Promise<AuthUser | null> => {
 })
 
 export function getDashboardPathForUser(user: AuthUser): string {
-  if (user.role === "brand") return "/dashboard/brand"
-  if (user.role === "admin") return "/dashboard/admin"
-  return "/dashboard"
+  return getDashboardPathForRole(user.role)
 }
