@@ -5,9 +5,27 @@ import {
   REFRESH_COOKIE_NAME,
   SESSION_COOKIE_NAME,
 } from "@/lib/auth/constants"
-import { getDashboardPathForRole } from "@/lib/auth/session"
+import {
+  getDashboardPathForRole,
+  verifyAccessToken,
+  type SessionClaims,
+} from "@/lib/auth/session"
 import type { AuthUser } from "@/lib/api/auth"
 import { getApiBaseUrl } from "@/lib/api/client"
+
+function authUserFromClaims(claims: SessionClaims): AuthUser {
+  const email = claims.email
+  return {
+    id: claims.id,
+    email,
+    role: claims.role,
+    status: "active",
+    emailVerified: false,
+    displayName: email?.split("@")[0] ?? "User",
+    instagramHandle: null,
+    createdAt: new Date().toISOString(),
+  }
+}
 
 function buildCookieHeader(
   cookieStore: Awaited<ReturnType<typeof cookies>>
@@ -102,17 +120,18 @@ async function refreshServerSession(
  */
 export const getServerSession = cache(async (): Promise<AuthUser | null> => {
   const cookieStore = await cookies()
-  const hasSessionCookie =
-    cookieStore.has(SESSION_COOKIE_NAME) ||
-    cookieStore.has(REFRESH_COOKIE_NAME)
+  const accessToken = cookieStore.get(SESSION_COOKIE_NAME)?.value
 
-  if (!hasSessionCookie) return null
+  if (accessToken) {
+    const claims = await verifyAccessToken(accessToken)
+    if (claims) return authUserFromClaims(claims)
+  }
+
+  const hasRefreshCookie = cookieStore.has(REFRESH_COOKIE_NAME)
+  if (!hasRefreshCookie) return null
 
   const initialCookieHeader = buildCookieHeader(cookieStore)
   if (!initialCookieHeader) return null
-
-  const currentUser = await fetchCurrentUser(initialCookieHeader)
-  if (currentUser) return currentUser
 
   const refreshedCookieHeader = await refreshServerSession(
     cookieStore,
