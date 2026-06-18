@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server"
 
+import { safeNextPath } from "@/lib/auth/redirect"
 import {
   getDashboardPathForRole,
   isAuthenticatedSession,
@@ -24,9 +25,11 @@ export async function applyAuthProxyRouting(
   const authenticated = isAuthenticatedSession(session)
 
   if (authenticated && GUEST_ONLY_PATHS.has(pathname)) {
-    const destination = session.claims
-      ? getDashboardPathForRole(session.claims.role)
-      : "/dashboard"
+    const next = safeNextPath(request.nextUrl.searchParams.get("next"))
+    const destination = next
+      ?? (session.claims
+        ? getDashboardPathForRole(session.claims.role)
+        : "/dashboard")
     return NextResponse.redirect(new URL(destination, request.url))
   }
 

@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useState } from "react"
 
 import { AuthShell } from "@/components/auth/auth-shell"
@@ -17,6 +17,7 @@ import { ApiError } from "@/lib/api/client"
 import { oauthStartUrl } from "@/lib/api/auth"
 import { signInWithGoogle } from "@/lib/supabase/oauth"
 import { useSignin } from "@/hooks/use-auth"
+import { dashboardPathForRole } from "@/lib/auth/redirect"
 import {
   clearOnboardingPending,
   initBrandSession,
@@ -30,6 +31,7 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [googleLoading, setGoogleLoading] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
   const signin = useSignin()
   const submitting = signin.isPending
 
@@ -57,14 +59,16 @@ export function LoginPage() {
         password,
       })
 
+      const next = searchParams.get("next")
+
       if (user.role === "brand") {
         initBrandSession({ workEmail: user.email ?? email.trim() })
-        router.push("/dashboard/brand")
+        router.replace(dashboardPathForRole("brand", next))
         return
       }
 
       clearOnboardingPending()
-      router.push("/dashboard")
+      router.replace(dashboardPathForRole("creator", next))
     } catch (err) {
       setError(
         err instanceof ApiError

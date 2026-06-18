@@ -20,6 +20,10 @@ function secretKey() {
   return new TextEncoder().encode(secret)
 }
 
+function isJwtVerificationConfigured() {
+  return secretKey() !== null
+}
+
 export async function verifyAccessToken(
   token: string
 ): Promise<SessionClaims | null> {
@@ -77,17 +81,29 @@ export async function readProxySession(cookies: {
   get(name: string): { value: string } | undefined
 }): Promise<ProxySession> {
   const accessToken = cookies.get(SESSION_COOKIE_NAME)?.value
+  const refreshToken = cookies.get(REFRESH_COOKIE_NAME)?.value
+  const jwtConfigured = isJwtVerificationConfigured()
+
   if (accessToken) {
-    const claims = await verifyAccessToken(accessToken)
-    if (claims) {
-      return { claims, hasRefreshToken: false }
+    if (jwtConfigured) {
+      const claims = await verifyAccessToken(accessToken)
+      if (claims) {
+        return { claims, hasRefreshToken: false }
+      }
+    } else {
+      // Cookie is set but web app has no JWT_SECRET — trust presence for routing;
+      // RSC/API calls still validate against the backend.
+      return { claims: null, hasRefreshToken: true }
     }
   }
 
-  const refreshToken = cookies.get(REFRESH_COOKIE_NAME)?.value
   if (refreshToken) {
-    const refresh = await verifyRefreshToken(refreshToken)
-    if (refresh) {
+    if (jwtConfigured) {
+      const refresh = await verifyRefreshToken(refreshToken)
+      if (refresh) {
+        return { claims: null, hasRefreshToken: true }
+      }
+    } else {
       return { claims: null, hasRefreshToken: true }
     }
   }
