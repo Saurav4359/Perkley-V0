@@ -18,8 +18,8 @@ export function DashboardOnboardingGate({ children }: { children: React.ReactNod
   const { user, isLoading, isAuthenticated } = useAuth()
 
   const decision: GateDecision = (() => {
-    // Wait for the real session check (`/api/auth/me`) before deciding.
-    if (isLoading) return null
+    // Session is resolved on the server; only wait if the client cache is empty.
+    if (isLoading && !user) return null
 
     // Authoritative protection: no app session → back to login.
     if (!isAuthenticated) return "/login"
