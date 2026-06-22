@@ -95,7 +95,6 @@
   --scrollbar-track: #f4f4f5;
   --scrollbar-thumb: #71717a;
   --scrollbar-arrow: #a1a1aa;
-  --hero-scrim-bottom: #fafaf9;
 }
 
 .dark {
@@ -132,7 +131,6 @@
   --scrollbar-track: #171717;
   --scrollbar-thumb: #71717a;
   --scrollbar-arrow: #525252;
-  --hero-scrim-bottom: #0a0a0a;
 }
 
 @layer base {

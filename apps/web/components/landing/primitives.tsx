@@ -102,55 +102,17 @@ export function AudienceTag({
   )
 }
 
-export function FlowDottedArrow({ className }: { className?: string }) {
-  return (
-    <svg
-      aria-hidden
-      viewBox="0 0 48 8"
-      className={cn(
-        "h-2 w-10 shrink-0 text-brand opacity-90 sm:h-2.5 sm:w-12",
-        className
-      )}
-      fill="none"
-    >
-      <line
-        x1="0"
-        y1="4"
-        x2="38"
-        y2="4"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeDasharray="2 4"
-        strokeLinecap="round"
-      />
-      <path
-        d="M40.5 4H46M43.5 1.75L46 4L43.5 6.25"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
 export function MetricChip({
   children,
   className,
-  variant = "default",
 }: {
   children: React.ReactNode
   className?: string
-  variant?: "default" | "emphasis"
 }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border bg-background",
-        variant === "default" &&
-          "border-border px-3 py-1 text-xs text-muted-foreground",
-        variant === "emphasis" &&
-          "border-border/80 px-4 py-2 text-sm font-semibold tracking-tight text-foreground/90",
+        "inline-flex items-center rounded-full border border-border bg-background px-3 py-1 text-xs text-muted-foreground",
         className
       )}
     >
