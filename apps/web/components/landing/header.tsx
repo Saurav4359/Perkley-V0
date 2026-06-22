@@ -6,7 +6,8 @@ import { useEffect, useState } from "react"
 import { PerkleyLogo } from "@/components/brand/perkley-logo"
 import { pageContainerClass } from "@/components/landing/primitives"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { Button, buttonVariants } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
+import { scrollToSection } from "@/lib/scroll-to-section"
 import { useActiveSection } from "@/lib/use-active-section"
 import { cn } from "@/lib/utils"
 
@@ -61,7 +62,10 @@ export function SiteHeader() {
                   <Link
                     key={href}
                     href={href}
-                    onClick={() => setActiveOnNavigate(id)}
+                    onClick={(event) => {
+                      event.preventDefault()
+                      scrollToSection(id, setActiveOnNavigate)
+                    }}
                     className={cn(
                       "relative whitespace-nowrap font-medium no-underline transition-colors focus-visible:outline-none",
                       overHero
@@ -79,35 +83,35 @@ export function SiteHeader() {
               </nav>
 
               <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-                <ThemeToggle />
+                <ThemeToggle
+                  className={cn(
+                    overHero &&
+                      "border-white/20 bg-black/35 [&_button:not([aria-pressed=true])]:text-white/70 [&_button:not([aria-pressed=true])]:hover:text-white [&_button[aria-pressed=true]]:bg-white [&_button[aria-pressed=true]]:text-[#0a0a0a]"
+                  )}
+                />
                 <Link
                   href="/login"
                   className={cn(
                     "inline-flex h-9 items-center rounded-full px-3.5 text-[0.9375rem] font-medium transition-colors sm:px-4",
                     overHero
-                      ? "text-white/82 hover:text-white"
+                      ? "text-white/90 hover:text-white"
                       : "text-foreground/75 hover:text-foreground"
                   )}
                 >
                   Login
                 </Link>
-                <Button
-                  nativeButton={false}
-                  render={
-                    <Link
-                      href="/signup"
-                      className={cn(
-                        buttonVariants({ size: "sm" }),
-                        "h-9 rounded-full px-4",
-                        overHero
-                          ? "bg-white text-[#0a0a0a] hover:bg-white/92"
-                          : "bg-foreground text-background hover:bg-foreground/90"
-                      )}
-                    />
-                  }
+                <Link
+                  href="/signup"
+                  className={cn(
+                    buttonVariants({ size: "sm" }),
+                    "inline-flex h-9 rounded-full px-4 font-medium",
+                    overHero
+                      ? "bg-white text-[#0a0a0a] shadow-[0_2px_12px_rgba(0,0,0,0.2)] hover:bg-white/92 hover:text-[#0a0a0a]"
+                      : "bg-foreground text-background hover:bg-foreground/90"
+                  )}
                 >
                   Get started
-                </Button>
+                </Link>
               </div>
             </div>
         </header>
