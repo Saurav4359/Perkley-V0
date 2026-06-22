@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test"
 
 import { HttpError } from "../lib/http-error"
-import { requireRoles } from "./auth"
+import { requireRoles } from "./rbac"
 
 describe("rbac middleware", () => {
   test("allows users with an accepted role", async () => {
