@@ -313,3 +313,22 @@ html[data-theme-animating] *::after {
     inset 0 1px 0 rgba(255, 255, 255, 0.06),
     0 12px 40px rgba(0, 0, 0, 0.45);
 }
+
+.hero-cinematic-scrim {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.58) 0%,
+      rgba(0, 0, 0, 0.34) 28%,
+      rgba(0, 0, 0, 0.14) 52%,
+      rgba(0, 0, 0, 0.06) 68%,
+      transparent 78%
+    ),
+    linear-gradient(
+      0deg,
+      var(--background) 0%,
+      color-mix(in srgb, var(--background) 92%, transparent) 14%,
+      color-mix(in srgb, var(--background) 72%, transparent) 28%,
+      transparent 46%
+    );
+}
