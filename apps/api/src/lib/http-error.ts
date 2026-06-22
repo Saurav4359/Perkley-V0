@@ -16,8 +16,8 @@ export function unauthorized(message = "Authentication required") {
   return new HttpError(401, message, "unauthorized")
 }
 
-export function forbidden(message = "Forbidden") {
-  return new HttpError(403, message, "forbidden")
+export function forbidden(message = "Forbidden", code = "forbidden") {
+  return new HttpError(403, message, code)
 }
 
 export function conflict(message: string, code = "conflict") {
