@@ -19,7 +19,7 @@ export function HeroSection() {
           alt=""
           fill
           priority
-          className="object-cover object-[center_42%] sm:object-center"
+          className="object-cover object-[center_42%] sm:object-center dark:brightness-[0.78] dark:saturate-[0.88] dark:contrast-[1.04]"
           sizes="100vw"
         />
         <div className="hero-cinematic-scrim absolute inset-0" />
