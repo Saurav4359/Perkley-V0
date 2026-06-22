@@ -1,8 +1,7 @@
 import Link from "next/link"
 import { ArrowRightIcon } from "lucide-react"
 
-import { HeroPreview } from "@/components/landing/hero-preview"
-import { MetricChip, pageContainerClass, SectionLabel } from "@/components/landing/primitives"
+import { pageContainerClass } from "@/components/landing/primitives"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -38,7 +37,7 @@ export function HeroSection() {
           >
             <Button
               size="lg"
-              className="h-11 rounded-full px-6 bg-foreground text-background hover:bg-foreground/90"
+              className="h-11 rounded-full px-7 bg-white text-[#0a0a0a] shadow-[0_8px_32px_rgba(0,0,0,0.25)] hover:bg-white/92"
               render={<Link href="#how-it-works" />}
             >
               For brands
@@ -47,7 +46,7 @@ export function HeroSection() {
             <Button
               variant="outline"
               size="lg"
-              className="h-11 rounded-full border-brand/30 px-6 text-brand hover:border-brand hover:bg-brand-muted"
+              className="h-11 rounded-full border-white/30 bg-white/10 px-7 text-white backdrop-blur-sm hover:border-white/45 hover:bg-white/18 hover:text-white"
               render={<Link href="#how-it-works" />}
             >
               For creators
@@ -63,8 +62,6 @@ export function HeroSection() {
             <MetricChip>Rewards follow results</MetricChip>
           </div>
         </div>
-
-        <HeroPreview />
       </div>
     </section>
   )
