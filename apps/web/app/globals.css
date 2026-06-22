@@ -363,8 +363,8 @@ html[data-theme-animating] *::after {
   z-index: 0;
   left: 50%;
   top: 50%;
-  width: min(40vw, 680px);
-  height: min(30vh, 400px);
+  width: min(58vw, 920px);
+  height: min(42vh, 520px);
   transform: translate(-50%, -50%);
   pointer-events: none;
   border-radius: 50%;
@@ -379,27 +379,27 @@ html[data-theme-animating] *::after {
 }
 
 .hero-copy-mask::before {
-  inset: 0;
-  background: rgba(0, 0, 0, 0.58);
-  filter: blur(40px);
-  transform: scale(1.12);
+  inset: -10%;
+  background: rgba(0, 0, 0, 0.46);
+  filter: blur(56px);
+  transform: scale(1.2);
 }
 
 .hero-copy-mask::after {
-  inset: -32%;
-  background: rgba(0, 0, 0, 0.22);
-  filter: blur(72px);
-  transform: scale(1.08);
+  inset: -48%;
+  background: rgba(0, 0, 0, 0.16);
+  filter: blur(100px);
+  transform: scale(1.12);
 }
 
 .dark .hero-copy-mask::before {
-  background: rgba(0, 0, 0, 0.4);
-  filter: blur(44px);
+  background: rgba(0, 0, 0, 0.34);
+  filter: blur(60px);
 }
 
 .dark .hero-copy-mask::after {
-  background: rgba(0, 0, 0, 0.14);
-  filter: blur(80px);
+  background: rgba(0, 0, 0, 0.1);
+  filter: blur(108px);
 }
 
 .hero-premium-scrim {

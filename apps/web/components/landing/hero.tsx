@@ -25,8 +25,11 @@ export function HeroSection() {
       </div>
 
       <div className={cn("relative z-10 w-full", pageContainerClass)}>
-        <div className="flex flex-col items-center gap-8 px-1 py-24 text-center sm:gap-9 sm:py-28 lg:gap-10 lg:py-32">
+        <div className="hero-copy-stage relative flex flex-col items-center gap-8 px-1 py-24 text-center sm:gap-9 sm:py-28 lg:gap-10 lg:py-32">
+          <div className="hero-copy-mask" aria-hidden />
+
           <motion.div
+            className="relative"
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
@@ -36,7 +39,7 @@ export function HeroSection() {
             </span>
           </motion.div>
 
-          <div className="flex max-w-3xl flex-col gap-5 sm:gap-6">
+          <div className="relative flex max-w-3xl flex-col gap-5 sm:gap-6">
             <motion.h1
               className="hero-headline font-display text-[2.75rem] leading-[1.02] tracking-[-0.02em] text-balance sm:text-5xl lg:text-[4rem] lg:leading-[1.04]"
               initial={{ opacity: 0, y: 18 }}
@@ -66,7 +69,7 @@ export function HeroSection() {
           </div>
 
           <motion.div
-            className="flex flex-col gap-3 sm:flex-row sm:gap-4"
+            className="relative flex flex-col gap-3 sm:flex-row sm:gap-4"
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{
