@@ -75,7 +75,7 @@ export function HeroSection() {
             <Button
               variant="outline"
               size="lg"
-              className="h-11 rounded-full border-white/35 bg-white/12 px-6 text-white backdrop-blur-sm hover:border-white/50 hover:bg-white/20 hover:text-white"
+              className="h-11 rounded-full border-white/35 bg-white/12 px-6 text-white backdrop-blur-sm hover:border-white/50 hover:bg-white/20 hover:text-white dark:border-white/25 dark:bg-black/30 dark:hover:border-white/40 dark:hover:bg-black/40"
               render={<Link href="#how-it-works" />}
             >
               For creators
