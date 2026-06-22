@@ -25,6 +25,37 @@ function hasText(value?: string | null) {
   return Boolean(value?.trim())
 }
 
+export function validateCampaignBudgetSolvency(input: WorkflowInput) {
+  if (!input.totalBudget || input.totalBudget <= 0) {
+    return { ok: false as const, reason: "invalid_total_budget" as const }
+  }
+
+  if (input.type === "campaign") {
+    if (!input.maxCreators || !input.fixedReward) {
+      return { ok: true as const }
+    }
+
+    const totalLiability = input.maxCreators * input.fixedReward
+    if (totalLiability > input.totalBudget) {
+      return { ok: false as const, reason: "campaign_liability_exceeds_budget" as const }
+    }
+  }
+
+  if (input.type === "bounty") {
+    const totalLiability =
+      (input.prizeFirst ?? 0) +
+      (input.prizeSecond ?? 0) +
+      (input.prizeThird ?? 0) +
+      20 * (input.prizeTop20Each ?? 0)
+
+    if (totalLiability > input.totalBudget) {
+      return { ok: false as const, reason: "bounty_prizes_exceed_budget" as const }
+    }
+  }
+
+  return { ok: true as const }
+}
+
 export function validateCampaignForPublish(input: WorkflowInput) {
   const missing: string[] = []
 
@@ -56,9 +87,12 @@ export function validateCampaignForPublish(input: WorkflowInput) {
     if (!input.prizeTop20Each || input.prizeTop20Each <= 0) missing.push("prizeTop20Each")
   }
 
+  const solvency = validateCampaignBudgetSolvency(input)
+
   return {
-    ok: missing.length === 0,
+    ok: missing.length === 0 && solvency.ok,
     missing,
+    solvencyReason: solvency.ok ? null : solvency.reason,
   }
 }
 

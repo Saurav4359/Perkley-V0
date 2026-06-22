@@ -215,6 +215,31 @@ export async function updateCampaign(userId: string, campaignId: string, input: 
     throw badRequest("Only draft campaigns can be edited.", "invalid_campaign_state")
   }
 
+  const escrow = await prisma.escrowTransaction.findUnique({
+    where: { campaignId },
+  })
+
+  if (escrow?.status === "funded" || escrow?.status === "released") {
+    const financialFields = [
+      ["totalBudget", input.totalBudget, existing.totalBudget],
+      ["maxCreators", input.maxCreators, existing.maxCreators],
+      ["fixedReward", input.fixedReward, existing.fixedReward],
+      ["prizeFirst", input.prizeFirst, existing.prizeFirst],
+      ["prizeSecond", input.prizeSecond, existing.prizeSecond],
+      ["prizeThird", input.prizeThird, existing.prizeThird],
+      ["prizeTop20Each", input.prizeTop20Each, existing.prizeTop20Each],
+    ] as const
+
+    for (const [field, nextValue, currentValue] of financialFields) {
+      if (nextValue !== undefined && nextValue !== currentValue) {
+        throw badRequest(
+          `Cannot change ${field} after escrow has been funded.`,
+          "escrow_funded_locked"
+        )
+      }
+    }
+  }
+
   const campaign = await prisma.campaign.update({
     where: { id: campaignId },
     data: {
@@ -264,6 +289,13 @@ export async function publishCampaign(userId: string, campaignId: string) {
 
   const validation = validateCampaignForPublish(campaign)
   if (!validation.ok) {
+    if (validation.solvencyReason) {
+      throw badRequest(
+        `Campaign budget is insufficient for configured rewards: ${validation.solvencyReason}.`,
+        validation.solvencyReason
+      )
+    }
+
     throw badRequest(
       `Campaign is missing required publish fields: ${validation.missing.join(", ")}.`,
       "campaign_not_publishable"
