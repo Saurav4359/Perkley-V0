@@ -17,6 +17,8 @@ const envSchema = z.object({
     .pipe(z.array(z.string().url()).min(1)),
   FRONTEND_URL: z.string().url().default("http://localhost:3000"),
   SESSION_COOKIE_NAME: z.string().min(1).default("perkley_session"),
+  /** `lax` for same-origin API rewrites (recommended). Use `none` only for true cross-site cookie auth. */
+  SESSION_COOKIE_SAMESITE: z.enum(["lax", "none"]).default("lax"),
   REFRESH_COOKIE_NAME: z.string().min(1).optional(),
   BCRYPT_COST: z.coerce.number().int().min(10).max(14).default(10),
   UPLOAD_STORAGE_DIR: z.string().min(1).default("./var/uploads"),
@@ -69,6 +71,26 @@ const envSchema = z.object({
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
   SMTP_FROM: z.string().optional(),
+}).superRefine((data, ctx) => {
+  if (data.NODE_ENV !== "production" && data.NODE_ENV !== "staging") return
+
+  const required = [
+    ["JWT_SECRET", data.JWT_SECRET],
+    ["OAUTH_TOKEN_ENCRYPTION_KEY", data.OAUTH_TOKEN_ENCRYPTION_KEY],
+    ["UPLOAD_TOKEN_SECRET", data.UPLOAD_TOKEN_SECRET],
+    ["RAZORPAY_KEY_ID", data.RAZORPAY_KEY_ID],
+    ["RAZORPAY_KEY_SECRET", data.RAZORPAY_KEY_SECRET],
+  ] as const
+
+  for (const [key, value] of required) {
+    if (!value) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `${key} is required when NODE_ENV is ${data.NODE_ENV}`,
+        path: [key],
+      })
+    }
+  }
 })
 
 export type ApiEnv = z.infer<typeof envSchema>
