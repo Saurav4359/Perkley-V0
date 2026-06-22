@@ -1,8 +1,5 @@
-"use client"
-
 import Link from "next/link"
 import { ArrowRightIcon } from "lucide-react"
-import { motion } from "framer-motion"
 
 import { HeroPreview } from "@/components/landing/hero-preview"
 import { MetricChip, pageContainerClass, SectionLabel } from "@/components/landing/primitives"
@@ -14,40 +11,30 @@ export function HeroSection() {
     <section className="border-b border-border">
       <div className={cn("grid gap-10 py-16 sm:py-20 lg:grid-cols-2 lg:items-center lg:gap-12 lg:py-24", pageContainerClass)}>
         <div className="flex flex-col gap-8">
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-          >
+          <div className="landing-reveal">
             <SectionLabel>Performance-based creator marketing</SectionLabel>
-          </motion.div>
+          </div>
 
           <div className="flex max-w-xl flex-col gap-5">
-            <motion.h1
-              className="font-display text-[2.65rem] leading-[1.02] tracking-tight text-balance sm:text-5xl lg:text-[3.25rem]"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.04, ease: [0.22, 1, 0.36, 1] }}
+            <h1
+              className="landing-reveal font-display text-[2.65rem] leading-[1.02] tracking-tight text-balance sm:text-5xl lg:text-[3.25rem]"
+              style={{ "--reveal-delay": "0.04s" } as React.CSSProperties}
             >
               Creator marketing, reimagined.
-            </motion.h1>
+            </h1>
 
-            <motion.p
-              className="max-w-md text-base leading-7 text-muted-foreground sm:text-lg"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+            <p
+              className="landing-reveal max-w-md text-base leading-7 text-muted-foreground sm:text-lg"
+              style={{ "--reveal-delay": "0.1s" } as React.CSSProperties}
             >
               Launch creator campaigns. Let creators compete. Reward performance
               — not follower counts.
-            </motion.p>
+            </p>
           </div>
 
-          <motion.div
-            className="flex flex-col gap-3 sm:flex-row"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.16, ease: [0.22, 1, 0.36, 1] }}
+          <div
+            className="landing-reveal flex flex-col gap-3 sm:flex-row"
+            style={{ "--reveal-delay": "0.16s" } as React.CSSProperties}
           >
             <Button
               size="lg"
@@ -65,18 +52,16 @@ export function HeroSection() {
             >
               For creators
             </Button>
-          </motion.div>
+          </div>
 
-          <motion.div
-            className="flex flex-wrap gap-2 border-t border-border pt-6"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.24 }}
+          <div
+            className="landing-reveal flex flex-wrap gap-2 border-t border-border pt-6"
+            style={{ "--reveal-delay": "0.24s" } as React.CSSProperties}
           >
             <MetricChip>Brands launch bounties</MetricChip>
             <MetricChip>Creators compete openly</MetricChip>
             <MetricChip>Rewards follow results</MetricChip>
-          </motion.div>
+          </div>
         </div>
 
         <HeroPreview />

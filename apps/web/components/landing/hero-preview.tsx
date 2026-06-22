@@ -1,6 +1,3 @@
-"use client"
-
-import { motion } from "framer-motion"
 import { ArrowUpRightIcon, TrophyIcon, UsersIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -15,11 +12,9 @@ const leaderboard = [
 
 export function HeroPreview() {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-      className="w-full"
+    <div
+      className="landing-reveal w-full"
+      style={{ "--reveal-delay": "0.2s" } as React.CSSProperties}
     >
       <SurfaceCard className="overflow-hidden p-6 sm:p-7">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -99,6 +94,6 @@ export function HeroPreview() {
           </div>
         </div>
       </SurfaceCard>
-    </motion.div>
+    </div>
   )
 }

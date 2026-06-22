@@ -19,15 +19,9 @@ import {
   type CampaignListFilters,
   type CreateCampaignInput,
 } from "@/lib/api/campaigns"
+import { campaignKeys } from "@/lib/query/keys"
 
-export const campaignKeys = {
-  all: ["campaigns"] as const,
-  public: (filters: CampaignListFilters) =>
-    ["campaigns", "public", filters] as const,
-  mine: (status?: ApiCampaignStatus) =>
-    ["campaigns", "mine", status ?? "all"] as const,
-  detail: (id: string) => ["campaigns", "detail", id] as const,
-}
+export { campaignKeys }
 
 export function usePublicCampaigns(filters: CampaignListFilters = {}) {
   return useQuery<ApiCampaign[]>({
