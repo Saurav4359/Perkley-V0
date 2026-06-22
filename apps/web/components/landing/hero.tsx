@@ -26,7 +26,7 @@ export function HeroSection() {
       </div>
 
       <div className={cn("relative z-10", pageContainerClass)}>
-        <div className="flex flex-col items-center gap-8 px-1 pb-10 pt-14 text-center sm:pt-16 sm:pb-12 lg:pt-20 lg:pb-14">
+        <div className="flex flex-col items-center gap-8 px-1 pb-10 pt-[5.5rem] text-center sm:pt-24 sm:pb-12 lg:pt-28 lg:pb-14">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}

@@ -40,11 +40,11 @@ export function SiteHeader() {
         className="pointer-events-none h-16 shrink-0 sm:h-[4.5rem]"
         aria-hidden
       />
-      <div className="fixed inset-x-0 top-0 z-50">
+      <div className="fixed inset-x-0 top-0 z-50 pt-3 sm:pt-4">
         <div className={pageContainerClass}>
           <header
             className={cn(
-              "glass-nav my-4 rounded-2xl border transition-[background-color,box-shadow,border-color] duration-300",
+              "glass-nav rounded-2xl border transition-[background-color,box-shadow,border-color] duration-300",
               scrolled && "glass-nav-scrolled"
             )}
           >
