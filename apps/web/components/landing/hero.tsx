@@ -7,9 +7,15 @@ import { motion } from "framer-motion"
 
 import { pageContainerClass } from "@/components/landing/primitives"
 import { Button } from "@/components/ui/button"
+import { scrollToSection } from "@/lib/scroll-to-section"
 import { cn } from "@/lib/utils"
 
 export function HeroSection() {
+  function handleHowItWorksClick(event: React.MouseEvent<HTMLAnchorElement>) {
+    event.preventDefault()
+    scrollToSection("how-it-works")
+  }
+
   return (
     <section className="relative flex min-h-[100svh] items-center overflow-hidden">
       <div className="absolute inset-0" aria-hidden>
@@ -81,7 +87,9 @@ export function HeroSection() {
             <Button
               size="lg"
               className="h-11 rounded-full px-7 bg-white text-[#0a0a0a] shadow-[0_8px_32px_rgba(0,0,0,0.25)] hover:bg-white/92"
-              render={<Link href="#how-it-works" />}
+              render={
+                <Link href="#how-it-works" onClick={handleHowItWorksClick} />
+              }
             >
               For brands
               <ArrowRightIcon data-icon="inline-end" />
@@ -90,7 +98,9 @@ export function HeroSection() {
               variant="outline"
               size="lg"
               className="h-11 rounded-full border-white/40 bg-black/45 px-7 text-white shadow-[0_4px_24px_rgba(0,0,0,0.25)] backdrop-blur-md hover:border-white/55 hover:bg-black/55 hover:text-white"
-              render={<Link href="#how-it-works" />}
+              render={
+                <Link href="#how-it-works" onClick={handleHowItWorksClick} />
+              }
             >
               For creators
             </Button>
