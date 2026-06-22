@@ -105,14 +105,20 @@ export function AudienceTag({
 export function MetricChip({
   children,
   className,
+  variant = "default",
 }: {
   children: React.ReactNode
   className?: string
+  variant?: "default" | "emphasis"
 }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border border-border bg-background px-3 py-1 text-xs text-muted-foreground",
+        "inline-flex items-center rounded-full border bg-background",
+        variant === "default" &&
+          "border-border px-3 py-1 text-xs text-muted-foreground",
+        variant === "emphasis" &&
+          "border-border/80 px-4 py-2 text-sm font-semibold tracking-tight text-foreground/90",
         className
       )}
     >
