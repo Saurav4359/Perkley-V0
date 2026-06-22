@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import Link from "next/link"
 import { ArrowRightIcon } from "lucide-react"
 import { motion } from "framer-motion"
@@ -11,8 +12,25 @@ import { cn } from "@/lib/utils"
 
 export function HeroSection() {
   return (
-    <section className="border-b border-border">
-      <div className={cn("grid gap-10 py-16 sm:py-20 lg:grid-cols-2 lg:items-center lg:gap-12 lg:py-24", pageContainerClass)}>
+    <section className="relative overflow-hidden border-b border-border">
+      <div className="absolute inset-0" aria-hidden>
+        <Image
+          src="/hero-nyc-times-square.png"
+          alt=""
+          fill
+          priority
+          className="object-cover object-[center_42%] sm:object-center"
+          sizes="100vw"
+        />
+        <div className="hero-cinematic-scrim absolute inset-0" />
+      </div>
+
+      <div
+        className={cn(
+          "relative z-10 grid gap-10 py-16 sm:py-20 lg:grid-cols-2 lg:items-center lg:gap-12 lg:py-24",
+          pageContainerClass
+        )}
+      >
         <div className="flex flex-col gap-8">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
