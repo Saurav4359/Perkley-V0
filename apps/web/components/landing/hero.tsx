@@ -32,7 +32,7 @@ export function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
           >
-            <span className="inline-flex items-center rounded-full border border-white/25 bg-black/35 px-3.5 py-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-white/92 backdrop-blur-md">
+            <span className="inline-flex items-center rounded-full border border-white/25 bg-black/35 px-3.5 py-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-white/92 backdrop-blur-md dark:border-white/20 dark:bg-black/55">
               Performance-based creator marketing
             </span>
           </motion.div>
