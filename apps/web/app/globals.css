@@ -337,3 +337,33 @@ html[data-theme-animating] *::after {
       transparent 72%
     );
 }
+
+.dark .hero-cinematic-scrim {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.82) 0%,
+      rgba(0, 0, 0, 0.68) 16%,
+      rgba(0, 0, 0, 0.5) 32%,
+      rgba(0, 0, 0, 0.32) 46%,
+      rgba(0, 0, 0, 0.14) 58%,
+      transparent 72%
+    ),
+    linear-gradient(
+      0deg,
+      var(--hero-scrim-bottom) 0%,
+      color-mix(in srgb, var(--hero-scrim-bottom) 99%, transparent) 5%,
+      color-mix(in srgb, var(--hero-scrim-bottom) 94%, transparent) 12%,
+      color-mix(in srgb, var(--hero-scrim-bottom) 82%, transparent) 24%,
+      color-mix(in srgb, var(--hero-scrim-bottom) 64%, transparent) 36%,
+      color-mix(in srgb, var(--hero-scrim-bottom) 44%, transparent) 48%,
+      color-mix(in srgb, var(--hero-scrim-bottom) 24%, transparent) 60%,
+      color-mix(in srgb, var(--hero-scrim-bottom) 10%, transparent) 70%,
+      transparent 82%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(8, 8, 12, 0.28) 0%,
+      transparent 55%
+    );
+}
