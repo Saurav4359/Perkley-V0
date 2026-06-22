@@ -35,7 +35,6 @@ export const updateBrandProfileSchema = z.object({
   industry: z.string().trim().min(1).max(80).optional(),
   website: optionalUrlSchema,
   workEmail: z.email().toLowerCase().optional(),
-  logoUrl: optionalUrlSchema,
   socialLinks: z
     .object({
       instagram: optionalUrlSchema,

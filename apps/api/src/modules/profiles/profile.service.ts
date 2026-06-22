@@ -361,7 +361,6 @@ export async function updateBrandProfile(userId: string, input: UpdateBrandProfi
       industry: input.industry,
       website: input.website,
       workEmail: input.workEmail,
-      logoUrl: input.logoUrl,
       socialLinks: input.socialLinks as Prisma.InputJsonObject | undefined,
       visibility: input.visibility,
     },
