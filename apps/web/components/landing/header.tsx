@@ -22,6 +22,7 @@ const SECTION_IDS = NAV_ITEMS.map((item) => item.id)
 export function SiteHeader() {
   const { activeSection, setActiveOnNavigate } = useActiveSection(SECTION_IDS)
   const [scrolled, setScrolled] = useState(false)
+  const overHero = !scrolled
 
   useEffect(() => {
     function onScroll() {
@@ -44,15 +45,21 @@ export function SiteHeader() {
         <div className={pageContainerClass}>
           <header
             className={cn(
-              "glass-nav rounded-2xl border transition-[background-color,box-shadow,border-color] duration-300",
-              scrolled && "glass-nav-scrolled"
+              "glass-nav rounded-2xl border transition-[background-color,box-shadow,border-color,color] duration-300",
+              scrolled && "glass-nav-scrolled",
+              overHero &&
+                !scrolled &&
+                "border-white/15 bg-black/25 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_8px_32px_rgba(0,0,0,0.2)] dark:border-white/12 dark:bg-black/35"
             )}
           >
             <div className="flex h-12 items-center justify-between gap-4 px-3.5 sm:h-14 sm:px-5">
               <Link href="/" className="shrink-0">
                 <PerkleyLogo
                   markClassName="h-9 w-9 sm:h-10 sm:w-10"
-                  textClassName="text-[1.05rem] sm:text-[1.15rem]"
+                  textClassName={cn(
+                    "text-[1.05rem] sm:text-[1.15rem]",
+                    overHero && "text-white"
+                  )}
                 />
               </Link>
 
@@ -64,9 +71,13 @@ export function SiteHeader() {
                     onClick={() => setActiveOnNavigate(id)}
                     className={cn(
                       "relative whitespace-nowrap font-medium no-underline transition-colors focus-visible:outline-none",
-                      activeSection === id
-                        ? "text-foreground after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-full after:rounded-full after:bg-brand after:content-['']"
-                        : "text-foreground/80 hover:text-foreground"
+                      overHero
+                        ? activeSection === id
+                          ? "text-white after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-full after:rounded-full after:bg-brand after:content-['']"
+                          : "text-white/78 hover:text-white"
+                        : activeSection === id
+                          ? "text-foreground after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-full after:rounded-full after:bg-brand after:content-['']"
+                          : "text-foreground/80 hover:text-foreground"
                     )}
                   >
                     {label}
@@ -78,7 +89,12 @@ export function SiteHeader() {
                 <ThemeToggle />
                 <Link
                   href="/login"
-                  className="inline-flex h-9 items-center rounded-full px-3.5 text-[0.9375rem] font-medium text-foreground/75 transition-colors hover:text-foreground sm:px-4"
+                  className={cn(
+                    "inline-flex h-9 items-center rounded-full px-3.5 text-[0.9375rem] font-medium transition-colors sm:px-4",
+                    overHero
+                      ? "text-white/82 hover:text-white"
+                      : "text-foreground/75 hover:text-foreground"
+                  )}
                 >
                   Login
                 </Link>
@@ -89,7 +105,10 @@ export function SiteHeader() {
                       href="/signup"
                       className={cn(
                         buttonVariants({ size: "sm" }),
-                        "h-9 rounded-full bg-foreground px-4 text-background hover:bg-foreground/90"
+                        "h-9 rounded-full px-4",
+                        overHero
+                          ? "bg-white text-[#0a0a0a] hover:bg-white/92"
+                          : "bg-foreground text-background hover:bg-foreground/90"
                       )}
                     />
                   }
