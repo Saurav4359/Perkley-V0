@@ -42,9 +42,7 @@ export function SiteHeader() {
           className={cn(
             "glass-nav rounded-2xl border transition-[background-color,box-shadow,border-color,color] duration-300",
             scrolled && "glass-nav-scrolled",
-            overHero &&
-              !scrolled &&
-              "border-white/15 bg-black/25 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_8px_32px_rgba(0,0,0,0.2)] dark:border-white/12 dark:bg-black/35"
+            overHero && !scrolled && "glass-nav-over-hero"
           )}
         >
             <div className="flex h-12 items-center justify-between gap-4 px-3.5 sm:h-14 sm:px-5">
