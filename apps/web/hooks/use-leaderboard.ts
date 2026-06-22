@@ -7,10 +7,9 @@ import {
   selectCampaignWinners,
   type CampaignLeaderboard,
 } from "@/lib/api/leaderboard"
+import { leaderboardKeys } from "@/lib/query/keys"
 
-export const leaderboardKeys = {
-  campaign: (campaignId: string) => ["leaderboard", campaignId] as const,
-}
+export { leaderboardKeys }
 
 export function useCampaignLeaderboard(
   campaignId: string | undefined,

@@ -18,9 +18,12 @@ import {
   type UpdateCreatorProfileInput,
   type UpsertPaymentDetailsInput,
 } from "@/lib/api/profile"
+import {
+  brandProfileKey,
+  creatorProfileKey,
+} from "@/lib/query/keys"
 
-export const creatorProfileKey = ["profile", "creator"] as const
-export const brandProfileKey = ["profile", "brand"] as const
+export { brandProfileKey, creatorProfileKey }
 
 export function useCreatorProfile(enabled = true) {
   return useQuery<CreatorProfile>({

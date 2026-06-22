@@ -1,6 +1,7 @@
 import { badRequest, forbidden, notFound, unauthorized } from "../../lib/http-error"
 import { isInstagramConfigured } from "../../lib/env"
 import { prisma } from "../../lib/prisma"
+import { decryptSecret } from "../../lib/secrets"
 import {
   buildSyncedMetrics,
   normalizeInstagramMediaMetrics,
@@ -13,7 +14,7 @@ async function loadCreatorInstagramToken(creatorId: string) {
     where: { userId: creatorId, provider: "instagram" },
     select: { accessToken: true },
   })
-  return account?.accessToken ?? null
+  return decryptSecret(account?.accessToken ?? null)
 }
 
 async function fetchInstagramMetricsForMedia(input: {

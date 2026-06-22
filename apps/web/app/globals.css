@@ -316,103 +316,41 @@ html[data-theme-animating] *::after {
     0 12px 40px rgba(0, 0, 0, 0.45);
 }
 
-.glass-nav.glass-nav-over-hero {
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border-color: rgba(255, 255, 255, 0.16);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 8px 32px rgba(0, 0, 0, 0.18);
+@keyframes landing-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.dark .glass-nav.glass-nav-over-hero {
-  background: rgba(0, 0, 0, 0.35);
-  border-color: rgba(255, 255, 255, 0.12);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 8px 32px rgba(0, 0, 0, 0.35);
-}
+@media (prefers-reduced-motion: no-preference) {
+  .landing-reveal {
+    animation: landing-fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--reveal-delay, 0s);
+  }
 
-.hero-premium-scrim {
-  background:
-    linear-gradient(
-      180deg,
-      rgba(0, 0, 0, 0.4) 0%,
-      rgba(0, 0, 0, 0.12) 34%,
-      rgba(0, 0, 0, 0.08) 58%,
-      rgba(0, 0, 0, 0.22) 100%
-    ),
-    radial-gradient(
-      ellipse 82% 68% at 50% 42%,
-      rgba(0, 0, 0, 0.02) 0%,
-      rgba(0, 0, 0, 0.2) 100%
-    );
-}
+  .landing-stagger-item {
+    animation: landing-fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
 
-.dark .hero-premium-scrim {
-  background:
-    linear-gradient(
-      180deg,
-      rgba(0, 0, 0, 0.78) 0%,
-      rgba(0, 0, 0, 0.48) 40%,
-      rgba(0, 0, 0, 0.56) 100%
-    ),
-    radial-gradient(
-      ellipse 85% 70% at 50% 42%,
-      rgba(0, 0, 0, 0.12) 0%,
-      rgba(0, 0, 0, 0.58) 100%
-    );
-}
+  .landing-stagger > .landing-stagger-item:nth-child(1) {
+    animation-delay: 0.05s;
+  }
 
-.hero-cinematic-scrim {
-  background:
-    linear-gradient(
-      180deg,
-      rgba(0, 0, 0, 0.64) 0%,
-      rgba(0, 0, 0, 0.44) 20%,
-      rgba(0, 0, 0, 0.26) 38%,
-      rgba(0, 0, 0, 0.1) 54%,
-      transparent 68%
-    ),
-    linear-gradient(
-      0deg,
-      var(--hero-scrim-bottom) 0%,
-      color-mix(in srgb, var(--hero-scrim-bottom) 98%, transparent) 6%,
-      color-mix(in srgb, var(--hero-scrim-bottom) 88%, transparent) 16%,
-      color-mix(in srgb, var(--hero-scrim-bottom) 68%, transparent) 30%,
-      color-mix(in srgb, var(--hero-scrim-bottom) 42%, transparent) 44%,
-      color-mix(in srgb, var(--hero-scrim-bottom) 18%, transparent) 58%,
-      transparent 72%
-    );
-}
+  .landing-stagger > .landing-stagger-item:nth-child(2) {
+    animation-delay: 0.13s;
+  }
 
-.dark .hero-cinematic-scrim {
-  background:
-    linear-gradient(
-      180deg,
-      rgba(0, 0, 0, 0.82) 0%,
-      rgba(0, 0, 0, 0.68) 16%,
-      rgba(0, 0, 0, 0.5) 32%,
-      rgba(0, 0, 0, 0.32) 46%,
-      rgba(0, 0, 0, 0.14) 58%,
-      transparent 72%
-    ),
-    linear-gradient(
-      0deg,
-      var(--hero-scrim-bottom) 0%,
-      color-mix(in srgb, var(--hero-scrim-bottom) 99%, transparent) 5%,
-      color-mix(in srgb, var(--hero-scrim-bottom) 94%, transparent) 12%,
-      color-mix(in srgb, var(--hero-scrim-bottom) 82%, transparent) 24%,
-      color-mix(in srgb, var(--hero-scrim-bottom) 64%, transparent) 36%,
-      color-mix(in srgb, var(--hero-scrim-bottom) 44%, transparent) 48%,
-      color-mix(in srgb, var(--hero-scrim-bottom) 24%, transparent) 60%,
-      color-mix(in srgb, var(--hero-scrim-bottom) 10%, transparent) 70%,
-      transparent 82%
-    ),
-    linear-gradient(
-      180deg,
-      rgba(8, 8, 12, 0.28) 0%,
-      transparent 55%
-    );
+  .landing-stagger > .landing-stagger-item:nth-child(3) {
+    animation-delay: 0.21s;
+  }
+
+  .landing-stagger > .landing-stagger-item:nth-child(4) {
+    animation-delay: 0.29s;
+  }
 }

@@ -2,6 +2,7 @@ import { Router } from "express"
 
 import { asyncRoute } from "../../middleware/async-route"
 import { optionalAuth, requireAuth, requireRoles } from "../../middleware/auth"
+import { publicReadRateLimit } from "../../middleware/rate-limit"
 import { validateBody } from "../../middleware/validate"
 import { campaignAnalyticsRoutes } from "../analytics/analytics.routes"
 import { campaignApplicationRoutes } from "../applications/application.routes"
@@ -31,6 +32,7 @@ export const campaignRoutes = Router()
 
 campaignRoutes.get(
   "/",
+  publicReadRateLimit,
   asyncRoute(async (req, res) => {
     const query = campaignListQuerySchema.parse(req.query)
     res.json({ campaigns: await listPublicCampaigns(query) })
@@ -56,6 +58,7 @@ campaignRoutes.use("/:id", campaignAnalyticsRoutes)
 
 campaignRoutes.get(
   "/:id",
+  publicReadRateLimit,
   optionalAuth,
   asyncRoute(async (req, res) => {
     const { id } = campaignIdParamSchema.parse(req.params)

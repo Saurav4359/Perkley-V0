@@ -170,6 +170,11 @@ export async function applyToCampaign(
 ) {
   const creator = await requireCreatorUser(creatorId)
   const campaign = await loadActiveCampaign(campaignId)
+
+  if (campaign.status !== "active") {
+    throw notFound("Campaign not found.")
+  }
+
   const acceptedCount = await countAcceptedApplications(campaignId)
 
   const existing = await prisma.campaignApplication.findUnique({
@@ -196,6 +201,9 @@ export async function applyToCampaign(
     const code = eligibility.reasons[0] ?? "cannot_apply"
     if (code === "already_applied") {
       throw conflict("You have already applied to this campaign.", code)
+    }
+    if (code === "campaign_not_active") {
+      throw notFound("Campaign not found.")
     }
     throw badRequest(`Cannot apply to campaign: ${eligibility.reasons.join(", ")}.`, code)
   }
@@ -283,6 +291,19 @@ export async function withdrawApplication(creatorId: string, campaignId: string)
     throw badRequest("This application cannot be withdrawn.", "invalid_application_state")
   }
 
+  const existingSubmission = await prisma.campaignSubmission.findFirst({
+    where: {
+      campaignId,
+      creatorId,
+    },
+  })
+  if (existingSubmission) {
+    throw conflict(
+      "Cannot withdraw an application after a submission has been created.",
+      "submission_exists"
+    )
+  }
+
   const updated = await prisma.campaignApplication.update({
     where: { id: application.id },
     data: { status: "withdrawn" },
@@ -353,48 +374,81 @@ export async function acceptApplication(
 ) {
   await requireBrandUser(brandId)
 
-  const campaign = await prisma.campaign.findFirst({
-    where: { id: campaignId, brandId },
-  })
-  if (!campaign) throw notFound("Campaign not found.")
+  const updated = await prisma.$transaction(async (tx) => {
+    const campaign = await tx.campaign.findFirst({
+      where: { id: campaignId, brandId },
+    })
+    if (!campaign) throw notFound("Campaign not found.")
 
-  const application = await loadApplicationForCampaign(campaignId, applicationId)
-  const acceptedCount = await countAcceptedApplications(campaignId)
-
-  const decision = canAcceptApplication({
-    campaignType: campaign.type,
-    status: application.status,
-    acceptedCount,
-    maxCreators: campaign.maxCreators,
-  })
-
-  if (!decision.ok) {
-    throw badRequest(`Cannot accept application: ${decision.reason}.`, decision.reason)
-  }
-
-  const updated = await prisma.campaignApplication.update({
-    where: { id: applicationId },
-    data: {
-      status: "accepted",
-      reviewedAt: new Date(),
-      reviewedBy: brandId,
-    },
-    include: {
-      creator: {
-        select: {
-          id: true,
-          creatorProfile: {
-            select: {
-              displayName: true,
-              instagramHandle: true,
-              avatarUrl: true,
-              followersCount: true,
-              verificationStatus: true,
+    const application = await tx.campaignApplication.findFirst({
+      where: {
+        id: applicationId,
+        campaignId,
+      },
+      include: {
+        creator: {
+          select: {
+            id: true,
+            creatorProfile: {
+              select: {
+                displayName: true,
+                instagramHandle: true,
+                avatarUrl: true,
+                followersCount: true,
+                verificationStatus: true,
+              },
             },
           },
         },
       },
-    },
+    })
+    if (!application) throw notFound("Application not found.")
+
+    const acceptedCount = await tx.campaignApplication.count({
+      where: {
+        campaignId,
+        status: "accepted",
+      },
+    })
+
+    const decision = canAcceptApplication({
+      campaignType: campaign.type,
+      status: application.status,
+      acceptedCount,
+      maxCreators: campaign.maxCreators,
+    })
+
+    if (!decision.ok) {
+      if (decision.reason === "campaign_full") {
+        throw conflict(`Cannot accept application: ${decision.reason}.`, decision.reason)
+      }
+      throw badRequest(`Cannot accept application: ${decision.reason}.`, decision.reason)
+    }
+
+    return tx.campaignApplication.update({
+      where: { id: applicationId },
+      data: {
+        status: "accepted",
+        reviewedAt: new Date(),
+        reviewedBy: brandId,
+      },
+      include: {
+        creator: {
+          select: {
+            id: true,
+            creatorProfile: {
+              select: {
+                displayName: true,
+                instagramHandle: true,
+                avatarUrl: true,
+                followersCount: true,
+                verificationStatus: true,
+              },
+            },
+          },
+        },
+      },
+    })
   })
 
   runNotificationSideEffect(notifyApplicationAcceptedForCampaign(campaignId, updated.creatorId))

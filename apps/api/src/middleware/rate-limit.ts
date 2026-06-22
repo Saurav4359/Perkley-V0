@@ -28,3 +28,27 @@ export const oauthRateLimit = rateLimit({
     code: "rate_limited",
   },
 })
+
+export const publicReadRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 120,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  skip: skipInDevelopment,
+  message: {
+    error: "Too many requests. Try again later.",
+    code: "rate_limited",
+  },
+})
+
+export const uploadContentRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 30,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  skip: skipInDevelopment,
+  message: {
+    error: "Too many upload attempts. Try again later.",
+    code: "rate_limited",
+  },
+})

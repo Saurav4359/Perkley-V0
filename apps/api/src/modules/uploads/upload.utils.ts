@@ -12,7 +12,7 @@ export const uploadRules: Record<MediaPurpose, UploadRule> = {
   brand_logo: {
     allowedRoles: ["brand"],
     maxBytes: 3 * mb,
-    mimeTypes: ["image/png", "image/jpeg", "image/webp", "image/svg+xml"],
+    mimeTypes: ["image/png", "image/jpeg", "image/webp"],
   },
   creator_avatar: {
     allowedRoles: ["creator"],
@@ -60,8 +60,6 @@ export function extensionForMimeType(mimeType: string) {
       return "jpg"
     case "image/webp":
       return "webp"
-    case "image/svg+xml":
-      return "svg"
     default:
       return "bin"
   }

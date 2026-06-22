@@ -1,20 +1,27 @@
-import type { UserRole } from "@prisma/client"
-import type { NextFunction, Request, RequestHandler, Response } from "express"
+import type { RequestHandler } from "express"
 
-import { forbidden, unauthorized } from "../lib/http-error"
-import { getOptionalSession, requireSession, type SessionUser } from "../modules/auth/session"
+import { unauthorized } from "../lib/http-error"
+import { getCachedUserStatus } from "../lib/user-status-cache"
+import { getOptionalSession, requireSession } from "../modules/auth/session"
+import { requireRoles } from "./rbac"
 
-declare global {
-  namespace Express {
-    interface Request {
-      auth?: SessionUser
-    }
-  }
-}
+export { requireRoles }
 
 export const requireAuth: RequestHandler = async (req, _res, next) => {
   try {
-    req.auth = await requireSession(req)
+    const session = await requireSession(req)
+    const status = await getCachedUserStatus(session.id)
+
+    if (status !== "active") {
+      next(unauthorized("This account is not active."))
+      return
+    }
+
+    req.auth = {
+      id: session.id,
+      role: session.role,
+      email: session.email,
+    }
     next()
   } catch (error) {
     next(error)
@@ -23,27 +30,24 @@ export const requireAuth: RequestHandler = async (req, _res, next) => {
 
 export const optionalAuth: RequestHandler = async (req, _res, next) => {
   try {
-    req.auth = await getOptionalSession(req) ?? undefined
+    const session = await getOptionalSession(req)
+    if (!session) {
+      next()
+      return
+    }
+
+    const status = await getCachedUserStatus(session.id)
+
+    if (status === "active") {
+      req.auth = {
+        id: session.id,
+        role: session.role,
+        email: session.email,
+      }
+    }
+
     next()
   } catch (error) {
     next(error)
-  }
-}
-
-export function requireRoles(...roles: UserRole[]): RequestHandler {
-  const allowed = new Set<UserRole>(roles)
-
-  return (req: Request, _res: Response, next: NextFunction) => {
-    if (!req.auth) {
-      next(unauthorized())
-      return
-    }
-
-    if (!allowed.has(req.auth.role)) {
-      next(forbidden("You do not have permission to access this resource."))
-      return
-    }
-
-    next()
   }
 }

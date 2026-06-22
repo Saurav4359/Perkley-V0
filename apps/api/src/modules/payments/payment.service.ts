@@ -1,6 +1,7 @@
 import type { Campaign, EscrowTransaction, Payout } from "@prisma/client"
+import { Prisma } from "@prisma/client"
 
-import { badRequest, forbidden, notFound, unauthorized } from "../../lib/http-error"
+import { badRequest, conflict, forbidden, notFound, unauthorized } from "../../lib/http-error"
 import { prisma } from "../../lib/prisma"
 import { rankLeaderboardCandidates, creatorInitials } from "../leaderboard/leaderboard.utils"
 import {
@@ -81,13 +82,6 @@ async function loadOwnedCampaign(brandId: string, campaignId: string) {
   })
   if (!campaign) throw notFound("Campaign not found.")
   return campaign
-}
-
-async function creatorHasPayoutMethod(creatorId: string) {
-  const method = await prisma.creatorPayoutMethod.findFirst({
-    where: { creatorId, isDefault: true },
-  })
-  return Boolean(method)
 }
 
 async function rankBountySubmissions(campaign: Campaign) {
@@ -245,23 +239,25 @@ export async function releaseCampaignPayments(
   await requireBrandUser(brandId)
   const campaign = await loadOwnedCampaign(brandId, campaignId)
 
-  const escrow = await prisma.escrowTransaction.findUnique({
+  const escrowSnapshot = await prisma.escrowTransaction.findUnique({
     where: { campaignId },
   })
-  if (!escrow) throw notFound("Escrow not found.")
+  if (!escrowSnapshot) throw notFound("Escrow not found.")
 
-  const remainingAmountInr = escrowRemainingAmount(escrow)
   const releaseDecision = canReleasePayments({
     campaignStatus: campaign.status,
     campaignType: campaign.type,
-    escrowStatus: escrow.status,
-    remainingAmountInr,
+    escrowStatus: escrowSnapshot.status,
+    remainingAmountInr: escrowRemainingAmount(escrowSnapshot),
   })
   if (!releaseDecision.ok) {
     throw badRequest(`Cannot release payments: ${releaseDecision.reason}.`, releaseDecision.reason)
   }
 
   const targetStatus = eligibleSubmissionStatus(campaign.type)
+  const ranked =
+    campaign.type === "bounty" ? await rankBountySubmissions(campaign) : []
+
   const submissions = await prisma.campaignSubmission.findMany({
     where: {
       campaignId,
@@ -275,13 +271,19 @@ export async function releaseCampaignPayments(
     throw badRequest("No eligible submissions are ready for payout.", "no_eligible_submissions")
   }
 
-  const ranked =
-    campaign.type === "bounty" ? await rankBountySubmissions(campaign) : []
+  const creatorIds = [...new Set(submissions.map((submission) => submission.creatorId))]
+  const defaultPayoutMethods = await prisma.creatorPayoutMethod.findMany({
+    where: {
+      creatorId: { in: creatorIds },
+      isDefault: true,
+    },
+    select: { creatorId: true },
+  })
+  const creatorsWithPayoutMethod = new Set(defaultPayoutMethods.map((method) => method.creatorId))
 
   const payoutPlans: Array<{ submission: (typeof submissions)[number]; amountInr: number }> = []
   for (const submission of submissions) {
-    const hasPayoutMethod = await creatorHasPayoutMethod(submission.creatorId)
-    if (!hasPayoutMethod) {
+    if (!creatorsWithPayoutMethod.has(submission.creatorId)) {
       throw badRequest(
         `Creator ${submission.creatorId} has no payout method on file.`,
         "creator_payout_method_missing"
@@ -313,53 +315,96 @@ export async function releaseCampaignPayments(
   }
 
   const totalReleaseAmount = payoutPlans.reduce((sum, plan) => sum + plan.amountInr, 0)
-  if (totalReleaseAmount > remainingAmountInr) {
-    throw badRequest("Escrow balance is insufficient for these payouts.", "insufficient_escrow")
-  }
-
   const now = new Date()
-  const nextStatus = nextEscrowStatusAfterRelease({
-    amountInr: escrow.amountInr,
-    releasedAmountInr: escrow.releasedAmountInr,
-    releaseAmountInr: totalReleaseAmount,
-  })
 
   const payouts = await prisma.$transaction(async (tx) => {
+    const escrow = await tx.escrowTransaction.findUnique({
+      where: { campaignId },
+    })
+    if (!escrow) throw notFound("Escrow not found.")
+
+    const remainingAmountInr = escrowRemainingAmount(escrow)
+    if (totalReleaseAmount > remainingAmountInr) {
+      throw badRequest("Escrow balance is insufficient for these payouts.", "insufficient_escrow")
+    }
+
     const created = []
 
     for (const plan of payoutPlans) {
-      const payout = await tx.payout.create({
-        data: {
-          escrowId: escrow.id,
+      const stillEligible = await tx.campaignSubmission.findFirst({
+        where: {
+          id: plan.submission.id,
           campaignId,
-          submissionId: plan.submission.id,
-          creatorId: plan.submission.creatorId,
-          amountInr: plan.amountInr,
-          status: "paid",
-          razorpayPayoutId: createPayoutReference(plan.submission.id),
-          paidAt: now,
-        },
-        include: {
-          campaign: { select: { title: true } },
+          status: targetStatus,
+          payout: null,
         },
       })
+      if (!stillEligible) continue
 
-      await tx.campaignSubmission.update({
-        where: { id: plan.submission.id },
-        data: { status: "paid" },
-      })
+      try {
+        const payout = await tx.payout.create({
+          data: {
+            escrowId: escrow.id,
+            campaignId,
+            submissionId: plan.submission.id,
+            creatorId: plan.submission.creatorId,
+            amountInr: plan.amountInr,
+            status: "paid",
+            razorpayPayoutId: createPayoutReference(plan.submission.id),
+            paidAt: now,
+          },
+          include: {
+            campaign: { select: { title: true } },
+          },
+        })
 
-      created.push(payout)
+        await tx.campaignSubmission.update({
+          where: { id: plan.submission.id },
+          data: { status: "paid" },
+        })
+
+        created.push(payout)
+      } catch (error) {
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === "P2002"
+        ) {
+          continue
+        }
+        throw error
+      }
     }
 
-    await tx.escrowTransaction.update({
-      where: { id: escrow.id },
+    if (created.length === 0) {
+      throw badRequest("No eligible submissions are ready for payout.", "no_eligible_submissions")
+    }
+
+    const actualReleaseAmount = created.reduce((sum, payout) => sum + payout.amountInr, 0)
+    const nextStatus = nextEscrowStatusAfterRelease({
+      amountInr: escrow.amountInr,
+      releasedAmountInr: escrow.releasedAmountInr,
+      releaseAmountInr: actualReleaseAmount,
+    })
+
+    const escrowUpdate = await tx.escrowTransaction.updateMany({
+      where: {
+        id: escrow.id,
+        releasedAmountInr: escrow.releasedAmountInr,
+        amountInr: { gte: escrow.releasedAmountInr + actualReleaseAmount },
+      },
       data: {
-        releasedAmountInr: escrow.releasedAmountInr + totalReleaseAmount,
+        releasedAmountInr: { increment: actualReleaseAmount },
         status: nextStatus,
         releasedAt: nextStatus === "released" ? now : escrow.releasedAt,
       },
     })
+
+    if (escrowUpdate.count === 0) {
+      throw conflict(
+        "Escrow balance changed during payout release. Please retry.",
+        "escrow_release_conflict"
+      )
+    }
 
     return created
   })
@@ -376,7 +421,7 @@ export async function releaseCampaignPayments(
   }
 
   return {
-    releasedAmountInr: totalReleaseAmount,
+    releasedAmountInr: payouts.reduce((sum, payout) => sum + payout.amountInr, 0),
     payouts: payouts.map(serializePayout),
   }
 }
@@ -393,9 +438,13 @@ export async function refundCampaignEscrow(brandId: string, campaignId: string) 
   const activePayouts = await prisma.payout.count({
     where: {
       escrowId: escrow.id,
-      status: { in: ["pending", "processing", "on_hold"] },
+      status: { in: ["pending", "processing", "on_hold", "paid"] },
     },
   })
+
+  if (escrow.releasedAmountInr > 0) {
+    throw badRequest("Cannot refund escrow after payouts have been released.", "escrow_already_released")
+  }
 
   const remainingAmountInr = escrowRemainingAmount(escrow)
   const decision = canRefundEscrow({
@@ -469,11 +518,24 @@ export async function listBrandPaymentHistory(
 }
 
 export async function assertEscrowFundedForPublish(campaignId: string) {
+  const campaign = await prisma.campaign.findUnique({
+    where: { id: campaignId },
+    select: { totalBudget: true },
+  })
+  if (!campaign) throw notFound("Campaign not found.")
+
   const escrow = await prisma.escrowTransaction.findUnique({
     where: { campaignId },
   })
 
   if (!escrow || escrow.status !== "funded") {
     throw badRequest("Campaign escrow must be funded before publishing.", "escrow_not_funded")
+  }
+
+  if (escrow.amountInr !== campaign.totalBudget) {
+    throw badRequest(
+      "Escrow amount does not match the campaign budget. Update the budget or re-fund escrow.",
+      "escrow_budget_mismatch"
+    )
   }
 }

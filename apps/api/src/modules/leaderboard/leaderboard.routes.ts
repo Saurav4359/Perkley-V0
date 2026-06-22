@@ -9,6 +9,7 @@ export const campaignLeaderboardRoutes = Router({ mergeParams: true })
 
 campaignLeaderboardRoutes.get(
   "/leaderboard",
+  requireAuth,
   asyncRoute(async (req, res) => {
     const { id } = campaignIdParamSchema.parse(req.params)
     res.json({ leaderboard: await getCampaignLeaderboard(id) })

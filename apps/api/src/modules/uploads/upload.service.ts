@@ -150,10 +150,20 @@ function conflictUploadState(status: MediaAsset["status"]) {
   return badRequest(`Media asset is ${status} and cannot accept a new upload.`, "invalid_asset_state")
 }
 
-export async function getMediaResponse(assetId: string) {
+export async function getMediaResponse(assetId: string, viewerId?: string | null) {
   const asset = await prisma.mediaAsset.findUnique({ where: { id: assetId } })
   if (!asset || !["uploaded", "attached"].includes(asset.status)) {
     throw notFound("Media asset not found.")
+  }
+
+  const isPublicDisplayAsset =
+    asset.status === "attached" &&
+    (asset.purpose === "brand_logo" || asset.purpose === "creator_avatar")
+
+  if (!isPublicDisplayAsset) {
+    if (!viewerId || asset.ownerId !== viewerId) {
+      throw notFound("Media asset not found.")
+    }
   }
 
   let bytes: Buffer

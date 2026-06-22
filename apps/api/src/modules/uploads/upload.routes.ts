@@ -1,7 +1,8 @@
 import express, { Router } from "express"
 
 import { asyncRoute } from "../../middleware/async-route"
-import { requireAuth } from "../../middleware/auth"
+import { optionalAuth, requireAuth } from "../../middleware/auth"
+import { publicReadRateLimit, uploadContentRateLimit } from "../../middleware/rate-limit"
 import { validateBody } from "../../middleware/validate"
 import { assetIdParamSchema, prepareUploadSchema } from "./upload.schemas"
 import { getMediaResponse, prepareUpload, uploadAssetContent } from "./upload.service"
@@ -20,6 +21,7 @@ uploadRoutes.post(
 
 uploadRoutes.put(
   "/content/:assetId",
+  uploadContentRateLimit,
   express.raw({ type: () => true, limit: "10mb" }),
   asyncRoute(async (req, res) => {
     const { assetId } = assetIdParamSchema.parse(req.params)
@@ -36,11 +38,14 @@ uploadRoutes.put(
 )
 mediaRoutes.get(
   "/:assetId",
+  publicReadRateLimit,
+  optionalAuth,
   asyncRoute(async (req, res) => {
     const { assetId } = assetIdParamSchema.parse(req.params)
-    const media = await getMediaResponse(assetId)
+    const media = await getMediaResponse(assetId, req.auth?.id)
     res.setHeader("Content-Type", media.mimeType)
     res.setHeader("Cache-Control", "public, max-age=31536000, immutable")
+    res.setHeader("X-Content-Type-Options", "nosniff")
     res.send(media.bytes)
   })
 )

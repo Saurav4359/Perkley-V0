@@ -1,22 +1,6 @@
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"
+import { FaqAccordion } from "@/components/landing/faq-accordion"
 import { FadeIn } from "@/components/landing/motion"
-import { SectionHeader, SurfaceCard } from "@/components/landing/primitives"
-
-const faqs = [
-  {
-    question: "Do I need a minimum follower count?",
-    answer: "No.",
-  },
-  {
-    question: "When are you launching?",
-    answer: "Coming soon.",
-  },
-]
+import { SectionHeader } from "@/components/landing/primitives"
 
 export function FaqSection() {
   return (
@@ -31,20 +15,7 @@ export function FaqSection() {
         </FadeIn>
 
         <FadeIn delay={0.08}>
-          <SurfaceCard className="overflow-hidden px-1">
-            <Accordion className="w-full">
-              {faqs.map((faq) => (
-                <AccordionItem key={faq.question} value={faq.question}>
-                  <AccordionTrigger className="px-5 text-left text-base hover:no-underline">
-                    {faq.question}
-                  </AccordionTrigger>
-                  <AccordionContent className="px-5 text-muted-foreground">
-                    {faq.answer}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </SurfaceCard>
+          <FaqAccordion />
         </FadeIn>
       </div>
     </section>

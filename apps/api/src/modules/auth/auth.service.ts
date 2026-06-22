@@ -6,6 +6,7 @@ import { conflict, unauthorized } from "../../lib/http-error"
 import { prisma } from "../../lib/prisma"
 import { encryptSecret } from "../../lib/secrets"
 import type { SigninInput, SignupInput } from "./auth.schemas"
+import { resolveOAuthLinkUser } from "./auth.oauth.utils"
 import type { GoogleProfile, InstagramProfile, SupabaseGoogleProfile } from "./oauth"
 import { createSessionTokens, type SessionUser, type SessionTokens } from "./session"
 
@@ -92,7 +93,7 @@ export async function signup(input: SignupInput) {
     }
   } catch (error) {
     if (isUniqueViolation(error)) {
-      throw conflict("An account with this email already exists.", "email_taken")
+      throw conflict("Unable to create an account with these details.", "signup_failed")
     }
 
     throw error
@@ -265,7 +266,7 @@ export async function completeGoogleOAuth(input: {
     },
   })
 
-  let user = existingOAuth?.user ?? null
+  let user = resolveOAuthLinkUser(existingOAuth?.user, input.linkUserId)
 
   if (!user && input.linkUserId) {
     user = await prisma.user.findUnique({
@@ -355,7 +356,7 @@ export async function completeSupabaseOAuth(input: {
         user: { include: { creatorProfile: true, brandProfile: true } },
       },
     })
-    user = existingOAuth?.user ?? null
+    user = resolveOAuthLinkUser(existingOAuth?.user, input.linkUserId)
   }
 
   if (!user && input.linkUserId) {
@@ -430,7 +431,7 @@ export async function completeInstagramOAuth(input: {
     },
   })
 
-  let user = existingOAuth?.user ?? null
+  let user = resolveOAuthLinkUser(existingOAuth?.user, input.linkUserId)
 
   if (!user && input.linkUserId) {
     user = await prisma.user.findUnique({

@@ -1,6 +1,3 @@
-"use client"
-
-import { motion } from "framer-motion"
 import { ArrowUpRightIcon, TrophyIcon, UsersIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -13,9 +10,13 @@ const leaderboard = [
   { rank: 3, name: "Lena R.", handle: "@lenar", score: "81K views", delta: "+12%" },
 ]
 
-export function HeroPreview({ embedded = false }: { embedded?: boolean }) {
-  const content = (
-    <>
+export function HeroPreview() {
+  return (
+    <div
+      className="landing-reveal w-full"
+      style={{ "--reveal-delay": "0.2s" } as React.CSSProperties}
+    >
+      <SurfaceCard className="overflow-hidden p-6 sm:p-7">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
@@ -92,21 +93,7 @@ export function HeroPreview({ embedded = false }: { embedded?: boolean }) {
             ))}
           </div>
         </div>
-    </>
-  )
-
-  if (embedded) {
-    return <div className="w-full">{content}</div>
-  }
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-      className="w-full"
-    >
-      <SurfaceCard className="overflow-hidden p-6 sm:p-7">{content}</SurfaceCard>
-    </motion.div>
+      </SurfaceCard>
+    </div>
   )
 }

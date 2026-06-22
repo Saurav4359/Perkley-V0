@@ -25,20 +25,18 @@ function secretKey() {
   return encoder.encode(requireJwtSecret())
 }
 
-function isCrossOriginDeployment() {
+function isProductionLikeDeployment() {
   const env = getEnv()
   return env.NODE_ENV === "production" || env.NODE_ENV === "staging"
 }
 
 function sessionCookieSameSite(): "lax" | "none" {
-  // Vercel (perkley.in) + Render (onrender.com) are different sites; credentialed
-  // fetches require SameSite=None with Secure in production.
-  return isCrossOriginDeployment() ? "none" : "lax"
+  return getEnv().SESSION_COOKIE_SAMESITE
 }
 
 function sessionCookieSecure() {
   const env = getEnv()
-  return isCrossOriginDeployment() || env.NODE_ENV === "production"
+  return isProductionLikeDeployment() || env.NODE_ENV === "production" || env.SESSION_COOKIE_SAMESITE === "none"
 }
 
 function cookieOptions(maxAgeSeconds: number) {
@@ -89,6 +87,7 @@ export async function verifySessionToken(token: string): Promise<SessionUser> {
   const { payload } = await jwtVerify(token, secretKey())
 
   if (
+    payload.typ !== "access" ||
     !payload.sub ||
     typeof payload.role !== "string" ||
     !sessionRoles.has(payload.role as UserRole)

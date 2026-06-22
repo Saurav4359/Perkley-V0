@@ -1,6 +1,6 @@
 import type { CampaignStatus } from "@prisma/client"
 
-import { badRequest, notFound } from "../../lib/http-error"
+import { badRequest, conflict, forbidden, notFound, unauthorized } from "../../lib/http-error"
 import { prisma } from "../../lib/prisma"
 import {
   notifyWinnerAnnounced,
@@ -18,6 +18,13 @@ import {
 } from "./leaderboard.utils"
 
 const competingStatuses = ["competing", "won"] as const
+
+async function requireBrandUser(userId: string) {
+  const user = await prisma.user.findUnique({ where: { id: userId } })
+  if (!user || user.status !== "active") throw unauthorized()
+  if (user.role !== "brand") throw forbidden("Brand role required.")
+  return user
+}
 
 async function loadBountyCampaign(campaignId: string) {
   const campaign = await prisma.campaign.findUnique({ where: { id: campaignId } })
@@ -153,17 +160,14 @@ export async function getCampaignLeaderboard(campaignId: string) {
 }
 
 export async function selectCampaignWinners(brandId: string, campaignId: string) {
+  await requireBrandUser(brandId)
   const campaign = await loadBountyCampaignForBrand(brandId, campaignId)
-
-  const existingWinners = await prisma.campaignSubmission.count({
-    where: { campaignId, status: "won" },
-  })
 
   const decision = canSelectWinners({
     campaignType: campaign.type,
     campaignStatus: campaign.status,
     deadline: campaign.deadline,
-    hasExistingWinners: existingWinners > 0,
+    hasExistingWinners: false,
   })
 
   if (!decision.ok) {
@@ -184,20 +188,42 @@ export async function selectCampaignWinners(brandId: string, campaignId: string)
     throw badRequest("No competing submissions are available for winner selection.", "no_competing_submissions")
   }
 
-  await prisma.$transaction([
-    prisma.campaignSubmission.updateMany({
+  const completed = await prisma.$transaction(async (tx) => {
+    const existingWinners = await tx.campaignSubmission.count({
+      where: { campaignId, status: "won" },
+    })
+    if (existingWinners > 0) {
+      throw conflict("Winners have already been selected for this campaign.", "winners_already_selected")
+    }
+
+    const campaignUpdate = await tx.campaign.updateMany({
+      where: {
+        id: campaignId,
+        brandId,
+        status: { in: ["active", "archived"] },
+      },
+      data: { status: "completed" },
+    })
+
+    if (campaignUpdate.count === 0) {
+      throw conflict("Winners have already been selected for this campaign.", "winners_already_selected")
+    }
+
+    await tx.campaignSubmission.updateMany({
       where: {
         id: { in: winnerIds },
         campaignId,
         status: "competing",
       },
       data: { status: "won" },
-    }),
-    prisma.campaign.update({
-      where: { id: campaignId },
-      data: { status: "completed" },
-    }),
-  ])
+    })
+
+    return true
+  })
+
+  if (!completed) {
+    throw conflict("Winners have already been selected for this campaign.", "winners_already_selected")
+  }
 
   const winners = ranked
     .filter((entry) => winnerIds.includes(entry.submissionId))

@@ -73,18 +73,39 @@ function shouldAttemptRefresh(path: string) {
   )
 }
 
+async function resolveServerCookieHeader(
+  headers: HeadersInit | undefined
+): Promise<string | undefined> {
+  if (typeof window !== "undefined") return undefined
+
+  const existing = new Headers(headers ?? undefined)
+  if (existing.has("Cookie")) return existing.get("Cookie") ?? undefined
+
+  const { cookies } = await import("next/headers")
+  const cookieStore = await cookies()
+  const cookieHeader = cookieStore
+    .getAll()
+    .map((cookie) => `${cookie.name}=${cookie.value}`)
+    .join("; ")
+
+  return cookieHeader || undefined
+}
+
 export async function apiFetch<T>(
   path: string,
   options: ApiRequestOptions = {}
 ): Promise<T> {
   const { body, headers, ...rest } = options
+  const serverCookieHeader = await resolveServerCookieHeader(headers)
 
   async function sendRequest() {
     return fetch(`${getApiBaseUrl()}${path}`, {
       ...rest,
       credentials: "include",
+      cache: rest.cache ?? (typeof window === "undefined" ? "no-store" : "default"),
       headers: {
         ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
+        ...(serverCookieHeader ? { Cookie: serverCookieHeader } : {}),
         ...headers,
       },
       body: body !== undefined ? JSON.stringify(body) : undefined,

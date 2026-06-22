@@ -5,6 +5,7 @@ import helmet from "helmet"
 
 import { getEnv } from "./lib/env"
 import { requestLog } from "./lib/request-log"
+import { apiCsrfProtection } from "./middleware/csrf"
 import { errorHandler } from "./middleware/error-handler"
 import { adminRoutes } from "./modules/admin/admin.routes"
 import { analyticsRoutes } from "./modules/analytics/analytics.routes"
@@ -44,7 +45,7 @@ export function createApp() {
           return
         }
 
-        callback(new Error(`Origin ${origin} not allowed by CORS`))
+        callback(null, false)
       },
       credentials: true,
       methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
@@ -52,6 +53,7 @@ export function createApp() {
   )
   app.use(express.json({ limit: "1mb" }))
   app.use(cookieParser())
+  app.use(apiCsrfProtection)
   app.use(requestLog)
 
   app.get("/health", (_req, res) => {
