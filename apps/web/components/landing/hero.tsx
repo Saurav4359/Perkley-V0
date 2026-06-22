@@ -89,7 +89,7 @@ export function HeroSection() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.65, delay: 0.22, ease: [0.22, 1, 0.36, 1] }}
         >
-          <div className="overflow-hidden rounded-[1.75rem] border border-white/70 bg-card shadow-[0_32px_80px_rgba(0,0,0,0.16),0_1px_0_rgba(255,255,255,0.8)_inset] sm:rounded-[2rem]">
+          <div className="overflow-hidden rounded-[1.75rem] border border-white/70 bg-card shadow-[0_32px_80px_rgba(0,0,0,0.16),0_1px_0_rgba(255,255,255,0.8)_inset] sm:rounded-[2rem] dark:border-white/10 dark:bg-card dark:shadow-[0_32px_96px_rgba(0,0,0,0.55),0_1px_0_rgba(255,255,255,0.05)_inset]">
             <div className="flex flex-wrap justify-center gap-3 border-b border-border bg-muted/40 px-5 py-4 sm:gap-4 sm:px-7 sm:py-5">
               <MetricChip variant="emphasis">Brands launch bounties</MetricChip>
               <MetricChip variant="emphasis">Creators compete openly</MetricChip>
