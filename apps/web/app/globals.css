@@ -316,6 +316,37 @@ html[data-theme-animating] *::after {
     0 12px 40px rgba(0, 0, 0, 0.45);
 }
 
+.hero-premium-scrim {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.68) 0%,
+      rgba(0, 0, 0, 0.34) 38%,
+      rgba(0, 0, 0, 0.42) 72%,
+      rgba(0, 0, 0, 0.58) 100%
+    ),
+    radial-gradient(
+      ellipse 85% 70% at 50% 42%,
+      rgba(0, 0, 0, 0.08) 0%,
+      rgba(0, 0, 0, 0.48) 100%
+    );
+}
+
+.dark .hero-premium-scrim {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.78) 0%,
+      rgba(0, 0, 0, 0.48) 40%,
+      rgba(0, 0, 0, 0.56) 100%
+    ),
+    radial-gradient(
+      ellipse 85% 70% at 50% 42%,
+      rgba(0, 0, 0, 0.12) 0%,
+      rgba(0, 0, 0, 0.58) 100%
+    );
+}
+
 .hero-cinematic-scrim {
   background:
     linear-gradient(
