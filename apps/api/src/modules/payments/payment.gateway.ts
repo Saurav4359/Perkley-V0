@@ -61,8 +61,13 @@ export function verifyEscrowPayment(input: {
   signature?: string
 }) {
   if (!isRazorpayConfigured()) {
+    const env = getEnv()
+    if (env.NODE_ENV !== "development" && env.NODE_ENV !== "test") {
+      return { ok: false as const, reason: "gateway_not_configured" as const }
+    }
+
     return {
-      ok: true,
+      ok: true as const,
       paymentId: input.paymentId || `dev_payment_${Date.now()}`,
     }
   }
