@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils"
 
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden border-b border-border">
+    <section className="relative -mt-16 overflow-hidden border-b border-border sm:-mt-[4.5rem]">
       <div className="absolute inset-0" aria-hidden>
         <Image
           src="/hero-nyc-times-square.png"
@@ -81,22 +81,25 @@ export function HeroSection() {
               For creators
             </Button>
           </motion.div>
-
-          <motion.div
-            className="flex flex-wrap justify-center gap-2 border-t border-white/20 pt-6"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.24 }}
-          >
-            <MetricChip>Brands launch bounties</MetricChip>
-            <MetricChip>Creators compete openly</MetricChip>
-            <MetricChip>Rewards follow results</MetricChip>
-          </motion.div>
         </div>
 
-        <div className="mb-14 sm:mb-20 lg:mb-24">
-          <HeroPreview />
-        </div>
+        <motion.div
+          className="mb-14 sm:mb-20 lg:mb-24"
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.65, delay: 0.22, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <div className="overflow-hidden rounded-[1.75rem] border border-white/70 bg-card shadow-[0_32px_80px_rgba(0,0,0,0.16),0_1px_0_rgba(255,255,255,0.8)_inset] sm:rounded-[2rem]">
+            <div className="flex flex-wrap justify-center gap-3 border-b border-border bg-muted/40 px-5 py-4 sm:gap-4 sm:px-7 sm:py-5">
+              <MetricChip variant="emphasis">Brands launch bounties</MetricChip>
+              <MetricChip variant="emphasis">Creators compete openly</MetricChip>
+              <MetricChip variant="emphasis">Rewards follow results</MetricChip>
+            </div>
+            <div className="p-4 sm:p-6 lg:p-7">
+              <HeroPreview embedded />
+            </div>
+          </div>
+        </motion.div>
       </div>
     </section>
   )
