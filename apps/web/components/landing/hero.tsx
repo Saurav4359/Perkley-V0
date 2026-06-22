@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils"
 
 export function HeroSection() {
   return (
-    <section className="relative -mt-16 flex min-h-[100svh] items-center overflow-hidden">
+    <section className="relative flex min-h-[100svh] items-center overflow-hidden">
       <div className="absolute inset-0" aria-hidden>
         <Image
           src="/hero-perkley-8k.png"
