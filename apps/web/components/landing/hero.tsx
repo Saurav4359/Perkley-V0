@@ -66,7 +66,7 @@ export function HeroSection() {
           >
             <Button
               size="lg"
-              className="h-11 rounded-full px-6 bg-white text-foreground shadow-[0_8px_32px_rgba(0,0,0,0.2)] hover:bg-white/92"
+              className="h-11 rounded-full px-6 bg-white text-[#0a0a0a] shadow-[0_8px_32px_rgba(0,0,0,0.2)] hover:bg-white/92 dark:shadow-[0_8px_40px_rgba(0,0,0,0.45)]"
               render={<Link href="#how-it-works" />}
             >
               For brands
