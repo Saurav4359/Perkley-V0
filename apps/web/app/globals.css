@@ -132,6 +132,7 @@
   --scrollbar-track: #171717;
   --scrollbar-thumb: #71717a;
   --scrollbar-arrow: #525252;
+  --hero-scrim-bottom: #0a0a0a;
 }
 
 @layer base {
@@ -327,9 +328,12 @@ html[data-theme-animating] *::after {
     ),
     linear-gradient(
       0deg,
-      var(--background) 0%,
-      color-mix(in srgb, var(--background) 92%, transparent) 14%,
-      color-mix(in srgb, var(--background) 72%, transparent) 28%,
-      transparent 46%
+      var(--hero-scrim-bottom) 0%,
+      color-mix(in srgb, var(--hero-scrim-bottom) 98%, transparent) 6%,
+      color-mix(in srgb, var(--hero-scrim-bottom) 88%, transparent) 16%,
+      color-mix(in srgb, var(--hero-scrim-bottom) 68%, transparent) 30%,
+      color-mix(in srgb, var(--hero-scrim-bottom) 42%, transparent) 44%,
+      color-mix(in srgb, var(--hero-scrim-bottom) 18%, transparent) 58%,
+      transparent 72%
     );
 }
