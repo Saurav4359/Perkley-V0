@@ -34,7 +34,7 @@ export function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
           >
-            <span className="inline-flex items-center rounded-full border border-white/20 bg-black/40 px-4 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.22em] text-white/90 backdrop-blur-md sm:text-[11px]">
+            <span className="inline-flex items-center rounded-full border border-white/30 bg-black/65 px-4 py-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.22em] text-white shadow-[0_4px_20px_rgba(0,0,0,0.35)] backdrop-blur-md sm:text-[11px]">
               Performance-based creator marketing
             </span>
           </motion.div>
@@ -89,7 +89,7 @@ export function HeroSection() {
             <Button
               variant="outline"
               size="lg"
-              className="h-11 rounded-full border-white/30 bg-white/10 px-7 text-white backdrop-blur-sm hover:border-white/45 hover:bg-white/18 hover:text-white"
+              className="h-11 rounded-full border-white/40 bg-black/45 px-7 text-white shadow-[0_4px_24px_rgba(0,0,0,0.25)] backdrop-blur-md hover:border-white/55 hover:bg-black/55 hover:text-white"
               render={<Link href="#how-it-works" />}
             >
               For creators
