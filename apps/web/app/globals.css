@@ -319,11 +319,11 @@ html[data-theme-animating] *::after {
   background:
     linear-gradient(
       180deg,
-      rgba(0, 0, 0, 0.58) 0%,
-      rgba(0, 0, 0, 0.34) 28%,
-      rgba(0, 0, 0, 0.14) 52%,
-      rgba(0, 0, 0, 0.06) 68%,
-      transparent 78%
+      rgba(0, 0, 0, 0.64) 0%,
+      rgba(0, 0, 0, 0.44) 20%,
+      rgba(0, 0, 0, 0.26) 38%,
+      rgba(0, 0, 0, 0.1) 54%,
+      transparent 68%
     ),
     linear-gradient(
       0deg,
