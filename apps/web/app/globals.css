@@ -338,15 +338,15 @@ html[data-theme-animating] *::after {
   background:
     linear-gradient(
       180deg,
-      rgba(0, 0, 0, 0.68) 0%,
-      rgba(0, 0, 0, 0.34) 38%,
-      rgba(0, 0, 0, 0.42) 72%,
-      rgba(0, 0, 0, 0.58) 100%
+      rgba(0, 0, 0, 0.4) 0%,
+      rgba(0, 0, 0, 0.12) 34%,
+      rgba(0, 0, 0, 0.08) 58%,
+      rgba(0, 0, 0, 0.22) 100%
     ),
     radial-gradient(
-      ellipse 85% 70% at 50% 42%,
-      rgba(0, 0, 0, 0.08) 0%,
-      rgba(0, 0, 0, 0.48) 100%
+      ellipse 82% 68% at 50% 42%,
+      rgba(0, 0, 0, 0.02) 0%,
+      rgba(0, 0, 0, 0.2) 100%
     );
 }
 
